@@ -10,5 +10,10 @@ Visual Subsystem
 ----------------
 This subsystem handles all of the visual processing, receiving OSC messages from the tracking and conductor systems and rendering graphics, either in the form of raster terminal output or vector laser output.
 
+Installation
+------------
+Clone the repository on your local machine:
 
+[user@host dev]$ git clone https://github.com/wmodes/crs
 
+At this time, the system is under development and there is nothing to see here. Return to your homes.

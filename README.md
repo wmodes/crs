@@ -1,0 +1,14 @@
+Co-related Space
+================
+Co-related Space is an interactive multimedia installation that engages the themes of presence, interaction, and place. Using motion tracking, laser light and a generative soundscape, it encourages interactions between participants, visually and sonically transforming a regularly trafficked space. Co-related Space highlights participants' active engagement and experimentation with sound and light, including complex direct and indirect behavior and relationships.
+
+Conductor Subsystem
+-------------------
+This subsystem directs symphonic movements or scense of the piece and aggregates data, making inferences about behavior and connections of participants. It receives OSC data from the tracking system and outputs OSC messages to the sound and visual subsystems.
+
+Visual Subsystem
+----------------
+This subsystem handles all of the visual processing, receiving OSC messages from the tracking and conductor systems and rendering graphics, either in the form of raster terminal output or vector laser output.
+
+
+

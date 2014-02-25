@@ -2,8 +2,9 @@
 
 default_radius = 0.75
 default_orient = 0
-default_linecolor = (1,1,1)
-default_blobcolor = (.1,.1,.1)
+default_linecolor = (1,1,1)     # white
+default_blobcolor = (.1,.1,.1)  # dark dark gray
+default_bkgdcolor = (.25, .25, .25, 1)    # dark gray
 
 radius_padding = 1.5      # increased radius of circle around blobs
 curve_segments = 36     # number of line segs in a curve

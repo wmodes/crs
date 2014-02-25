@@ -17,6 +17,7 @@ import pprint
 from math import copysign
 from random import randint
 from itertools import chain
+import random
 
 # installed modules
 import pyglet
@@ -34,6 +35,7 @@ DEF_RADIUS = config.default_radius
 DEF_ORIENT = config.default_orient
 DEF_LINECOLOR = config.default_linecolor
 DEF_BLOBCOLOR = config.default_blobcolor
+DEF_BKGDCOLOR = config.default_bkgdcolor
 
 RAD_PAD = config.radius_padding     # increased radius of circle around blobs
 CURVE_SEGS = config.curve_segments  # number of line segs in a curve
@@ -62,22 +64,59 @@ warnings.filterwarnings('ignore')
 # basic data elements
 
 class Field(object):
-    """An object representing the field.
-    
-    A word about raphics scaling:
-     * The vision tracking system (our input data) measures in meters.
-     * The laser DAC measures in uh, int16? -32,768 to 32,768
-     * Pyglet measures in pixels at the screen resolution of the window you create
-     * The pathfinding units are each some ratio of the smallest expected radius
+    """An object representing the field.  """
 
-     So we will keep eveything internally in centemeters (so we can use ints
-     instead of floats), and then convert it to the appropriate units before 
-     display depending on the output mode
-    
-    """
+    def __init__(self):
+        # we could use a list here which would make certain things easier, but
+        # we need to do deletions and references pretty regularly.
+        self.m_cell_dict = {}
+        self.m_connector_dict = {}
 
-    def __init__(self,xmin,ymin,xmax,ymax,min_laser,max_laser,
+    def addCell(self,cell):
+        self.m_cell_dict[cell.m_id] = cell
+
+    def delCell(self,cell):
+        del self.m_cell_list[cell.m_id]
+
+    def addConnector(self,connector):
+        self.m_connector_dict[connector.m_id] = connector
+        connector.m_cells[0].addConnector(connector)
+        connector.m_cells[1].addConnector(connector)
+
+    def delConnector(self,connector):
+        del self.m_connector_list[connector.m_id]
+
+    # should this shit be in the pathfinding module? If so, I'd have to pass
+    # all the info it has access to here in Field
+    def makePathGrid(self):
+        # for our pathfinding, we're going to overlay a grid over the field with
+        # squares that are sized by a constant in the config file
+        self.path_grid = GridMap(self.scale2path(self.m_xmax),
+                            self.scale2path(self.m_ymax))
+        self.pathfinder = PathFinder(self.path_grid.successors, self.path_grid.move_cost, 
+                                self.path_grid.estimate)
+
+    def pathScoreCells(self):
+        for key, cell in self.m_cell_dict.iteritems():
+            #print "cell:",cell.m_id," radius:",cell.m_radius,"cm pathscaled:",\
+                #self.scale2path(cell.m_radius)
+            self.path_grid.set_blocked(self.scale2path(cell.m_location),\
+                                    self.scale2path(cell.m_radius*RAD_PAD),BLOCK_FUZZ)
+
+    def initScaling(self,xmin,ymin,xmax,ymax,min_laser,max_laser,
             min_screen,max_screen,path_unit,mode):
+        """Set up scaling in the field.
+
+        A word about graphics scaling:
+         * The vision tracking system (our input data) measures in meters.
+         * The laser DAC measures in uh, int16? -32,768 to 32,768
+         * Pyglet measures in pixels at the screen resolution of the window you create
+         * The pathfinding units are each some ratio of the smallest expected radius
+
+         So we will keep eveything internally in centemeters (so we can use ints
+         instead of floats), and then convert it to the appropriate units before 
+         display depending on the output mode
+        """
         self.m_xmin = xmin
         self.m_ymin = ymin
         self.m_xmax = xmax
@@ -564,16 +603,17 @@ class PathGraph(object):
 if __name__ == "__main__":
 
     # initialize field
-    field = Field(XMIN, YMIN, XMAX, YMAX, MIN_LASER, MAX_LASER, 
+    field = Field()
+    field.initScaling(XMIN, YMIN, XMAX, YMAX, MIN_LASER, MAX_LASER, 
         MIN_SCREEN, MAX_SCREEN, PATH_UNIT, MODE_SCREEN)
+    field.makePathGrid()
 
     # initialize pyglet 
     (xmax,ymax) = field.screenMax()
     window = pyglet.window.Window(width=xmax,height=ymax)
     # set window background color = r, g, b, alpha
     # each value goes from 0.0 to 1.0
-    dkgray = .25, .25, .25, 0
-    pyglet.gl.glClearColor(*dkgray)
+    pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
 
     # generate test data
     rmin = 35
@@ -586,63 +626,44 @@ if __name__ == "__main__":
     connections = 4
 
     # make cells
-    cell_list=[]
+    #cell_list=[]
     for i in range(people):
         cell = Cell(field,i,(randint(xmin,xmax),randint(ymin,ymax)),randint(rmin,rmax))
-        cell_list.append(cell)
+        field.addCell(cell)
+
+    # add cells to path 
+    field.pathScoreCells()
 
     # make connectors
     connector_list=[]
     for i in range(connections):
-        cell0 = cell_list[randint(0,people-1)]
-        cell1 = cell_list[randint(0,people-1)]
+        cell0 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
+        #print "cell0:",cell0.m_id," loc:",cell0.m_location
+        cell1 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
         while cell0 == cell1:
-            cell1 = cell_list[randint(0,people-1)]
+            cell1 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
+        print "cell1:",cell1.m_id," loc:",cell1.m_location
         connector = Connector(field,i,cell0,cell1)
-        connector_list.append(connector)
-        cell0.addConnector(connector)
-        cell1.addConnector(connector)
-
-    def downScale(n):
-        return(int(n/PATH_UNIT))
-
-    def downScaleP(p):
-        return(int(p[0]/PATH_UNIT),int(p[1]/PATH_UNIT))
-
-    def upScale(n):
-        return(int(n*PATH_UNIT))
-
-    def upScaleP(p):
-        return(int(p[0]*PATH_UNIT),int(p[1]*PATH_UNIT))
-
-    # for our pathfinding, we're going to overlay a grid over the field with
-    # squares that are half a default radius
-    path_grid = GridMap(field.scale2path(XMAX),field.scale2path(YMAX))
-    pf = PathFinder(path_grid.successors, path_grid.move_cost, path_grid.estimate)
-    for cell in cell_list:
-        print "cell:",cell.m_id," radius:",cell.m_radius,"cm pathscaled:",field.scale2path(cell.m_radius)
-        path_grid.set_blocked(field.scale2path(cell.m_location),
-                field.scale2path(cell.m_radius*RAD_PAD),BLOCK_FUZZ)
+        field.addConnector(connector)
 
     allpaths = []
-    for connector in connector_list:
+    for key, connector in field.m_connector_dict.iteritems():
         start = field.scale2path(connector.m_cells[0].m_location)
         goal = field.scale2path(connector.m_cells[1].m_location)
-        path = list(pf.compute_path(start, goal))
-        path_grid.set_block_line(path)
+        path = list(field.pathfinder.compute_path(start, goal))
+        field.path_grid.set_block_line(path)
         allpaths = allpaths + path
         
-    path_grid.printme(allpaths)
-
+    field.path_grid.printme(allpaths)
 
     @window.event
     def on_draw():
         window.clear()
 
-        for cell in cell_list:
+        for key, cell in field.m_cell_dict.iteritems():
             cell.drawBlob(DEF_BLOBCOLOR)
             cell.drawCell()
-        for connector in connector_list:
+        for key, connector in field.m_connector_dict.iteritems():
             connector.draw()
 
     pyglet.app.run()

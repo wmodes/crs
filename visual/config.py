@@ -20,7 +20,9 @@ max_laser = 32768
 min_screen = 0
 max_screen = 800
 
-path_unit = 20   # 20cm = about 8in
+#path_unit = 20   # 20cm = about 8in
+path_unit = 40   # 20cm = about 8in
+#path_unit = 30   # 20cm = about 8in
 
 logfile="crs-visual.log"
 

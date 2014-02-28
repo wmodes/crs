@@ -71,6 +71,7 @@ class Field(object):
         # we need to do deletions and references pretty regularly.
         self.m_cell_dict = {}
         self.m_connector_dict = {}
+        self.allpaths = []
 
     def addCell(self,cell):
         self.m_cell_dict[cell.m_id] = cell
@@ -86,8 +87,9 @@ class Field(object):
     def delConnector(self,connector):
         del self.m_connector_list[connector.m_id]
 
-    # should this shit be in the pathfinding module? If so, I'd have to pass
-    # all the info it has access to here in Field
+    # should the next two functions be in the gridmap module? No, because the GridMap
+    # and Pathfinder classes have to be instantiated from somewhere. And if not
+    # here they have to be called from the main loop. Better here.
     def makePathGrid(self):
         # for our pathfinding, we're going to overlay a grid over the field with
         # squares that are sized by a constant in the config file
@@ -96,12 +98,28 @@ class Field(object):
         self.pathfinder = PathFinder(self.path_grid.successors, self.path_grid.move_cost, 
                                 self.path_grid.estimate)
 
+    def resetPathGrid(self):
+        self.path_grid.reset_grid()
+        self.allpaths = []
+
     def pathScoreCells(self):
         for key, cell in self.m_cell_dict.iteritems():
             #print "cell:",cell.m_id," radius:",cell.m_radius,"cm pathscaled:",\
                 #self.scale2path(cell.m_radius)
             self.path_grid.set_blocked(self.scale2path(cell.m_location),\
                                     self.scale2path(cell.m_radius*RAD_PAD),BLOCK_FUZZ)
+
+    def findPath(self, connector):
+        """ Find path in path_grid and then scale it appropriately."""
+        start = field.scale2path(connector.m_cells[0].m_location)
+        goal = field.scale2path(connector.m_cells[1].m_location)
+        path = list(field.pathfinder.compute_path(start, goal))
+        field.path_grid.set_block_line(path)
+        self.allpaths = self.allpaths + path
+        return self.path2scale(path)
+        
+    def printGrid(self):
+        self.path_grid.printme(self.allpaths)
 
     def initScaling(self,xmin,ymin,xmax,ymax,min_laser,max_laser,
             min_screen,max_screen,path_unit,mode):
@@ -175,7 +193,7 @@ class Field(object):
 
     def path2scale(self,n):
         """Convert internal unit (cm) to units usable for pathfinding. """
-        print "m_path_scale",self.m_path_scale
+        #print "m_path_scale",self.m_path_scale
         return self._convert(n,1/self.m_path_scale,0)
 
 
@@ -280,8 +298,9 @@ class Connector(GraphElement):
 
     def __init__(self, field, id, cell0, cell1, effect=[], c=DEF_LINECOLOR):
         """Store basic info and create a GraphElement object"""
-        self.m_id=id
-        self.m_cells=(cell0,cell1)
+        self.m_id = id
+        self.m_cells = (cell0,cell1)
+        self.m_path = []
         GraphElement.__init__(self,field,effect,c)
 
     """def makeBasicShape(self):
@@ -292,6 +311,10 @@ class Connector(GraphElement):
         self.shape = Line(loc0,loc1,rad0,rad1,self.m_color)
         return(self.shape)
         """
+
+    def addPath(self,path):
+        """Record the path of this connector."""
+        self.m_path = path
 
     def draw(self,color=0):
         # TODO: Here we know how many connectors we have, and we can tell 
@@ -304,7 +327,7 @@ class Connector(GraphElement):
         loc1 = self.m_cells[1].m_location
         rad0 = self.m_cells[0].m_radius
         rad1 = self.m_cells[1].m_radius
-        shape = Line(self.m_field,loc0,loc1,rad0,rad1,color)
+        shape = Line(self.m_field,loc0,loc1,rad0,rad1,color,self.m_path)
         shape.draw()
         return(shape)
 
@@ -418,7 +441,7 @@ class Line(GraphicObject):
 
     """Define line object."""
 
-    def __init__(self, field, p0, p1, r0, r1, color):
+    def __init__(self, field, p0, p1, r0, r1, color, path=[]):
         """Line constructor.
 
         Args:
@@ -433,6 +456,10 @@ class Line(GraphicObject):
         def makeArc(p1,p2):
             return (p1,midpoint(p1,p2),p2)
 
+        def inCircle(center, radius, p):
+            square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
+            return square_dist <= radius ** 2
+
         (x0,y0)=p0
         (x1,y1)=p1
         """
@@ -443,23 +470,56 @@ class Line(GraphicObject):
         """
         nr0 = r0*RAD_PAD
         nr1 = r1*RAD_PAD
-        # get position of p1 relative to p0 
-        vx = int(copysign(1,x1-x0))  # rel x pos vector as 1 or -1
-        vy = int(copysign(1,y1-y0))  # rel y pos vector as 1 or -1
-        xdif = abs(x0 - x1)
-        ydif = abs(y0 - y1)
-        if (xdif > ydif):
-            xmid = x0 + vx*xdif/2
-            arc0 = makeArc((x0 + vx*nr0,y0),(xmid,y0))
-            arc1 = makeArc((xmid,y0),(xmid,y1))
-            arc2 = makeArc((xmid,y1),(x1 - vx*nr1,y1))
+        # if we were given a path, we will use it
+        if path:
+            n = len(path) - 1
+            index = [0] + [int(x * 0.5) for x in range(2, n*2)] + [n]
+            lastpt = []
+            npath = []
+            for i in range(0, len(path)-1):
+                # Remove parts of path within the radius of cell
+                # if this point is inside one of our circles, forget it
+                if not inCircle(p0, nr0, path[i]) and not inCircle(p1, nr1, path[i]):
+                    #print path[i],"inside cell"
+                    # take segment of two points, and transform to three point arc
+                    arc = makeArc(path[i],path[i+1])
+                    npath.append(arc[0])
+                    npath.append(arc[1])
+                    lastpt = arc[2]
+            npath.append(lastpt)
+
+            #print "npath:", npath
+            arcpoints = npath
+            arcindex = [(x-2,x-1,x) for x in range(2,len(npath),2)]
+            #print "arcpoints:", arcpoints
+            #print "arcindex:", arcindex
+
+        # otherwise, we will construct a simple dumb path
         else:
-            ymid = y0 + vy*ydif/2
-            arc0 = makeArc((x0,y0 + vy*nr0),(x0,ymid))
-            arc1 = makeArc((x0,ymid),(x1,ymid))
-            arc2 = makeArc((x1,ymid),(x1,y1 - vy*nr1))
-        arcpoints = [arc0[0],arc0[1],arc0[2],arc1[1],arc2[0],arc2[1],arc2[2]]
-        arcindex=[(0,1,2),(2,3,4),(4,5,6)]
+            # get position of p1 relative to p0 
+            vx = int(copysign(1,x1-x0))  # rel x pos vector as 1 or -1
+            vy = int(copysign(1,y1-y0))  # rel y pos vector as 1 or -1
+            xdif = abs(x0 - x1)
+            ydif = abs(y0 - y1)
+            # whether we make a zig at the midpoint horz or vert depends on 
+            # whether the x or y axis is shorter
+            if (xdif > ydif):
+                xmid = x0 + vx*xdif/2
+                # take segment of two points, and transform to three point arc
+                arc0 = makeArc((x0 + vx*nr0,y0),(xmid,y0))
+                arc1 = makeArc((xmid,y0),(xmid,y1))
+                arc2 = makeArc((xmid,y1),(x1 - vx*nr1,y1))
+            else:
+                ymid = y0 + vy*ydif/2
+                # take segment of two points, and transform to three point arc
+                arc0 = makeArc((x0,y0 + vy*nr0),(x0,ymid))
+                arc1 = makeArc((x0,ymid),(x1,ymid))
+                arc2 = makeArc((x1,ymid),(x1,y1 - vy*nr1))
+            arcpoints = [arc0[0],arc0[1],arc0[2],arc1[1],arc2[0],arc2[1],arc2[2]]
+            #arcpoints = list(chain(*arc))
+            arcindex=[(0,1,2),(2,3,4),(4,5,6)]
+            print "arcpoints:", arcpoints
+            print "arcindex:", arcindex
 
         GraphicObject.__init__(self,field,arcpoints,arcindex,color)
 
@@ -622,8 +682,8 @@ if __name__ == "__main__":
     xmax = XMAX-rmax
     ymin = rmax
     ymax = YMAX-rmax
-    people = 6
-    connections = 4
+    people = 10
+    connections = 7
 
     # make cells
     #cell_list=[]
@@ -642,19 +702,18 @@ if __name__ == "__main__":
         cell1 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
         while cell0 == cell1:
             cell1 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
-        print "cell1:",cell1.m_id," loc:",cell1.m_location
+        #print "cell1:",cell1.m_id," loc:",cell1.m_location
         connector = Connector(field,i,cell0,cell1)
         field.addConnector(connector)
 
     allpaths = []
     for key, connector in field.m_connector_dict.iteritems():
-        start = field.scale2path(connector.m_cells[0].m_location)
-        goal = field.scale2path(connector.m_cells[1].m_location)
-        path = list(field.pathfinder.compute_path(start, goal))
-        field.path_grid.set_block_line(path)
-        allpaths = allpaths + path
-        
-    field.path_grid.printme(allpaths)
+        #start = field.scale2path(connector.m_cells[0].m_location)
+        #goal = field.scale2path(connector.m_cells[1].m_location)
+        #path = list(field.pathfinder.compute_path(start, goal))
+        #field.path_grid.set_block_line(path)
+        connector.addPath(field.findPath(connector))
+    field.printGrid()
 
     @window.event
     def on_draw():

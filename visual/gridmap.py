@@ -1,21 +1,12 @@
 from collections import defaultdict
 from math import sqrt
+import numpy
 
-
-COVER_MAP = [
-    [(0,0)],
-    [(0,1),(1,0),(0,-1),(-1,0)],
-    [(1,1),(1,-1),(-1,-1),(-1,1)],
-    [(0,2),(2,0),(0,-2),(-2,0)],
-    [(1,2),(2,1),(2,-1),(1,-2),(-1,-2),(-2,-1),(-2,1),(-1,2)],
-    [(0,3),(2,2),(3,0),(2,-2),(0,-3),(-2,-2),(-3,0),(-2,2)],
-    [(1,3),(3,1),(3,-1),(1,-3),(-1,-3),(-3,-1),(-3,1),(-1,3)]
-]
 
 PATH_COST_ZIG = 2
 PATH_COST_MID = 1
-PATH_COST_LINE = 2
-PATH_COST_PROX = [5,4,3]
+PATH_COST_LINE = 3
+PATH_COST_PROX = [6,5,4]
 
 DRAW_GRID = '.'
 DRAW_COST_PROX = "#$@%&0*"
@@ -37,9 +28,15 @@ class GridMap(object):
         self.xmax = xmax
         self.ymax = ymax
 
-        self.map = [[0] * self.ymax for i in range(self.xmax)]
+        #self.map = [[0] * self.ymax for i in range(self.xmax)]
+        self.map = numpy.zeros((self.xmax,self.ymax))
         #self.blocked = defaultdict(lambda: False)
         self.gen_circles(MAX_CIRCLE_RADIUS)
+
+    def reset_grid(self):
+        """ Resets the grid between frames. """
+        #self.map = [[0] * self.ymax for i in range(self.xmax)]
+        self.map = numpy.zeros((self.xmax,self.ymax))
 
     def gen_circles (self, max_r):
         """ Pre-generate circles to some maximum radius. """

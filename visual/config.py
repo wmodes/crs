@@ -7,8 +7,8 @@ default_blobcolor = (.1,.1,.1)  # dark dark gray
 default_bkgdcolor = (.25, .25, .25, 1)    # dark gray
 
 radius_padding = 1.5      # increased radius of circle around blobs
-curve_segments = 36     # number of line segs in a curve
-fuzzy_area_for_cells = 3
+curve_segments = 8     # number of line segs in a curve
+fuzzy_area_for_cells = 1
 
 xmin = 0
 ymin = 0
@@ -21,8 +21,8 @@ min_screen = 0
 max_screen = 800
 
 #path_unit = 20   # 20cm = about 8in
-path_unit = 40   # 20cm = about 8in
-#path_unit = 30   # 20cm = about 8in
+#path_unit = 40   # 20cm = about 8in
+path_unit = 30   # 20cm = about 8in
 
 logfile="crs-visual.log"
 

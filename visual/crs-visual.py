@@ -104,10 +104,8 @@ class Field(object):
 
     def pathScoreCells(self):
         for key, cell in self.m_cell_dict.iteritems():
-            #print "cell:",cell.m_id," radius:",cell.m_radius,"cm pathscaled:",\
-                #self.scale2path(cell.m_radius)
             self.path_grid.set_blocked(self.scale2path(cell.m_location),\
-                                    self.scale2path(cell.m_radius*RAD_PAD),BLOCK_FUZZ)
+                                    self.scale2path(cell.m_cellradius),BLOCK_FUZZ)
 
     def findPath(self, connector):
         """ Find path in path_grid and then scale it appropriately."""
@@ -245,7 +243,8 @@ class Cell(GraphElement):
         """Store basic info and create a GraphElement object"""
         self.m_id=id
         self.m_location=p
-        self.m_radius=r
+        self.m_blobradius=r
+        self.m_cellradius=r * RAD_PAD
         self.m_oriend=orient
         self.m_connector_dict = {}
         # does Cell have to call GraphElement to get teh defaults set?
@@ -263,22 +262,17 @@ class Cell(GraphElement):
     def delConnector(self, connector):
         del self.m_connector_list[connector.m_id]
 
-    """def makeBasicShape(self):
-        self.shape = Circle(self.m_location,self.m_radius,self.m_color)
-        return(self.shape)
-        """
-
     def drawCell(self,color=0):
         if not color:
             color = DEF_LINECOLOR 
-        shape = Circle(self.m_field,self.m_location,self.m_radius*RAD_PAD,color)
+        shape = Circle(self.m_field,self.m_location,self.m_cellradius,color)
         shape.draw()
         return(shape)
 
     def drawBlob(self,color=0):
         if not color:
             color = DEF_LINECOLOR 
-        shape = Circle(self.m_field,self.m_location,self.m_radius,color)
+        shape = Circle(self.m_field,self.m_location,self.m_blobradius,color)
         shape.drawSolid()
         return(shape)
 
@@ -303,15 +297,6 @@ class Connector(GraphElement):
         self.m_path = []
         GraphElement.__init__(self,field,effect,c)
 
-    """def makeBasicShape(self):
-        loc0 = self.m_cells[0].m_location
-        loc1 = self.m_cells[1].m_location
-        rad0 = self.m_cells[0].m_radius
-        rad1 = self.m_cells[1].m_radius
-        self.shape = Line(loc0,loc1,rad0,rad1,self.m_color)
-        return(self.shape)
-        """
-
     def addPath(self,path):
         """Record the path of this connector."""
         self.m_path = path
@@ -325,36 +310,14 @@ class Connector(GraphElement):
             color = self.m_color
         loc0 = self.m_cells[0].m_location
         loc1 = self.m_cells[1].m_location
-        rad0 = self.m_cells[0].m_radius
-        rad1 = self.m_cells[1].m_radius
+        rad0 = self.m_cells[0].m_cellradius
+        rad1 = self.m_cells[1].m_cellradius
         shape = Line(self.m_field,loc0,loc1,rad0,rad1,color,self.m_path)
         shape.draw()
         return(shape)
 
 
 # graphic primatives
-
-class Point(object):
-    """Basic cartisian coordinate point object"""
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-
-class Arc(object):
-    """Basic arc object"""
-
-    def __init__(self,p1,p2,p3,c):
-        self.p1 = p1
-        self.p2 = p2
-        self.p3 = p3
-        self.c = c
-
-
-class Arc(object):
-
-    """Basic arc object"""
 
 class GraphicObject(object):
 
@@ -384,13 +347,18 @@ class GraphicObject(object):
             p0 = self.m_arcpoints[self.m_arcindex[i][0]]
             p1 = self.m_arcpoints[self.m_arcindex[i][1]]
             p2 = self.m_arcpoints[self.m_arcindex[i][2]]
-            (lp,index) = cubicSpline(p0,p1,p2,CURVE_SEGS)
+            # if this is a straight line, don't chop into cubicSplines
+            if p0[0] == p1[0] == p2[0] or p0[1] == p1[1] == p2[1]:
+                points = [p0,p1,p2]
+                index = [0,1,1,2]
+            else:
+                (points,index) = cubicSpline(p0,p1,p2,CURVE_SEGS)
             pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
-            #print "list:",tuple(chain(*lp))
-            #print "convert:",self.m_field.scale2out(tuple(chain(*lp)))
-            pyglet.graphics.draw_indexed(CURVE_SEGS, pyglet.gl.GL_LINES,
+            #print "list:",tuple(chain(*points))
+            #print "convert:",self.m_field.scale2out(tuple(chain(*points)))
+            pyglet.graphics.draw_indexed(len(points), pyglet.gl.GL_LINES,
                 index,
-                ('v2i',self.m_field.scale2out(tuple(chain(*lp)))),
+                ('v2i',self.m_field.scale2out(tuple(chain(*points)))),
             )
         
 
@@ -458,7 +426,19 @@ class Line(GraphicObject):
 
         def inCircle(center, radius, p):
             square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
-            return square_dist <= radius ** 2
+            return square_dist < radius ** 2
+
+        def findIntersect(inpt, outpt, center, radius):
+            #print "findIntersect(",inpt,",",outpt,",",center,",",radius,")"
+            # better than measuring square of the distance, here we just say
+            # "really close"  Faster!
+            if abs(inpt[0] - outpt[0]) + abs(inpt[1] - outpt[1]) < 2:
+                return inpt
+            midpt = midpoint(inpt, outpt)
+            if inCircle(center, radius, midpt):
+                return findIntersect(midpt, outpt, center, radius)
+            else:
+                return findIntersect(inpt,midpt, center, radius)
 
         (x0,y0)=p0
         (x1,y1)=p1
@@ -468,8 +448,6 @@ class Line(GraphicObject):
         i = [(0,1)]
         c = [c]
         """
-        nr0 = r0*RAD_PAD
-        nr1 = r1*RAD_PAD
         # if we were given a path, we will use it
         if path:
             n = len(path) - 1
@@ -477,15 +455,38 @@ class Line(GraphicObject):
             lastpt = []
             npath = []
             for i in range(0, len(path)-1):
+                thispt = path[i]
+                nextpt = path[i+1]
                 # Remove parts of path within the radius of cell
-                # if this point is inside one of our circles, forget it
-                if not inCircle(p0, nr0, path[i]) and not inCircle(p1, nr1, path[i]):
-                    #print path[i],"inside cell"
-                    # take segment of two points, and transform to three point arc
-                    arc = makeArc(path[i],path[i+1])
-                    npath.append(arc[0])
-                    npath.append(arc[1])
-                    lastpt = arc[2]
+                # if both ends of this line segment are inside a circle fugetaboutit
+                if (inCircle(p0, r0, thispt) and inCircle(p0, r0, nextpt)) or\
+                    (inCircle(p1, r1, thispt) and inCircle(p1, r1, nextpt)):
+                    continue
+                # if one end of this line segment is inside a circle
+                if inCircle(p0, r0, thispt) and not inCircle(p0, r0, nextpt):
+                    # find the point intersecting the circle
+                    thispt = findIntersect(thispt, nextpt, p0, r0)
+                # if one end of this line segment is inside the other circle
+                if inCircle(p1, r1, nextpt) and not inCircle(p1, r1, thispt):
+                    # find the point intersecting the circle
+                    nextpt = findIntersect(nextpt, thispt, p1, r1)
+                """
+                # if one end of this line segment is inside a circle
+                if inCircle(p1, r1, thispt) and not inCircle(p1, r1, nextpt):
+                    # find the point intersecting the circle
+                    thispt = findIntersect(thispt, nextpt, p1, r1)
+                # if one end of this line segment is inside the other circle
+                if inCircle(p0, r0, nextpt) and not inCircle(p0, r0, thispt):
+                    # find the point intersecting the circle
+                    nextpt = findIntersect(nextpt, thispt, p0, r0)
+                """
+                # if neither point is inside one of our circles, use it
+                #print path[i],"inside cell"
+                # take segment of two points, and transform to three point arc
+                arc = makeArc(thispt,nextpt)
+                npath.append(arc[0])
+                npath.append(arc[1])
+                lastpt = arc[2]
             npath.append(lastpt)
 
             #print "npath:", npath
@@ -506,20 +507,20 @@ class Line(GraphicObject):
             if (xdif > ydif):
                 xmid = x0 + vx*xdif/2
                 # take segment of two points, and transform to three point arc
-                arc0 = makeArc((x0 + vx*nr0,y0),(xmid,y0))
+                arc0 = makeArc((x0 + vx*r0,y0),(xmid,y0))
                 arc1 = makeArc((xmid,y0),(xmid,y1))
-                arc2 = makeArc((xmid,y1),(x1 - vx*nr1,y1))
+                arc2 = makeArc((xmid,y1),(x1 - vx*r1,y1))
             else:
                 ymid = y0 + vy*ydif/2
                 # take segment of two points, and transform to three point arc
-                arc0 = makeArc((x0,y0 + vy*nr0),(x0,ymid))
+                arc0 = makeArc((x0,y0 + vy*r0),(x0,ymid))
                 arc1 = makeArc((x0,ymid),(x1,ymid))
-                arc2 = makeArc((x1,ymid),(x1,y1 - vy*nr1))
+                arc2 = makeArc((x1,ymid),(x1,y1 - vy*r1))
             arcpoints = [arc0[0],arc0[1],arc0[2],arc1[1],arc2[0],arc2[1],arc2[2]]
             #arcpoints = list(chain(*arc))
             arcindex=[(0,1,2),(2,3,4),(4,5,6)]
-            print "arcpoints:", arcpoints
-            print "arcindex:", arcindex
+            #print "arcpoints:", arcpoints
+            #print "arcindex:", arcindex
 
         GraphicObject.__init__(self,field,arcpoints,arcindex,color)
 
@@ -532,15 +533,6 @@ def cubicX(t, p0, p1, p2):
 def cubicY(t, p0, p1, p2):
     #print "points:",p0[1],p1[1],p2[1]," t:",t
     return int((1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1])
-
-def cubicIndex(t):
-    """Create point index for a contiguous series of t line segments. """
-    index = []
-    for i in range(t):
-        index.append(i)
-        if i != 0 and i != t-1:
-            index.append(i)
-    return index
 
 def cubicSpline(p0, p1, p2, nSteps):
     """cubics are defined as a start point (p0) and end point (p2) and
@@ -558,7 +550,8 @@ def cubicSpline(p0, p1, p2, nSteps):
         y = cubicY(t, p0, p1, p2)
         lineSegments.append((x,y))
     lineSegments.append(p2)
-    return (lineSegments,cubicIndex(nSteps))
+    cubicIndex = [0] + [int(x * 0.5) for x in range(2, (nSteps-1)*2)] + [nSteps-1]
+    return (lineSegments,cubicIndex)
 
 # effect elements
 

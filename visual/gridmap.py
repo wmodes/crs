@@ -112,7 +112,9 @@ class GridMap(object):
 
         #The cost is:
         # the Euclidean distance PLUS
-        score = sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
+        # TODO: There has got to be a faster way to weigh distance
+        #score = sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
+        score = ((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2) ** 0.5
         # PLUS a penalty for getting near blocked spaces
         score += self.map[c2[0]][c2[1]]
         # PLUS a penalty for changing direction (except near the center point?)
@@ -133,7 +135,9 @@ class GridMap(object):
 
             The cost is the Euclidean distance.
         """
-        return sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
+        # TODO: There has got to be a faster routine for this
+        #return sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
+        return ((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2) ** 0.5
 
     def successors(self, c):
         """ Compute the successors of coordinate 'c': all the 

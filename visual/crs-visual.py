@@ -21,6 +21,7 @@ import random
 
 # installed modules
 import pyglet
+from pyglet.window import key
 
 # local modules
 import config
@@ -264,16 +265,16 @@ class Cell(GraphElement):
 
     def drawCell(self,color=0):
         if not color:
-            color = DEF_LINECOLOR 
+            color=self.m_color
         shape = Circle(self.m_field,self.m_location,self.m_cellradius,color)
-        shape.draw()
+        shape.draw(color)
         return(shape)
 
     def drawBlob(self,color=0):
         if not color:
-            color = DEF_LINECOLOR 
+            color=self.m_color
         shape = Circle(self.m_field,self.m_location,self.m_blobradius,color)
-        shape.drawSolid()
+        shape.drawSolid(color)
         return(shape)
 
 
@@ -307,13 +308,13 @@ class Connector(GraphElement):
         # specifically, we want to jog the origin line in the direction 
         # it is going.
         if not color:
-            color = self.m_color
+            color=self.m_color
         loc0 = self.m_cells[0].m_location
         loc1 = self.m_cells[1].m_location
         rad0 = self.m_cells[0].m_cellradius
         rad1 = self.m_cells[1].m_cellradius
         shape = Line(self.m_field,loc0,loc1,rad0,rad1,color,self.m_path)
-        shape.draw()
+        shape.draw(color)
         return(shape)
 
 
@@ -336,23 +337,25 @@ class GraphicObject(object):
         self.m_arcindex = index
         self.m_color = color
 
-    def draw(self):
+    def draw(self,color=0):
         # e.g., self.m_arcpoints = [(10,5),(15,5),(15,10),(15,15),(10,15),(5,15),(5,10),(5,5)]
         # e.g., self.m_arcindex = [(0,1,2),(2,3,4),(4,5,6),(6,7,0)]
         #print "self.m_arcpoints = ",self.m_arcpoints
         #print "self.m_arcindex = ",self.m_arcindex
+        if not color:
+            color=self.m_color
 
         for i in range(len(self.m_arcindex)):
             # e.g., self.m_arcindex[i] = (0,1,2)
             p0 = self.m_arcpoints[self.m_arcindex[i][0]]
             p1 = self.m_arcpoints[self.m_arcindex[i][1]]
             p2 = self.m_arcpoints[self.m_arcindex[i][2]]
-            # if this is a straight line, don't chop into cubicSplines
+            # if this is a straight line, don't chop into quadSplines
             if p0[0] == p1[0] == p2[0] or p0[1] == p1[1] == p2[1]:
                 points = [p0,p1,p2]
                 index = [0,1,1,2]
             else:
-                (points,index) = cubicSpline(p0,p1,p2,CURVE_SEGS)
+                (points,index) = quadSpline(p0,p1,p2,CURVE_SEGS)
             pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
             #print "list:",tuple(chain(*points))
             #print "convert:",self.m_field.scale2out(tuple(chain(*points)))
@@ -381,7 +384,9 @@ class Circle(GraphicObject):
         arcindex=[(0,1,2),(2,3,4),(4,5,6),(6,7,0)]
         GraphicObject.__init__(self,field,arcpoints,arcindex,color)
 
-    def drawSolid(self):
+    def drawSolid(self,color=0):
+        if not color:
+            color=self.m_color
         # e.g., self.m_arcpoints = [(10,5),(15,5),(15,10),(15,15),(10,15),(5,15),(5,10),(5,5)]
         # e.g., self.m_arcindex = [(0,1,2),(2,3,4),(4,5,6),(6,7,0)]
         #print "self.m_arcpoints = ",self.m_arcpoints
@@ -391,7 +396,7 @@ class Circle(GraphicObject):
             p0 = self.m_arcpoints[self.m_arcindex[i][0]]
             p1 = self.m_arcpoints[self.m_arcindex[i][1]]
             p2 = self.m_arcpoints[self.m_arcindex[i][2]]
-            (points,index) = cubicSpline(p0,p1,p2,CURVE_SEGS)
+            (points,index) = quadSpline(p0,p1,p2,CURVE_SEGS)
             points.append(self.m_center)
             nxlast_pt = len(points)-2
             last_pt = len(points)-1
@@ -429,9 +434,8 @@ class Line(GraphicObject):
             return square_dist < radius ** 2
 
         def findIntersect(inpt, outpt, center, radius):
-            #print "findIntersect(",inpt,",",outpt,",",center,",",radius,")"
-            # better than measuring square of the distance, here we just say
-            # "really close"  Faster!
+            # Here instead of checking whether the point is on the circle, 
+            # we just see if the points have converged on each other.
             if abs(inpt[0] - outpt[0]) + abs(inpt[1] - outpt[1]) < 2:
                 return inpt
             midpt = midpoint(inpt, outpt)
@@ -526,32 +530,34 @@ class Line(GraphicObject):
 
 # spline code
 
-def cubicX(t, p0, p1, p2):
+def quadX(t, p0, p1, p2):
     #print "points:",p0[0],p1[0],p2[0]," t:",t
     return  int((1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0])
 
-def cubicY(t, p0, p1, p2):
+def quadY(t, p0, p1, p2):
     #print "points:",p0[1],p1[1],p2[1]," t:",t
     return int((1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1])
 
-def cubicSpline(p0, p1, p2, nSteps):
-    """cubics are defined as a start point (p0) and end point (p2) and
+def quadSpline(p0, p1, p2, nSteps):
+    """Returns a list of line segments and an index to make the full curve.
+
+    Cubics are defined as a start point (p0) and end point (p2) and
     a control point (p1) and a parameter t that goes from 0.0 to 1.0.
     The parameter is sample nSteps times.
 
-    Returns a list of line segments and an index to make the full curve
+    NOTE: Technically, these are called Quadratic Bezier splines
     """
     lineSegments = []
-    for i in range(0, nSteps-1):
+    for i in range(nSteps+1):
         # the definition of the spline means the parameter t goes
         # from 0.0 to 1.0
         t = i / float(nSteps)
-        x = cubicX(t, p0, p1, p2)
-        y = cubicY(t, p0, p1, p2)
+        x = quadX(t, p0, p1, p2)
+        y = quadY(t, p0, p1, p2)
         lineSegments.append((x,y))
-    lineSegments.append(p2)
-    cubicIndex = [0] + [int(x * 0.5) for x in range(2, (nSteps-1)*2)] + [nSteps-1]
-    return (lineSegments,cubicIndex)
+    #lineSegments.append(p2)
+    quadIndex = [0] + [int(x * 0.5) for x in range(2, (nSteps)*2)] + [nSteps]
+    return (lineSegments,quadIndex)
 
 # effect elements
 
@@ -570,83 +576,6 @@ class EffectDouble(Effect):
     def __init__(self, stuff):
         #work out init values that will effect this
         pass
-
-    def evaluate(self, prim):
-        # do double
-        return prim
-
-# pathfinder graph
-
-"""
-Creating a graph for A* pathfinding algorithm
-* Divide space into points one standard diameter apart
-* edges are at cardinal directions
-* nodes are blocked when a cell diameter touches its center
-* use modified A* for traversing nodes
-"""
-
-class PathNote(object):
-
-    """A node object of the pathfinding graph
-
-    Stores the following values:
-        m_p: the location of the node as an (x,y) tuple
-        m_block: a tag to indicate blocking
-
-    """
-
-    def __init__(self, p, block=False):
-        self.m_p = p
-        self.m_block = block
-
-    def clearBlock(self):
-        self.m_block = False
-
-    def makeBlock(self):
-        self.m_block = True
-
-    def isBlocked(self):
-        return(self.m_block)
-
-
-class PathEdge(object):
-
-    """An edge object of the pathfinding graph
-
-    Stores the following values:
-        m_cells: a tuple of two cells that form the ends of the edge
-        m_block: a tag to indicate blocking
-
-    """
-
-    def __init__(self, nodes, block=False):
-        self.m_nodes = nodes
-        self.m_block = block
-
-    def clearBlock(self):
-        self.m_block = False
-
-    def makeBlock(self):
-        self.m_block = True
-
-    def isBlocked(self):
-        return(self.m_block)
-
-
-
-class PathGraph(object):
-
-    """Creates a graph of the entire field
-
-    Creates all the nodes and edges of the graph
-    
-    Stores the following values:
-
-    """
-
-    def __init__(self, xmax, ymax):
-        self.m_xmax = xmax
-        self.m_ymax = ymax
 
     def evaluate(self, prim):
         # do double
@@ -699,6 +628,8 @@ if __name__ == "__main__":
         connector = Connector(field,i,cell0,cell1)
         field.addConnector(connector)
 
+    playcell = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
+
     allpaths = []
     for key, connector in field.m_connector_dict.iteritems():
         #start = field.scale2path(connector.m_cells[0].m_location)
@@ -706,18 +637,60 @@ if __name__ == "__main__":
         #path = list(field.pathfinder.compute_path(start, goal))
         #field.path_grid.set_block_line(path)
         connector.addPath(field.findPath(connector))
-    field.printGrid()
+    #field.printGrid()
 
-    @window.event
+    #@window.event
     def on_draw():
-        window.clear()
+        #window.clear()
+        print "draw loop."
 
-        for key, cell in field.m_cell_dict.iteritems():
-            cell.drawBlob(DEF_BLOBCOLOR)
-            cell.drawCell()
-        for key, connector in field.m_connector_dict.iteritems():
-            connector.draw()
+    def on_key_press(symbol, modifiers):
+        MOVEME = 5
+        print "key press.",
+        if symbol == pyglet.window.key.SPACE:
+            print "SPACE"
+            window.clear()
+            for key, cell in field.m_cell_dict.iteritems():
+                cell.drawBlob(DEF_BLOBCOLOR)
+                cell.drawCell(DEF_LINECOLOR)
+            for key, connector in field.m_connector_dict.iteritems():
+                connector.draw(DEF_LINECOLOR)
+            return
+        elif symbol == pyglet.window.key.LEFT:
+            print "LEFT"
+            rx = -MOVEME
+            ry = 0
+        elif symbol == pyglet.window.key.RIGHT:
+            print "RIGHT"
+            rx = MOVEME
+            ry = 0
+        elif symbol == pyglet.window.key.UP:
+            print "UP"
+            rx = 0
+            ry = MOVEME
+        elif symbol == pyglet.window.key.DOWN:
+            print "DOWN"
+            rx = 0
+            ry = -MOVEME
+        else:
+            return
+        # erase cell
+        playcell.drawBlob(DEF_BKGDCOLOR)
+        playcell.drawCell(DEF_BKGDCOLOR)
+        if playcell.m_connector_dict:
+            for key, connector in playcell.m_connector_dict.iteritems():
+                connector.draw(DEF_BKGDCOLOR)
+        # move cell
+        playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
+        # redraw cell
+        playcell.drawBlob(DEF_BLOBCOLOR)
+        playcell.drawCell(DEF_LINECOLOR)
+        if playcell.m_connector_dict:
+            for key, connector in playcell.m_connector_dict.iteritems():
+                connector.draw(DEF_LINECOLOR)
 
+    window.on_draw = on_draw
+    window.on_key_press = on_key_press
     pyglet.app.run()
 
 

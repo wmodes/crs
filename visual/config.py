@@ -8,7 +8,7 @@ default_bkgdcolor = (.25, .25, .25, 1)    # dark gray
 
 radius_padding = 1.5      # increased radius of circle around blobs
 curve_segments = 8     # number of line segs in a curve
-fuzzy_area_for_cells = 1
+fuzzy_area_for_cells = 2
 
 xmin = 0
 ymin = 0

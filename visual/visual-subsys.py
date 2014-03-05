@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Co-related Space is an interactive multimedia installation that engages the themes of presence, interaction, and place. Using motion tracking, laser light and a generative soundscape, it encourages interactions between participants, visually and sonically transforming a regularly trafficked space. Co-related Space highlights participants' active engagement and experimentation with sound and light, including complex direct and indirect behavior and relationships."""
  
-__appname__ = "crs-visual.py"
+__appname__ = "visual-subsys.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -22,12 +22,14 @@ import random
 # installed modules
 import pyglet
 from pyglet.window import key
+import numpy
 
 # local modules
 import config
 import pathfinder
 from gridmap import GridMap
 from pathfinder import PathFinder
+import bezier
 
 
 # constants
@@ -37,6 +39,7 @@ DEF_ORIENT = config.default_orient
 DEF_LINECOLOR = config.default_linecolor
 DEF_BLOBCOLOR = config.default_blobcolor
 DEF_BKGDCOLOR = config.default_bkgdcolor
+DRAW_BLOBS = config.draw_blobs
 
 RAD_PAD = config.radius_padding     # increased radius of circle around blobs
 CURVE_SEGS = config.curve_segments  # number of line segs in a curve
@@ -71,8 +74,14 @@ class Field(object):
         # we could use a list here which would make certain things easier, but
         # we need to do deletions and references pretty regularly.
         self.m_cell_dict = {}
+        self.m_blob_dict = {}
         self.m_connector_dict = {}
         self.allpaths = []
+        self.initScaling(XMIN, YMIN, XMAX, YMAX, MIN_LASER, MAX_LASER, 
+            MIN_SCREEN, MAX_SCREEN, PATH_UNIT, MODE_SCREEN)
+        self.makePathGrid()
+
+    # Cells
 
     def addCell(self,cell):
         self.m_cell_dict[cell.m_id] = cell
@@ -80,13 +89,62 @@ class Field(object):
     def delCell(self,cell):
         del self.m_cell_list[cell.m_id]
 
+    def renderCell(self,cell):
+        cell.render()
+
+    def drawCell(self,cell):
+        cell.draw()
+
+    def renderAllCells(self):
+        for key, cell in field.m_cell_dict.iteritems():
+            cell.render()
+
+    def drawAllCells(self):
+        for key, cell in field.m_cell_dict.iteritems():
+            cell.draw()
+
+    # Connectors
+
     def addConnector(self,connector):
         self.m_connector_dict[connector.m_id] = connector
         connector.m_cells[0].addConnector(connector)
         connector.m_cells[1].addConnector(connector)
 
     def delConnector(self,connector):
+        # TODO test the next two lines - Is the Cell.delConnector method implemented?
+        # delete the connector in the cells attached to the connector
+        connector.m_cells[0].delConnector(connector)
+        connector.m_cells[1].delConnector(connector)
+        # delete the connector from the connector list
         del self.m_connector_list[connector.m_id]
+
+    def renderConnector(self,connector):
+        connector.render()
+
+    def drawConnector(self,cell):
+        connector.draw()
+
+    def renderAllConnectors(self):
+        for key, connector in field.m_connector_dict.iteritems():
+            connector.render()
+
+    def drawAllConnectors(self):
+        for key, connector in field.m_connector_dict.iteritems():
+            connector.draw()
+
+    # Everything
+
+    def renderAll(self):
+        """Render all the cells and connectors."""
+        self.renderAllCells()
+        self.renderAllConnectors()
+
+    def drawAll(self):
+        """Draw all the cells and connectors."""
+        self.drawAllCells()
+        self.drawAllConnectors()
+
+    # Pathfinding
 
     # should the next two functions be in the gridmap module? No, because the GridMap
     # and Pathfinder classes have to be instantiated from somewhere. And if not
@@ -106,7 +164,7 @@ class Field(object):
     def pathScoreCells(self):
         for key, cell in self.m_cell_dict.iteritems():
             self.path_grid.set_blocked(self.scale2path(cell.m_location),\
-                                    self.scale2path(cell.m_cellradius),BLOCK_FUZZ)
+                                    self.scale2path(cell.m_radius),BLOCK_FUZZ)
 
     def findPath(self, connector):
         """ Find path in path_grid and then scale it appropriately."""
@@ -119,6 +177,8 @@ class Field(object):
         
     def printGrid(self):
         self.path_grid.printme(self.allpaths)
+
+    # Scaling
 
     def initScaling(self,xmin,ymin,xmax,ymax,min_laser,max_laser,
             min_screen,max_screen,path_unit,mode):
@@ -211,16 +271,20 @@ class GraphElement(object):
 
     """
 
-    def __init__(self,field,effect=[],c=DEF_LINECOLOR):
+    def __init__(self,field,effect=[], color=DEF_LINECOLOR):
         self.m_field=field
         self.m_leffects=effect
-        self.m_color=c
+        self.m_color=color
+        # TODO: init points, index, color
 
     def addEffect(self, effect):
         self.m_leffect.append=effect
         
     def applyEffects():
         pass
+
+    def draw(self):
+        self.m_shape.draw()
 
 
 class Cell(GraphElement):
@@ -240,16 +304,16 @@ class Cell(GraphElement):
     """
 
     def __init__(self, field, id, p, r=DEF_RADIUS, orient=DEF_ORIENT,
-            effect=[], c=DEF_LINECOLOR):
+            effect=[], color=DEF_LINECOLOR):
         """Store basic info and create a GraphElement object"""
-        self.m_id=id
-        self.m_location=p
-        self.m_blobradius=r
-        self.m_cellradius=r * RAD_PAD
-        self.m_oriend=orient
+        self.m_id = id
+        self.m_location = p
+        self.m_blob_radius = r
+        self.m_blob_color = DEF_BLOBCOLOR
+        self.m_radius = r*RAD_PAD
+        self.m_oriend = orient
         self.m_connector_dict = {}
-        # does Cell have to call GraphElement to get teh defaults set?
-        GraphElement.__init__(self,field,effect,c)
+        GraphElement.__init__(self,field,effect,color)
 
     def setLocation(self, p):
         self.m_location=p
@@ -263,19 +327,19 @@ class Cell(GraphElement):
     def delConnector(self, connector):
         del self.m_connector_list[connector.m_id]
 
-    def drawCell(self,color=0):
-        if not color:
-            color=self.m_color
-        shape = Circle(self.m_field,self.m_location,self.m_cellradius,color)
-        shape.draw(color)
-        return(shape)
+    def render(self):
+        self.m_shape = Circle(self.m_field,self.m_location,self.m_radius,
+                              self.m_color,solid=False)
+        self.m_shape.render()
+        if DRAW_BLOBS:
+            self.m_blobshape = Circle(self.m_field,self.m_location,self.m_blob_radius,
+                                  self.m_blob_color,solid=True)
+            self.m_blobshape.render()
 
-    def drawBlob(self,color=0):
-        if not color:
-            color=self.m_color
-        shape = Circle(self.m_field,self.m_location,self.m_blobradius,color)
-        shape.drawSolid(color)
-        return(shape)
+    def draw(self):
+        self.m_shape.draw()
+        if DRAW_BLOBS:
+            self.m_blobshape.draw()
 
 
 class Connector(GraphElement):
@@ -291,31 +355,25 @@ class Connector(GraphElement):
 
     """
 
-    def __init__(self, field, id, cell0, cell1, effect=[], c=DEF_LINECOLOR):
+    def __init__(self, field, id, cell0, cell1, effect=[], color=DEF_LINECOLOR):
         """Store basic info and create a GraphElement object"""
         self.m_id = id
         self.m_cells = (cell0,cell1)
         self.m_path = []
-        GraphElement.__init__(self,field,effect,c)
+        GraphElement.__init__(self,field,effect,color)
 
     def addPath(self,path):
         """Record the path of this connector."""
         self.m_path = path
 
-    def draw(self,color=0):
-        # TODO: Here we know how many connectors we have, and we can tell 
-        # in what direction they go, we need to pass that info on to use it.
-        # specifically, we want to jog the origin line in the direction 
-        # it is going.
-        if not color:
-            color=self.m_color
+    def render(self):
         loc0 = self.m_cells[0].m_location
         loc1 = self.m_cells[1].m_location
-        rad0 = self.m_cells[0].m_cellradius
-        rad1 = self.m_cells[1].m_cellradius
-        shape = Line(self.m_field,loc0,loc1,rad0,rad1,color,self.m_path)
-        shape.draw(color)
-        return(shape)
+        rad0 = self.m_cells[0].m_radius
+        rad1 = self.m_cells[1].m_radius
+        self.m_shape = Line(self.m_field,loc0,loc1,rad0,rad1,self.m_color,self.m_path)
+        #print ("Render Connector(%s):%s to %s" % (self.m_id,cell0.m_location,cell1.m_location))
+        self.m_shape.render()
 
 
 # graphic primatives
@@ -336,29 +394,43 @@ class GraphicObject(object):
         self.m_arcpoints = points
         self.m_arcindex = index
         self.m_color = color
+        # each arc is broken down into a list of points and indecies
+        # these are gathered into lists of lists
+        # TODO: possibly these could be melded into single dim lists
+        self.m_points = []
+        self.m_index = []
 
-    def draw(self,color=0):
-        # e.g., self.m_arcpoints = [(10,5),(15,5),(15,10),(15,15),(10,15),(5,15),(5,10),(5,5)]
-        # e.g., self.m_arcindex = [(0,1,2),(2,3,4),(4,5,6),(6,7,0)]
+    def render(self):
+        # e.g., self.m_arcpoints = [(10,5),(15,5),(15,10),(15,15),(10,15),(5,15),(5,10)]
+        # e.g., self.m_arcindex = [(0,1,2,3),(3,4,5,6)]
         #print "self.m_arcpoints = ",self.m_arcpoints
         #print "self.m_arcindex = ",self.m_arcindex
-        if not color:
-            color=self.m_color
 
         for i in range(len(self.m_arcindex)):
-            # e.g., self.m_arcindex[i] = (0,1,2)
+            # e.g., self.m_arcindex[i] = (0,1,2,3)
             p0 = self.m_arcpoints[self.m_arcindex[i][0]]
             p1 = self.m_arcpoints[self.m_arcindex[i][1]]
             p2 = self.m_arcpoints[self.m_arcindex[i][2]]
-            # if this is a straight line, don't chop into quadSplines
-            if p0[0] == p1[0] == p2[0] or p0[1] == p1[1] == p2[1]:
-                points = [p0,p1,p2]
-                index = [0,1,1,2]
+            p3 = self.m_arcpoints[self.m_arcindex[i][3]]
+            # if this is a straight line, don't chop into cubicSplines
+            if p0[0] == p1[0] == p2[0] == p3[0] or \
+                    p0[1] == p1[1] == p2[1] == p3[1]:
+                points = [p0,p1,p2,p3]
+                index = [0,1,1,2,2,3]
+                # TODO: convert CURVE_SEGS into a passable parameter, so in the
+                # case of a straight line, we pass t=1 so it makes ONE slice
             else:
-                (points,index) = quadSpline(p0,p1,p2,CURVE_SEGS)
+                (points,index) = cubicSpline(p0,p1,p2,p3,CURVE_SEGS)
+            self.m_points.append(points)
+            self.m_index.append(index)
+
+    def draw(self):
+        #print "points:",self.m_points
+        #print "index:",self.m_index
+        for i in range(len(self.m_index)):
+            points = self.m_points[i]
+            index = self.m_index[i]
             pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
-            #print "list:",tuple(chain(*points))
-            #print "convert:",self.m_field.scale2out(tuple(chain(*points)))
             pyglet.graphics.draw_indexed(len(points), pyglet.gl.GL_LINES,
                 index,
                 ('v2i',self.m_field.scale2out(tuple(chain(*points)))),
@@ -369,7 +441,7 @@ class Circle(GraphicObject):
 
     """Define circle object."""
 
-    def __init__(self, field, p, r, color):
+    def __init__(self, field, p, r, color,solid=False):
         """Circle constructor.
 
         Args:
@@ -379,16 +451,20 @@ class Circle(GraphicObject):
         """
         self.m_center = p
         self.m_radius = r
+        self.m_solid = solid
+        k = 0.5522847498307935  # 4/3 (sqrt(2)-1)
+        kr = int(r*k)
         (x,y)=p
-        arcpoints=[(x,y-r),(x+r,y-r),(x+r,y),(x+r,y+r),(x,y+r),(x-r,y+r),(x-r,y),(x-r,y-r)]
-        arcindex=[(0,1,2),(2,3,4),(4,5,6),(6,7,0)]
+        arcpoints=[(x+r,y),(x+r,y+kr), (x+kr,y+r), (x,y+r),
+                           (x-kr,y+r), (x-r,y+kr), (x-r,y),
+                           (x-r,y-kr), (x-kr,y-r), (x,y-r),
+                            (x+kr,y-r), (x+r,y-kr)]
+        arcindex=[(0, 1, 2, 3), (3, 4, 5, 6), (6, 7, 8, 9), (9, 10, 11, 0)]
         GraphicObject.__init__(self,field,arcpoints,arcindex,color)
 
-    def drawSolid(self,color=0):
-        if not color:
-            color=self.m_color
-        # e.g., self.m_arcpoints = [(10,5),(15,5),(15,10),(15,15),(10,15),(5,15),(5,10),(5,5)]
-        # e.g., self.m_arcindex = [(0,1,2),(2,3,4),(4,5,6),(6,7,0)]
+    def render(self):
+        # e.g., self.m_arcpoints = [(10,5),(15,5),(15,10),(15,15),(10,15),(5,15),(5,10)]
+        # e.g., self.m_arcindex = [(0,1,2,3),(3,4,5,6)]
         #print "self.m_arcpoints = ",self.m_arcpoints
         #print "self.m_arcindex = ",self.m_arcindex
         for i in range(len(self.m_arcindex)):
@@ -396,19 +472,32 @@ class Circle(GraphicObject):
             p0 = self.m_arcpoints[self.m_arcindex[i][0]]
             p1 = self.m_arcpoints[self.m_arcindex[i][1]]
             p2 = self.m_arcpoints[self.m_arcindex[i][2]]
-            (points,index) = quadSpline(p0,p1,p2,CURVE_SEGS)
-            points.append(self.m_center)
-            nxlast_pt = len(points)-2
-            last_pt = len(points)-1
-            xtra_index = [nxlast_pt,last_pt,last_pt,0]
-            index = index + xtra_index
+            p3 = self.m_arcpoints[self.m_arcindex[i][3]]
+            (points,index) = cubicSpline(p0,p1,p2,p3,CURVE_SEGS)
+            if self.m_solid:
+                points.append(self.m_center)
+                nxlast_pt = len(points)-2
+                last_pt = len(points)-1
+                xtra_index = [nxlast_pt,last_pt,last_pt,0]
+                index = index + xtra_index
+            self.m_points.append(points)
+            self.m_index.append(index)
+
+    def draw(self):
+        for i in range(len(self.m_index)):
+            points = self.m_points[i]
+            index = self.m_index[i]
             pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
-            pyglet.graphics.draw_indexed(len(points), pyglet.gl.GL_POLYGON,
-                index,
-                ('v2i',self.m_field.scale2out(tuple(chain(*points)))),
-                #('c3b',self.m_color*2)
-            )
-        
+            if not self.m_solid:
+                pyglet.graphics.draw_indexed(len(points), pyglet.gl.GL_LINES,
+                    index,
+                    ('v2i',self.m_field.scale2out(tuple(chain(*points)))),
+                )
+            else:
+                pyglet.graphics.draw_indexed(len(points), pyglet.gl.GL_POLYGON,
+                    index,
+                    ('v2i',self.m_field.scale2out(tuple(chain(*points)))),
+                )
 
 class Line(GraphicObject):
 
@@ -427,7 +516,8 @@ class Line(GraphicObject):
             return (int((p1[0]+p2[0])/2), int((p1[1]+p2[1])/2))
 
         def makeArc(p1,p2):
-            return (p1,midpoint(p1,p2),p2)
+            midpt = midpoint(p1,p2)
+            return (p1,midpt,midpt,p2)
 
         def inCircle(center, radius, p):
             square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
@@ -453,80 +543,53 @@ class Line(GraphicObject):
         c = [c]
         """
         # if we were given a path, we will use it
-        if path:
-            n = len(path) - 1
-            index = [0] + [int(x * 0.5) for x in range(2, n*2)] + [n]
-            lastpt = []
-            npath = []
-            for i in range(0, len(path)-1):
-                thispt = path[i]
-                nextpt = path[i+1]
-                # Remove parts of path within the radius of cell
-                # if both ends of this line segment are inside a circle fugetaboutit
-                if (inCircle(p0, r0, thispt) and inCircle(p0, r0, nextpt)) or\
-                    (inCircle(p1, r1, thispt) and inCircle(p1, r1, nextpt)):
-                    continue
-                # if one end of this line segment is inside a circle
-                if inCircle(p0, r0, thispt) and not inCircle(p0, r0, nextpt):
-                    # find the point intersecting the circle
-                    thispt = findIntersect(thispt, nextpt, p0, r0)
-                # if one end of this line segment is inside the other circle
-                if inCircle(p1, r1, nextpt) and not inCircle(p1, r1, thispt):
-                    # find the point intersecting the circle
-                    nextpt = findIntersect(nextpt, thispt, p1, r1)
-                """
-                # if one end of this line segment is inside a circle
-                if inCircle(p1, r1, thispt) and not inCircle(p1, r1, nextpt):
-                    # find the point intersecting the circle
-                    thispt = findIntersect(thispt, nextpt, p1, r1)
-                # if one end of this line segment is inside the other circle
-                if inCircle(p0, r0, nextpt) and not inCircle(p0, r0, thispt):
-                    # find the point intersecting the circle
-                    nextpt = findIntersect(nextpt, thispt, p0, r0)
-                """
-                # if neither point is inside one of our circles, use it
-                #print path[i],"inside cell"
-                # take segment of two points, and transform to three point arc
-                arc = makeArc(thispt,nextpt)
-                npath.append(arc[0])
-                npath.append(arc[1])
-                lastpt = arc[2]
+        n = len(path) - 1
+        index = [0] + [int(x * 0.5) for x in range(2, n*2)] + [n]
+        lastpt = []
+        npath = []
+        arcpoints = []
+        arcindex = []
+        for i in range(0, len(path)-1):
+            thispt = path[i]
+            nextpt = path[i+1]
+            # Remove parts of path within the radius of cell
+            # if both ends of this line segment are inside a circle fugetaboutit
+            if (inCircle(p0, r0, thispt) and inCircle(p0, r0, nextpt)) or\
+                (inCircle(p1, r1, thispt) and inCircle(p1, r1, nextpt)):
+                continue
+            # if one end of this line segment is inside a circle
+            if inCircle(p0, r0, thispt) and not inCircle(p0, r0, nextpt):
+                # find the point intersecting the circle
+                thispt = findIntersect(thispt, nextpt, p0, r0)
+            # if one end of this line segment is inside the other circle
+            if inCircle(p1, r1, nextpt) and not inCircle(p1, r1, thispt):
+                # find the point intersecting the circle
+                nextpt = findIntersect(nextpt, thispt, p1, r1)
+            """
+            # if one end of this line segment is inside a circle
+            if inCircle(p1, r1, thispt) and not inCircle(p1, r1, nextpt):
+                # find the point intersecting the circle
+                thispt = findIntersect(thispt, nextpt, p1, r1)
+            # if one end of this line segment is inside the other circle
+            if inCircle(p0, r0, nextpt) and not inCircle(p0, r0, thispt):
+                # find the point intersecting the circle
+                nextpt = findIntersect(nextpt, thispt, p0, r0)
+            """
+            # if neither point is inside one of our circles, use it
+            #print path[i],"inside cell"
+            # take segment of two points, and transform to three point arc
+            arc = makeArc(thispt,nextpt)
+            npath.append(arc[0])
+            npath.append(arc[1])
+            lastpt = arc[2]
             npath.append(lastpt)
-
             #print "npath:", npath
             arcpoints = npath
-            arcindex = [(x-2,x-1,x) for x in range(2,len(npath),2)]
+            arcindex = [(x-3,x-2,x-1,x) for x in range(3,len(npath),3)]
             #print "arcpoints:", arcpoints
             #print "arcindex:", arcindex
-
-        # otherwise, we will construct a simple dumb path
-        else:
-            # get position of p1 relative to p0 
-            vx = int(copysign(1,x1-x0))  # rel x pos vector as 1 or -1
-            vy = int(copysign(1,y1-y0))  # rel y pos vector as 1 or -1
-            xdif = abs(x0 - x1)
-            ydif = abs(y0 - y1)
-            # whether we make a zig at the midpoint horz or vert depends on 
-            # whether the x or y axis is shorter
-            if (xdif > ydif):
-                xmid = x0 + vx*xdif/2
-                # take segment of two points, and transform to three point arc
-                arc0 = makeArc((x0 + vx*r0,y0),(xmid,y0))
-                arc1 = makeArc((xmid,y0),(xmid,y1))
-                arc2 = makeArc((xmid,y1),(x1 - vx*r1,y1))
-            else:
-                ymid = y0 + vy*ydif/2
-                # take segment of two points, and transform to three point arc
-                arc0 = makeArc((x0,y0 + vy*r0),(x0,ymid))
-                arc1 = makeArc((x0,ymid),(x1,ymid))
-                arc2 = makeArc((x1,ymid),(x1,y1 - vy*r1))
-            arcpoints = [arc0[0],arc0[1],arc0[2],arc1[1],arc2[0],arc2[1],arc2[2]]
-            #arcpoints = list(chain(*arc))
-            arcindex=[(0,1,2),(2,3,4),(4,5,6)]
-            #print "arcpoints:", arcpoints
-            #print "arcindex:", arcindex
-
         GraphicObject.__init__(self,field,arcpoints,arcindex,color)
+
 
 # spline code
 
@@ -559,6 +622,27 @@ def quadSpline(p0, p1, p2, nSteps):
     quadIndex = [0] + [int(x * 0.5) for x in range(2, (nSteps)*2)] + [nSteps]
     return (lineSegments,quadIndex)
 
+def cubicSpline(p0, p1, p2, p3, nSteps):
+    """Returns a list of line segments and an index to make the full curve.
+
+    Cubics are defined as a start point (p0) and end point (p3) and
+    control points (p1 & p2) and a parameter t that goes from 0.0 to 1.0.
+    """
+    points = numpy.array([p0, p1, p2, p3])
+    bez = bezier.Bezier_Curve( points )
+    lineSegments = []
+    for val in numpy.linspace( 0, 1, nSteps ):
+        #print '%s: %s' % (val, bez( val ))
+        # the definition of the spline means the parameter t goes
+        # from 0.0 to 1.0
+        (x,y) = bez(val)
+        lineSegments.append((int(x),int(y)))
+    #lineSegments.append(p2)
+    cubicIndex = [0] + [int(x * 0.5) for x in range(2, (nSteps-1)*2)] + [nSteps-1]
+    #print "lineSegments = ",lineSegments
+    #print "cubicIndex = ",cubicIndex
+    return (lineSegments,cubicIndex)
+
 # effect elements
 
 class Effect(object):
@@ -586,9 +670,6 @@ if __name__ == "__main__":
 
     # initialize field
     field = Field()
-    field.initScaling(XMIN, YMIN, XMAX, YMAX, MIN_LASER, MAX_LASER, 
-        MIN_SCREEN, MAX_SCREEN, PATH_UNIT, MODE_SCREEN)
-    field.makePathGrid()
 
     # initialize pyglet 
     (xmax,ymax) = field.screenMax()
@@ -610,7 +691,9 @@ if __name__ == "__main__":
     # make cells
     #cell_list=[]
     for i in range(people):
-        cell = Cell(field,i,(randint(xmin,xmax),randint(ymin,ymax)),randint(rmin,rmax))
+        p = (randint(xmin,xmax), randint(ymin,ymax))
+        r = randint(rmin,rmax)
+        cell = Cell(field,i,p,r)
         field.addCell(cell)
 
     # add cells to path 
@@ -631,30 +714,29 @@ if __name__ == "__main__":
     playcell = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
 
     allpaths = []
-    for key, connector in field.m_connector_dict.iteritems():
-        #start = field.scale2path(connector.m_cells[0].m_location)
-        #goal = field.scale2path(connector.m_cells[1].m_location)
-        #path = list(field.pathfinder.compute_path(start, goal))
-        #field.path_grid.set_block_line(path)
-        connector.addPath(field.findPath(connector))
-    #field.printGrid()
+    #for key, connector in field.m_connector_dict.iteritems():
+        #connector.addPath(field.findPath(connector))
+    field.printGrid()
 
     #@window.event
     def on_draw():
-        #window.clear()
-        print "draw loop."
+        start = time.clock()
+        field.resetPathGrid()
+        field.pathScoreCells()
+        for key, connector in field.m_connector_dict.iteritems():
+            connector.addPath(field.findPath(connector))
+        window.clear()
+        field.renderAll()
+        field.drawAll()
+        print "draw loop in",(time.clock() - start)*1000,"ms"
 
     def on_key_press(symbol, modifiers):
-        MOVEME = 5
+        MOVEME = 25
         print "key press.",
         if symbol == pyglet.window.key.SPACE:
             print "SPACE"
             window.clear()
-            for key, cell in field.m_cell_dict.iteritems():
-                cell.drawBlob(DEF_BLOBCOLOR)
-                cell.drawCell(DEF_LINECOLOR)
-            for key, connector in field.m_connector_dict.iteritems():
-                connector.draw(DEF_LINECOLOR)
+            field.renderAll()
             return
         elif symbol == pyglet.window.key.LEFT:
             print "LEFT"
@@ -674,20 +756,8 @@ if __name__ == "__main__":
             ry = -MOVEME
         else:
             return
-        # erase cell
-        playcell.drawBlob(DEF_BKGDCOLOR)
-        playcell.drawCell(DEF_BKGDCOLOR)
-        if playcell.m_connector_dict:
-            for key, connector in playcell.m_connector_dict.iteritems():
-                connector.draw(DEF_BKGDCOLOR)
         # move cell
         playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
-        # redraw cell
-        playcell.drawBlob(DEF_BLOBCOLOR)
-        playcell.drawCell(DEF_LINECOLOR)
-        if playcell.m_connector_dict:
-            for key, connector in playcell.m_connector_dict.iteritems():
-                connector.draw(DEF_LINECOLOR)
 
     window.on_draw = on_draw
     window.on_key_press = on_key_press

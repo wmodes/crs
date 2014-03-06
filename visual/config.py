@@ -33,3 +33,18 @@ logfile="crs-visual.log"
 oscport = 7010
 oschost = ""
 osctimeout = 0
+
+oscpath_start = "/pf/started"
+oscpath_entry = "/pf/entry"
+oscpath_exit = "/pf/exit"
+oscpath_update = "/pf/update"
+oscpath_frame = "/pf/frame"
+oscpath_stop = "/pf/stopped"
+oscpath_set = "/pf/set/"
+oscpath_set_dict = {
+    "minx": "minx",
+    "maxx": "maxx",
+    "miny": "miny",
+    "maxy": "maxy",
+    "npeople": "npeople",
+}

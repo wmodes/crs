@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Co-related Space is an interactive multimedia installation that engages the themes of presence, interaction, and place. Using motion tracking, laser light and a generative soundscape, it encourages interactions between participants, visually and sonically transforming a regularly trafficked space. Co-related Space highlights participants' active engagement and experimentation with sound and light, including complex direct and indirect behavior and relationships."""
- 
-__appname__ = "visual-subsys.py"
+"""Visual subsystem module contains main loop and majority of important classes.
+
+Co-related Space is an interactive multimedia installation that engages the
+themes of presence, interaction, and place. Using motion tracking, laser light
+and a generative soundscape, it encourages interactions between participants,
+visually and sonically transforming a regularly trafficked space. Co-related
+Space highlights participants' active engagement and experimentation with sound
+and light, including complex direct and indirect behavior and relationships.
+
+"""
+
+__appname__ = "visualsys.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
- 
 
 # core modules
 import logging
@@ -14,7 +22,6 @@ import warnings
 import time
 import daemon
 import pprint
-from math import copysign
 from random import randint
 from itertools import chain
 import random
@@ -77,17 +84,46 @@ class Field(object):
         self.m_blob_dict = {}
         self.m_connector_dict = {}
         self.allpaths = []
-        self.initScaling(XMIN, YMIN, XMAX, YMAX, MIN_LASER, MAX_LASER, 
-            MIN_SCREEN, MAX_SCREEN, PATH_UNIT, MODE_SCREEN)
+        self.initScaling((XMIN,YMIN), (XMAX,YMAX), 
+                         (MIN_LASER,MIN_LASER), (MAX_LASER,MAX_LASER), 
+                         (MIN_SCREEN,MIN_SCREEN), (MAX_SCREEN,MAX_SCREEN), 
+                         PATH_UNIT, MODE_SCREEN)
         self.makePathGrid()
+
+    def initScreen(self):
+        # initialize pyglet 
+        (xmax,ymax) = self.screenMax()
+        self.m_screen = pyglet.window.Window(width=xmax,height=ymax)
+        # set window background color = r, g, b, alpha
+        # each value goes from 0.0 to 1.0
+        pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+
+    def updateScreen(self):
+        # initialize pyglet 
+        (xmax,ymax) = self.screenMax()
+        self.m_screen.set_size(xmax, ymax)
+        # set window background color = r, g, b, alpha
+        # each value goes from 0.0 to 1.0
+        pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
 
     # Cells
 
-    def addCell(self,cell):
-        self.m_cell_dict[cell.m_id] = cell
+    def createCell(self, id):
+        # create cell - note we pass self since we want a back reference to
+        # feild instance
+        cell = Cell(self, id)
+        # add to the cell list
+        self.m_cell_dict[id] = cell
 
-    def delCell(self,cell):
-        del self.m_cell_list[cell.m_id]
+    def updateCell(self, id, p=(), r=0, orient=0, effects=[], color=0):
+        cell = self.m_cell_dict[id]
+        cell.update(p, r, orient, effects, color)
+
+    def delCell(self, id):
+        cell = self.m_cell_dict[id]
+        cell.disconnect()
+        # delete the cell from the cell list
+        del self.m_cell_dict[cell.m_id]
 
     def renderCell(self,cell):
         cell.render()
@@ -96,27 +132,28 @@ class Field(object):
         cell.draw()
 
     def renderAllCells(self):
-        for key, cell in field.m_cell_dict.iteritems():
+        for key, cell in self.m_cell_dict.iteritems():
             cell.render()
 
     def drawAllCells(self):
-        for key, cell in field.m_cell_dict.iteritems():
+        for key, cell in self.m_cell_dict.iteritems():
             cell.draw()
 
     # Connectors
 
-    def addConnector(self,connector):
-        self.m_connector_dict[connector.m_id] = connector
-        connector.m_cells[0].addConnector(connector)
-        connector.m_cells[1].addConnector(connector)
+    def createConnector(self, id, cell0, cell1):
+        # create connector - note we pass self since we want a back reference
+        # to feild instance
+        connector = Connector(self, id, cell0, cell1)
+        # add to the connector list
+        self.m_connector_dict[id] = connector
 
-    def delConnector(self,connector):
-        # TODO test the next two lines - Is the Cell.delConnector method implemented?
+    def delConnector(self,id):
+        connector = self.m_connector_dict[id]
         # delete the connector in the cells attached to the connector
-        connector.m_cells[0].delConnector(connector)
-        connector.m_cells[1].delConnector(connector)
-        # delete the connector from the connector list
-        del self.m_connector_list[connector.m_id]
+        connector.disconnect()
+        # delete from the connector list
+        del self.m_connector_dict[id]
 
     def renderConnector(self,connector):
         connector.render()
@@ -125,11 +162,11 @@ class Field(object):
         connector.draw()
 
     def renderAllConnectors(self):
-        for key, connector in field.m_connector_dict.iteritems():
+        for key, connector in self.m_connector_dict.iteritems():
             connector.render()
 
     def drawAllConnectors(self):
-        for key, connector in field.m_connector_dict.iteritems():
+        for key, connector in self.m_connector_dict.iteritems():
             connector.draw()
 
     # Everything
@@ -180,8 +217,8 @@ class Field(object):
 
     # Scaling
 
-    def initScaling(self,xmin,ymin,xmax,ymax,min_laser,max_laser,
-            min_screen,max_screen,path_unit,mode):
+    def initScaling(self,pmin,pmax,pmin_laser,pmax_laser,
+                    pmin_screen,pmax_screen,path_unit,mode):
         """Set up scaling in the field.
 
         A word about graphics scaling:
@@ -194,14 +231,14 @@ class Field(object):
          instead of floats), and then convert it to the appropriate units before 
          display depending on the output mode
         """
-        self.m_xmin = xmin
-        self.m_ymin = ymin
-        self.m_xmax = xmax
-        self.m_ymax = ymax
-        self.m_min_laser = min_laser
-        self.m_max_laser  = max_laser 
-        self.m_min_screen = min_screen
-        self.m_max_screen = max_screen
+        self.m_xmin = xmin = pmin[0]
+        self.m_ymin = ymin = pmin[1]
+        self.m_xmax = xmax = pmax[0]
+        self.m_ymax = ymax = pmax[1]
+        self.m_min_laser = min_laser = pmin_laser[0]
+        self.m_max_laser  = max_laser = pmax_laser[0]
+        self.m_min_screen = min_screen = pmin_screen[0]
+        self.m_max_screen = max_screen = pmax_screen[0]
         self.m_mode = mode
         self.m_path_unit = path_unit
         if xmax > ymax:
@@ -212,48 +249,89 @@ class Field(object):
             self.m_screen_scale = float(max_screen-min_screen)/(ymax-ymin)
         #print "path unit:",path_unit," path_scale:",float(1)/path_unit
         self.m_path_scale = float(1)/path_unit
+        print "SCREEN SCALE:",self.m_screen_scale
+        print "REAL SCALING:",(xmin,ymin),(xmax,ymax)
+        print "SCREEN SCALING:",self.scale2out((xmin,ymin)),self.scale2out((xmax,ymax))
+        print "SCREEN SCALING(alt):",self.screenMax()
+
+    def updateScaling(self,pmin=0,pmax=0,pmin_laser=0,pmax_laser=0,
+                      pmin_screen=0,pmax_screen=0):
+        """Update scaling in the field. """
+        if pmin:
+            self.m_xmin = pmin[0]
+            self.m_ymin = pmin[1]
+        if pmax:
+            self.m_xmax = pmax[0]
+            self.m_ymax = pmax[1]
+        if pmin_laser:
+            self.m_min_laser = pmin_laser[0]
+        if pmax_laser:
+            self.m_max_laser  = pmax_laser[0]
+        if pmin_screen:
+            self.m_min_screen = pmin_screen[0]
+        if pmax_screen:
+            self.m_max_screen = pmax_screen[0]
+        xmin = self.m_xmin
+        ymin = self.m_ymin
+        xmax = self.m_xmax
+        ymax = self.m_ymax
+        min_laser = self.m_min_laser
+        max_laser = self.m_max_laser
+        min_screen = self.m_min_screen
+        max_screen = self.m_max_screen
+        if xmax > ymax:
+            self.m_laser_scale = float(max_laser-min_laser)/(xmax-xmin)
+            self.m_screen_scale = float(max_screen-min_screen)/(xmax-xmin)
+        else:
+            self.m_laser_scale = float(max_laser-min_laser)/(ymax-ymin)
+            self.m_screen_scale = float(max_screen-min_screen)/(ymax-ymin)
+        print "SCREEN SCALE:",self.m_screen_scale
+        print "REAL SCALING:",(xmin,ymin),(xmax,ymax)
+        print "SCREEN SCALING:",self.scale2out((xmin,ymin)),self.scale2out((xmax,ymax))
+        print "SCREEN SCALING(alt):",self.screenMax()
 
     def laserMax(self):
-        return (int(self.m_xmax*self.m_laser_scale) + self.m_min_laser,
-            int(self.m_ymax*self.m_laser_scale) + self.m_min_laser)
+        return (int((self.m_xmax-self.m_xmin)*self.m_laser_scale) + self.m_min_laser,
+            int((self.m_ymax-self.m_ymin)*self.m_laser_scale) + self.m_min_laser)
 
     def screenMax(self):
-        return (int(self.m_xmax*self.m_screen_scale) + self.m_min_screen,
-            int(self.m_ymax*self.m_screen_scale) + self.m_min_screen)
+        return (int((self.m_xmax-self.m_xmin)*self.m_screen_scale) + self.m_min_screen,
+            int((self.m_ymax-self.m_ymin)*self.m_screen_scale) + self.m_min_screen)
 
-    def _convert(self,obj,scale,min):
+    def _convert(self,obj,scale,min1,min2):
         """Recursively converts numbers in an object.
 
         This function accepts single integers, tuples, lists, or combinations.
 
         """
         if isinstance(obj, (int, float)):
-            return(int(obj*scale) + min)
+            #return(int(obj*scale) + min)
+            return(int((obj-min1)*scale) + min2)
         elif isinstance(obj, list):
             mylist = []
             for i in obj:
-                mylist.append(self._convert(i,scale,min))
+                mylist.append(self._convert(i,scale,min1,min2))
             return mylist
         elif isinstance(obj, tuple):
             mylist = []
             for i in obj:
-                mylist.append(self._convert(i,scale,min))
+                mylist.append(self._convert(i,scale,min1,min2))
             return tuple(mylist)
 
     def scale2out(self,n):
         """Convert internal unit (cm) to units usable for the laser or screen. """
         if self.m_mode == MODE_SCREEN:
-            return self._convert(n,self.m_screen_scale,self.m_min_screen)
-        return self._convert(n,self.m_laser_scale,self.m_min_laser)
+            return self._convert(n,self.m_screen_scale,self.m_xmin,self.m_min_screen)
+        return self._convert(n,self.m_laser_scale,self.m_xmin,self.m_min_laser)
 
     def scale2path(self,n):
         """Convert internal unit (cm) to units usable for pathfinding. """
-        return self._convert(n,self.m_path_scale,0)
+        return self._convert(n,self.m_path_scale,self.m_xmin,0)
 
     def path2scale(self,n):
-        """Convert internal unit (cm) to units usable for pathfinding. """
+        """Convert pathfinding units to internal unit (cm). """
         #print "m_path_scale",self.m_path_scale
-        return self._convert(n,1/self.m_path_scale,0)
+        return self._convert(n,1/self.m_path_scale,0,self.m_xmin)
 
 
 class GraphElement(object):
@@ -271,14 +349,14 @@ class GraphElement(object):
 
     """
 
-    def __init__(self,field,effect=[], color=DEF_LINECOLOR):
+    def __init__(self,field,effects=[], color=DEF_LINECOLOR):
         self.m_field=field
-        self.m_leffects=effect
+        self.m_leffects=effects
         self.m_color=color
         # TODO: init points, index, color
 
-    def addEffect(self, effect):
-        self.m_leffect.append=effect
+    def addEffects(self, effects):
+        self.m_leffect += effects
         
     def applyEffects():
         pass
@@ -303,8 +381,8 @@ class Cell(GraphElement):
 
     """
 
-    def __init__(self, field, id, p, r=DEF_RADIUS, orient=DEF_ORIENT,
-            effect=[], color=DEF_LINECOLOR):
+    def __init__(self, field, id, p=(), r=DEF_RADIUS, orient=DEF_ORIENT,
+            effects=[], color=DEF_LINECOLOR):
         """Store basic info and create a GraphElement object"""
         self.m_id = id
         self.m_location = p
@@ -313,7 +391,21 @@ class Cell(GraphElement):
         self.m_radius = r*RAD_PAD
         self.m_oriend = orient
         self.m_connector_dict = {}
-        GraphElement.__init__(self,field,effect,color)
+        GraphElement.__init__(self,field,effects,color)
+
+    def update(self, p=(), r=0, orient=0, effects=[], color=0):
+        """Store basic info and create a GraphElement object"""
+        if p:
+            self.m_location = p
+        if r:
+            self.m_blob_radius = r
+            self.m_radius = r*RAD_PAD
+        if orient:
+            self.m_oriend = orient
+        if effects:
+            self.m_leffects = effects
+        if color:
+            self.m_color = color
 
     def setLocation(self, p):
         self.m_location=p
@@ -340,6 +432,16 @@ class Cell(GraphElement):
         self.m_shape.draw()
         if DRAW_BLOBS:
             self.m_blobshape.draw()
+
+    def disconnect(self):
+        """Disconnects all the connectors and refs it can reach.
+        
+        To actually delete it, remove it from the list of cells in the Field
+        class.
+        """
+        print "Disconnecting cell",self.m_id
+        for key,connector in self.m_connector_dict.iteritems():
+            connector.disconnect()
 
 
 class Connector(GraphElement):
@@ -374,6 +476,17 @@ class Connector(GraphElement):
         self.m_shape = Line(self.m_field,loc0,loc1,rad0,rad1,self.m_color,self.m_path)
         #print ("Render Connector(%s):%s to %s" % (self.m_id,cell0.m_location,cell1.m_location))
         self.m_shape.render()
+
+    def disconnect(self):
+        """Disconnects all the refs it can reach.
+        
+        To actually delete it, remove it from the list of connectors in the Field
+        class.
+        """
+        print "Disconnecting connector",self.m_id,"between",\
+                self.m_cells[0].m_id,"and",self.m_cells[1].m_id
+        self.m_cells[0].delConnector(self)
+        self.m_cells[1].delConnector(self)
 
 
 # graphic primatives
@@ -656,7 +769,7 @@ class Effect(object):
 
 
 class EffectDouble(Effect):
-    
+
     def __init__(self, stuff):
         #work out init values that will effect this
         pass
@@ -666,17 +779,13 @@ class EffectDouble(Effect):
         return prim
 
 
+
 if __name__ == "__main__":
 
     # initialize field
     field = Field()
-
     # initialize pyglet 
-    (xmax,ymax) = field.screenMax()
-    window = pyglet.window.Window(width=xmax,height=ymax)
-    # set window background color = r, g, b, alpha
-    # each value goes from 0.0 to 1.0
-    pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+    field.initScreen()
 
     # generate test data
     rmin = 35
@@ -725,7 +834,7 @@ if __name__ == "__main__":
         field.pathScoreCells()
         for key, connector in field.m_connector_dict.iteritems():
             connector.addPath(field.findPath(connector))
-        window.clear()
+        field.m_screen.clear()
         field.renderAll()
         field.drawAll()
         print "draw loop in",(time.clock() - start)*1000,"ms"
@@ -735,7 +844,7 @@ if __name__ == "__main__":
         print "key press.",
         if symbol == pyglet.window.key.SPACE:
             print "SPACE"
-            window.clear()
+            field.m_screen.clear()
             field.renderAll()
             return
         elif symbol == pyglet.window.key.LEFT:
@@ -759,8 +868,8 @@ if __name__ == "__main__":
         # move cell
         playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
 
-    window.on_draw = on_draw
-    window.on_key_press = on_key_press
+    field.m_screen.on_draw = on_draw
+    field.m_screen.on_key_press = on_key_press
     pyglet.app.run()
 
 

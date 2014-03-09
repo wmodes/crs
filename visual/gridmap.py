@@ -1,8 +1,12 @@
-from collections import defaultdict
+
+
+# core modules
+from math import copysign
+#from collections import defaultdict
 from math import sqrt
 import numpy
 
-
+# constants
 PATH_COST_ZIG = 2
 PATH_COST_MID = 1
 PATH_COST_LINE = 3
@@ -28,8 +32,8 @@ class GridMap(object):
         self.xmax = xmax
         self.ymax = ymax
 
-        #self.map = [[0] * self.ymax for i in range(self.xmax)]
-        self.map = numpy.zeros((self.xmax,self.ymax))
+        #self.map = [[0] * self.ymax+1 for i in range(self.xmax+1)]
+        self.map = numpy.zeros((self.xmax+1,self.ymax+1))
         #self.blocked = defaultdict(lambda: False)
         self.gen_circles(MAX_CIRCLE_RADIUS)
 
@@ -103,12 +107,12 @@ class GridMap(object):
             if not self.map[x][y]:
                 self.map[x][y] = PATH_COST_LINE
 
+    def midpoint(self, p1, p2):
+        return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
+
     def move_cost(self, c1, c2, pred=None, start=None, goal=None):
         """ Compute the cost of movement from one coordinate to another. 
         """
-
-        def midpoint(p1, p2):
-            return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
 
         #The cost is:
         # the Euclidean distance PLUS
@@ -123,7 +127,7 @@ class GridMap(object):
             score += PATH_COST_ZIG
         # MINUS a penalty if we are at the midpoint of a line
         if start and goal:
-            midpt = midpoint(start, goal)
+            midpt = self.midpoint(start, goal)
             if c2[0] == midpt[0] or c2[1] == midpt[1]:
                 score -= PATH_COST_MID
         score += self.map[c2[0]][c2[1]]
@@ -160,19 +164,84 @@ class GridMap(object):
 
         return slist
 
-    def printme(self,path=[]):
+    def easy_path(self,start,goal):
+        """ First we try to create an easy path if we can.
+
+        First we try several simple/dumb paths, reserving A* for the ones that
+        are blocked and need more smarts. We sort the connectors by distance
+        and do easy paths for the closest ones first. Otherwise, we return nothing.
+
+        args:
+            start = path-scaled start point
+            goal = path-scaled goal point
+        returns:
+            path-scaled list of points that make up the path
+        """
+
+        def enumXpath(p0,p1):
+            xpath = []
+            y = p0[1]
+            x0 = p0[0]
+            x1 = p1[0]
+            if x0 < x1:
+                for x in range(x0,x1+1,1):
+                    xpath.append((x,y))
+            else:
+                for x in range(x0,x1-1,-1):
+                    xpath.append((x,y))
+            return xpath
+
+        def enumYpath(p0,p1):
+            ypath = []
+            x = p0[0]
+            y0 = p0[1]
+            y1 = p1[1]
+            if y0 < y1:
+                for y in range(y0,y1,1):
+                    ypath.append((x,y))
+            else:
+                for y in range(y0,y1-1,-1):
+                    ypath.append((x,y))
+            return ypath
+
+        (x0,y0)=start
+        (x1,y1)=goal
+        path = []
+        # get position of p1 relative to p0 
+        vx = int(copysign(1,x1-x0))  # rel x pos vector as 1 or -1
+        vy = int(copysign(1,y1-y0))  # rel y pos vector as 1 or -1
+        xdif = abs(x0 - x1)
+        ydif = abs(y0 - y1)
+        if not xdif:
+            #print "straight x line: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif
+            path = enumYpath((x0,y0),(x1,y1))
+        elif not ydif:
+            #print "straight y line: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif
+            path = enumXpath((x0,y0),(x1,y1))
+        elif (xdif > ydif):
+            xmid = x0 + vx*xdif/2
+            #print "longer on x: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"xmidpt:",xmid
+            path += enumXpath((x0,y0),(xmid,y0))
+            path += enumYpath((xmid,y0),(xmid,y1))
+            path += enumXpath((xmid,y1),(x1,y1))
+        else:
+            ymid = y0 + vy*ydif/2
+            #print "longer on y: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"ymidpt:",ymid
+            path += enumYpath((x0,y0),(x0,ymid))
+            path += enumXpath((x0,ymid),(x1,ymid))
+            path += enumYpath((x1,ymid),(x1,y1))
+        return path
+
+    def printme(self):
         """ Print the map to stdout in ASCII. """
         for y in reversed(range(self.ymax)):
             for x in range(self.xmax):
-                if self.map[x][y] > PATH_COST_LINE and (x,y) in path:
-                    print DRAW_PATH_BLOCK, 
-                elif self.map[x][y] > PATH_COST_LINE:
+                if self.map[x][y] > PATH_COST_LINE:
                     #print self.map[x][y],
                     for c in range(len(PATH_COST_PROX)):
                         if self.map[x][y] == PATH_COST_PROX[c]:
                             print DRAW_COST_PROX[c],
-                            pass
-                elif (x, y) in path:
+                elif self.map[x][y] == PATH_COST_LINE:
                     print DRAW_PATH,
                 else:
                     print DRAW_GRID,

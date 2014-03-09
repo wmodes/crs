@@ -175,7 +175,11 @@ class OSCHandler(object):
         sample = args[0]
         time = args[1]
         id = args[2]
+        print "BEFORE: cells:",self.m_field.m_cell_dict
+        print "BEFORE: conx:",self.m_field.m_connection_dict
         self.m_field.delCell(id)
+        print "AFTER: cells:",self.m_field.m_cell_dict
+        print "AFTER: conx:",self.m_field.m_connection_dict
 
     def event_tracking_update(self, path, tags, args, source):
         """Information about people's movement within field.
@@ -204,14 +208,25 @@ class OSCHandler(object):
         y = int(100*args[4])
         vx = int(100*args[5])
         vy = int(100*args[6])
-        major = int(100*args[7])
-        minor = int(100*args[8])
+        major = int(100*args[7]/2)
+        minor = int(100*args[8]/2)
         gid = args[9]
         gsize = args[10]
         channel = args[11]
-        print "field.updateCell(",id,",",(x,y),",",major,")"
-        print "field:",self.m_field
+        # TODO: if gid is not equal to 0 than we have a grouping, we need to
+        # stop mapping the cell(s) that are not getting updated in new frames
+        # alternately, we can just turn all cells invisible each frame and then
+        # make them visible as we get an update
+        #print "field.updateCell(",id,",",(x,y),",",major,")"
         self.m_field.updateCell(id,(x,y),major)
+        # TODO: What happens to connections when someone joins a group? Oh god.
+        # In our OSC messages, when two cells become a group, a gid is assigned 
+        # the groupsize is incremented, and only one of the cells gets updated
+        # Like so:
+        #   /pf/update 410 28.8 2 1.1 -1.4 -1.2 -0.2 nan nan 1 2 2
+        #   /pf/update 410 28.8 4 0.9 -1.0 -0.2 -2.4 nan nan 1 2 4
+        #   /pf/update 411 28.8 4 0.9 -1.0 nan nan nan nan 1 2 4
+        #   /pf/update 412 29.0 4 0.9 -1.0 nan nan nan nan 1 2 4
 
     def event_tracking_frame(self, path, tags, args, source):
         """New frame event.
@@ -237,6 +252,8 @@ if __name__ == "__main__":
 
     def on_draw():
         start = time.clock()
+        field.resetDistances()
+        field.calcDistances()
         field.resetPathGrid()
         field.pathScoreCells()
         for key, connector in field.m_connector_dict.iteritems():

@@ -12,7 +12,9 @@ class PathFinder(object):
         comparable with __eq__. Other than that, they may be 
         represented as you wish, as long as the functions 
         supplied to the constructor know how to handle them.
+
     """
+
     def __init__(self, successors, move_cost, heuristic_to_goal):
         """ Create a new PathFinder. Provided with several 
             functions that represent your graph and the costs of
@@ -37,7 +39,7 @@ class PathFinder(object):
         self.successors = successors
         self.move_cost = move_cost
         self.heuristic_to_goal = heuristic_to_goal
-    
+
     def compute_path(self, start, goal):
         """ Compute the path between the 'start' point and the 
             'goal' point. 

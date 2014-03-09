@@ -64,6 +64,8 @@ MODE_LASER = 1
 PATH_UNIT = config.path_unit
 BLOCK_FUZZ = config.fuzzy_area_for_cells
 
+MIN_CONX_DIST = config.minimum_connection_distance
+
 # create logger
 logger = logging.getLogger(__appname__)
 logging.basicConfig(filename=LOGFILE,level=logging.DEBUG,
@@ -81,9 +83,8 @@ class Field(object):
         # we could use a list here which would make certain things easier, but
         # we need to do deletions and references pretty regularly.
         self.m_cell_dict = {}
-        self.m_blob_dict = {}
         self.m_connector_dict = {}
-        self.allpaths = []
+        #self.allpaths = []
         self.initScaling((XMIN,YMIN), (XMAX,YMAX), 
                          (MIN_LASER,MIN_LASER), (MAX_LASER,MAX_LASER), 
                          (MIN_SCREEN,MIN_SCREEN), (MAX_SCREEN,MAX_SCREEN), 
@@ -120,10 +121,13 @@ class Field(object):
         cell.update(p, r, orient, effects, color)
 
     def delCell(self, id):
-        cell = self.m_cell_dict[id]
-        cell.disconnect()
-        # delete the cell from the cell list
-        del self.m_cell_dict[cell.m_id]
+        # delete all connectors from master list of connectors
+        #for connector in cell.m_connector_dict.values():
+            #del self.m_connector_dict[connector.m_id]
+        # have cell disconnect all of its connections and refs
+        self.m_cell_dict[id].cellDisconnect()
+        # delete the cell master list of cells
+        del self.m_cell_dict[id]
 
     def renderCell(self,cell):
         cell.render()
@@ -132,18 +136,20 @@ class Field(object):
         cell.draw()
 
     def renderAllCells(self):
-        for key, cell in self.m_cell_dict.iteritems():
+        for cell in self.m_cell_dict.values():
             cell.render()
 
     def drawAllCells(self):
-        for key, cell in self.m_cell_dict.iteritems():
+        for cell in self.m_cell_dict.values():
             cell.draw()
 
     # Connectors
 
     def createConnector(self, id, cell0, cell1):
         # create connector - note we pass self since we want a back reference
-        # to feild instance
+        # to field instance
+        # NOTE: Connector class takes care of storing the cells as well as
+        # telling each of the two cells that they now have a connector
         connector = Connector(self, id, cell0, cell1)
         # add to the connector list
         self.m_connector_dict[id] = connector
@@ -151,7 +157,7 @@ class Field(object):
     def delConnector(self,id):
         connector = self.m_connector_dict[id]
         # delete the connector in the cells attached to the connector
-        connector.disconnect()
+        connector.conxDisconnect()
         # delete from the connector list
         del self.m_connector_dict[id]
 
@@ -162,11 +168,11 @@ class Field(object):
         connector.draw()
 
     def renderAllConnectors(self):
-        for key, connector in self.m_connector_dict.iteritems():
+        for connector in self.m_connector_dict.values():
             connector.render()
 
     def drawAllConnectors(self):
-        for key, connector in self.m_connector_dict.iteritems():
+        for connector in self.m_connector_dict.values():
             connector.draw()
 
     # Everything
@@ -181,7 +187,31 @@ class Field(object):
         self.drawAllCells()
         self.drawAllConnectors()
 
-    # Pathfinding
+    # Distances - TODO: temporary -- this info will come from the conduction subsys
+
+    def dist_sqd(self,cell0,cell1):
+        return ((cell0.m_location[0]-cell1.m_location[0])**2 + 
+                (cell0.m_location[1]-cell1.m_location[1])**2)
+
+    def resetDistances(self):
+        self.distance = {}
+
+    def calcDistances(self):
+        for cell0 in self.m_cell_dict.values():
+            for cell1 in self.m_cell_dict.values():
+                conxid = str(cell0.m_id)+'.'+str(cell1.m_id)
+                conxid_ = str(cell1.m_id)+'.'+str(cell0.m_id)
+                #if self.distance[conxid] == 0:
+                if cell0 != cell1:
+                    dist = self.dist_sqd(cell0,cell1)
+                    #print "Calculating distance",conxid,"dist:",dist
+                    self.distance[conxid] = dist
+                    self.distance[conxid_] = dist
+                    #self.distance[str(cell1.m_id)+'.'+str(cell0.m_id)] = dist
+                    if dist < MIN_CONX_DIST:
+                        self.createConnector(conxid,cell0,cell1)
+
+    # Paths
 
     # should the next two functions be in the gridmap module? No, because the GridMap
     # and Pathfinder classes have to be instantiated from somewhere. And if not
@@ -190,30 +220,61 @@ class Field(object):
         # for our pathfinding, we're going to overlay a grid over the field with
         # squares that are sized by a constant in the config file
         self.path_grid = GridMap(self.scale2path(self.m_xmax),
-                            self.scale2path(self.m_ymax))
+                                 self.scale2path(self.m_ymax))
         self.pathfinder = PathFinder(self.path_grid.successors, self.path_grid.move_cost, 
-                                self.path_grid.estimate)
+                                     self.path_grid.estimate)
 
     def resetPathGrid(self):
         self.path_grid.reset_grid()
-        self.allpaths = []
+        # we store the results of all the paths, why? Not sure we need to anymore
+        #self.allpaths = []
 
     def pathScoreCells(self):
-        for key, cell in self.m_cell_dict.iteritems():
+        for cell in self.m_cell_dict.values():
             self.path_grid.set_blocked(self.scale2path(cell.m_location),\
                                     self.scale2path(cell.m_radius),BLOCK_FUZZ)
 
+    def pathfindConnectors(self):
+        """ Find path for all the connectors.
+
+        We sort the connectors by distance and do easy paths for the closest 
+        ones first.
+        """
+        #connector_dict_rekeyed = self.m_connector_dict
+        #for i in connector_dict_rekeyed.iterkeys():
+        connector_dict_rekeyed = {}
+        for connector in self.m_connector_dict.values():
+            p0 = connector.m_cell0.m_location
+            p1 = connector.m_cell1.m_location
+            # normally we'd take the sqrt to get the distance, but here this is 
+            # just used as a sort comparison, so we'll not take the hit for sqrt
+            score = ((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2) 
+            # here we save time by sorting as we go through it
+            connector_dict_rekeyed[score] = connector
+        for i in sorted(connector_dict_rekeyed.iterkeys()):
+            connector = connector_dict_rekeyed[i]
+            print "findpath--id:",connector.m_id,"dist:",i**0.5
+            connector.addPath(self.findPath(connector))
+
     def findPath(self, connector):
         """ Find path in path_grid and then scale it appropriately."""
-        start = field.scale2path(connector.m_cells[0].m_location)
-        goal = field.scale2path(connector.m_cells[1].m_location)
-        path = list(field.pathfinder.compute_path(start, goal))
-        field.path_grid.set_block_line(path)
-        self.allpaths = self.allpaths + path
+        start = self.scale2path(connector.m_cell0.m_location)
+        goal = self.scale2path(connector.m_cell1.m_location)
+        # TODO: Either here or in compute_path we first try several simple/dumb
+        # paths, reserving A* for the ones that are blocked and need more
+        # smarts. We sort the connectors by distance and do easy paths for the
+        # closest ones first.
+        path = list(self.path_grid.easy_path(start, goal))
+        #print "connector:id",connector.m_id,"path:",path
+        if not path:
+            path = list(self.pathfinder.compute_path(start, goal))
+        # take results of found paths and block them on the map
+        self.path_grid.set_block_line(path)
+        #self.allpaths = self.allpaths + path
         return self.path2scale(path)
         
     def printGrid(self):
-        self.path_grid.printme(self.allpaths)
+        self.path_grid.printme()
 
     # Scaling
 
@@ -249,10 +310,10 @@ class Field(object):
             self.m_screen_scale = float(max_screen-min_screen)/(ymax-ymin)
         #print "path unit:",path_unit," path_scale:",float(1)/path_unit
         self.m_path_scale = float(1)/path_unit
-        print "SCREEN SCALE:",self.m_screen_scale
-        print "REAL SCALING:",(xmin,ymin),(xmax,ymax)
-        print "SCREEN SCALING:",self.scale2out((xmin,ymin)),self.scale2out((xmax,ymax))
-        print "SCREEN SCALING(alt):",self.screenMax()
+        #print "SCREEN SCALE:",self.m_screen_scale
+        #print "REAL SCALING:",(xmin,ymin),(xmax,ymax)
+        #print "SCREEN SCALING:",self.scale2out((xmin,ymin)),self.scale2out((xmax,ymax))
+        #print "SCREEN SCALING(alt):",self.screenMax()
 
     def updateScaling(self,pmin=0,pmax=0,pmin_laser=0,pmax_laser=0,
                       pmin_screen=0,pmax_screen=0):
@@ -285,10 +346,10 @@ class Field(object):
         else:
             self.m_laser_scale = float(max_laser-min_laser)/(ymax-ymin)
             self.m_screen_scale = float(max_screen-min_screen)/(ymax-ymin)
-        print "SCREEN SCALE:",self.m_screen_scale
-        print "REAL SCALING:",(xmin,ymin),(xmax,ymax)
-        print "SCREEN SCALING:",self.scale2out((xmin,ymin)),self.scale2out((xmax,ymax))
-        print "SCREEN SCALING(alt):",self.screenMax()
+        #print "SCREEN SCALE:",self.m_screen_scale
+        #print "REAL SCALING:",(xmin,ymin),(xmax,ymax)
+        #print "SCREEN SCALING:",self.scale2out((xmin,ymin)),self.scale2out((xmax,ymax))
+        #print "SCREEN SCALING(alt):",self.screenMax()
 
     def laserMax(self):
         return (int((self.m_xmax-self.m_xmin)*self.m_laser_scale) + self.m_min_laser,
@@ -390,6 +451,7 @@ class Cell(GraphElement):
         self.m_blob_color = DEF_BLOBCOLOR
         self.m_radius = r*RAD_PAD
         self.m_oriend = orient
+        self.m_visible = True
         self.m_connector_dict = {}
         GraphElement.__init__(self,field,effects,color)
 
@@ -417,7 +479,7 @@ class Cell(GraphElement):
         self.m_connector_dict[connector.m_id] = connector
 
     def delConnector(self, connector):
-        del self.m_connector_list[connector.m_id]
+        del self.m_connector_dict[connector.m_id]
 
     def render(self):
         self.m_shape = Circle(self.m_field,self.m_location,self.m_radius,
@@ -433,16 +495,32 @@ class Cell(GraphElement):
         if DRAW_BLOBS:
             self.m_blobshape.draw()
 
-    def disconnect(self):
+    def cellDisconnect(self):
         """Disconnects all the connectors and refs it can reach.
         
         To actually delete it, remove it from the list of cells in the Field
         class.
         """
         print "Disconnecting cell",self.m_id
-        for key,connector in self.m_connector_dict.iteritems():
-            connector.disconnect()
+        new_connector_dict = self.m_connector_dict.copy()
+        # for each connector attached to this cell...
+        for connector in new_connector_dict.values():
+            # OPTION: for simplicity's sake, we do the work rather than passing to
+            # the object to do the work
+            # delete the connector from its two cells
+            del connector.m_cell0.m_connector_dict[connector.m_id]
+            del connector.m_cell1.m_connector_dict[connector.m_id]
+            # delete cells ref'd from this connector
+            connector.m_cell0 = None
+            connector.m_cell1 = None
+            # now delete from this cell's list
+            del self.m_connector_dict[connector.m_id]
 
+            # OPTION: Let the objects do the work
+            #connector.conxDisconnect()
+            # we may not need this because the connector calls the same thing
+            # for it's two cells, including this one
+            #self.delConnector(connector)
 
 class Connector(GraphElement):
 
@@ -451,7 +529,7 @@ class Connector(GraphElement):
     Create a connector as a subclass of the basic data element.
     
     Stores the following values:
-        m_cells: the two cells connected by this connector
+        m_cell0, m_cell1: the two cells connected by this connector
 
     makeBasicShape: create the set of arcs that will define the shape
 
@@ -460,8 +538,14 @@ class Connector(GraphElement):
     def __init__(self, field, id, cell0, cell1, effect=[], color=DEF_LINECOLOR):
         """Store basic info and create a GraphElement object"""
         self.m_id = id
-        self.m_cells = (cell0,cell1)
+        # store the cells we are connected to
+        self.m_cell0 = cell0
+        self.m_cell1 = cell1
+        # tell the cells themselves that they now own a connector
+        cell0.addConnector(self)
+        cell1.addConnector(self)
         self.m_path = []
+        self.m_score = 0
         GraphElement.__init__(self,field,effect,color)
 
     def addPath(self,path):
@@ -469,25 +553,38 @@ class Connector(GraphElement):
         self.m_path = path
 
     def render(self):
-        loc0 = self.m_cells[0].m_location
-        loc1 = self.m_cells[1].m_location
-        rad0 = self.m_cells[0].m_radius
-        rad1 = self.m_cells[1].m_radius
+        loc0 = self.m_cell0.m_location
+        loc1 = self.m_cell1.m_location
+        rad0 = self.m_cell0.m_radius
+        rad1 = self.m_cell1.m_radius
         self.m_shape = Line(self.m_field,loc0,loc1,rad0,rad1,self.m_color,self.m_path)
         #print ("Render Connector(%s):%s to %s" % (self.m_id,cell0.m_location,cell1.m_location))
         self.m_shape.render()
 
-    def disconnect(self):
-        """Disconnects all the refs it can reach.
+    def conxDisconnect(self):
+        """Disconnect cells this connector refs & this connector ref'd by them.
         
         To actually delete it, remove it from the list of connectors in the Field
         class.
         """
         print "Disconnecting connector",self.m_id,"between",\
-                self.m_cells[0].m_id,"and",self.m_cells[1].m_id
-        self.m_cells[0].delConnector(self)
-        self.m_cells[1].delConnector(self)
+                self.m_cell0.m_id,"and",self.m_cell1.m_id
+        # OPTION: for simplicity's sake, we do the work rather than passing to
+        # the object to do the work
+        # delete the connector from its two cells
+        del self.m_cell0.m_connector_dict[self.m_cell0.m_id]
+        del self.m_cell1.m_connector_dict[self.m_cell1.m_id]
+        # delete the refs to those two cells
+        self.m_cell0 = None
+        self.m_cell1 = None
 
+        # OPTION: We let the objects do the work
+        # delete the connector from its two cells
+        #self.m_cell0.delConnector(self)
+        #self.m_cell1.delConnector(self)
+        # delete cells ref'd from this connector
+        #self.m_cell0 = None
+        #self.m_cell1 = None
 
 # graphic primatives
 
@@ -639,7 +736,9 @@ class Line(GraphicObject):
         def findIntersect(inpt, outpt, center, radius):
             # Here instead of checking whether the point is on the circle, 
             # we just see if the points have converged on each other.
-            if abs(inpt[0] - outpt[0]) + abs(inpt[1] - outpt[1]) < 2:
+            sum_dist = abs(inpt[0] - outpt[0]) + abs(inpt[1] - outpt[1])
+            #print "sum dist:",sum_dist
+            if sum_dist <= 2:
                 return inpt
             midpt = midpoint(inpt, outpt)
             if inCircle(center, radius, midpt):
@@ -782,13 +881,14 @@ class EffectDouble(Effect):
 
 if __name__ == "__main__":
 
+
     # initialize field
     field = Field()
     # initialize pyglet 
     field.initScreen()
 
     # generate test data
-    rmin = 35
+    rmin = 20
     rmax = 70
     xmin = rmax
     xmax = XMAX-rmax
@@ -800,13 +900,10 @@ if __name__ == "__main__":
     # make cells
     #cell_list=[]
     for i in range(people):
+        cell = field.createCell(i)
         p = (randint(xmin,xmax), randint(ymin,ymax))
         r = randint(rmin,rmax)
-        cell = Cell(field,i,p,r)
-        field.addCell(cell)
-
-    # add cells to path 
-    field.pathScoreCells()
+        field.updateCell(i,p,r)
 
     # make connectors
     connector_list=[]
@@ -817,27 +914,28 @@ if __name__ == "__main__":
         while cell0 == cell1:
             cell1 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
         #print "cell1:",cell1.m_id," loc:",cell1.m_location
-        connector = Connector(field,i,cell0,cell1)
-        field.addConnector(connector)
+        field.createConnector(i,cell0,cell1)
 
     playcell = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
 
-    allpaths = []
-    #for key, connector in field.m_connector_dict.iteritems():
+    #for connector in field.m_connector_dict.values():
         #connector.addPath(field.findPath(connector))
-    field.printGrid()
+    #field.printGrid()
 
-    #@window.event
     def on_draw():
         start = time.clock()
+        field.resetDistances()
+        field.calcDistances()
         field.resetPathGrid()
         field.pathScoreCells()
-        for key, connector in field.m_connector_dict.iteritems():
-            connector.addPath(field.findPath(connector))
+        field.pathfindConnectors()
         field.m_screen.clear()
         field.renderAll()
         field.drawAll()
-        print "draw loop in",(time.clock() - start)*1000,"ms"
+        #print "draw loop in",(time.clock() - start)*1000,"ms"
+
+    field.m_screen.on_draw = on_draw
+    #visualsys.pyglet.app.run()
 
     def on_key_press(symbol, modifiers):
         MOVEME = 25
@@ -868,7 +966,6 @@ if __name__ == "__main__":
         # move cell
         playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
 
-    field.m_screen.on_draw = on_draw
     field.m_screen.on_key_press = on_key_press
     pyglet.app.run()
 

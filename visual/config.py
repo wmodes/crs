@@ -17,6 +17,8 @@ ymin = 0
 xmax = 1219 # 40ft = 12.19m = 1219cm
 ymax = 1219
 
+minimum_connection_distance = 12000   # this is cm sq
+
 min_laser = -32768
 max_laser = 32768
 min_screen = 0

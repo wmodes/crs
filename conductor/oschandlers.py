@@ -32,6 +32,9 @@ import conductorsys
 OSCPORT = config.oscport
 OSCHOST = config.oschost if config.oschost else "localhost"
 OSCTIMEOUT = config.osctimeout
+OSCPATH = config.oscpath
+
+"""
 OSCPATH_PING = config.oscpath_ping
 OSCPATH_START = config.oscpath_start
 OSCPATH_ENTRY = config.oscpath_entry
@@ -41,12 +44,14 @@ OSCPATH_FRAME = config.oscpath_frame
 OSCPATH_STOP = config.oscpath_stop
 OSCPATH_SET = config.oscpath_set
 OSCPATH_SET_DICT = config.oscpath_set_dict
+"""
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
 # set to False
 def handle_timeout(self):
     self.timed_out = True
+
 
 class OSCHandler(object):
 
@@ -63,20 +68,27 @@ class OSCHandler(object):
         self.m_xmax = 0
         self.m_ymax = 0
 
+        self.EVENTFUNC = {
+            'ping': self.event_tracking_ping,
+            'start': self.event_tracking_start,
+            'stop': self.event_tracking_stop,
+            'entry': self.event_tracking_entry,
+            'exit': self.event_tracking_exit,
+            'update': self.event_tracking_update,
+            'frame': self.event_tracking_frame,
+            'minx': self.event_tracking_set,
+            'miny': self.event_tracking_set,
+            'maxx': self.event_tracking_set,
+            'maxy': self.event_tracking_set,
+            'npeople': self.event_tracking_set,
+        }
+
         # add a method to an instance of the class
         import types
         self.m_server.handle_timeout = types.MethodType(handle_timeout, self.m_server)
 
-        self.m_server.addMsgHandler(OSCPATH_PING, self.event_tracking_ping)
-        self.m_server.addMsgHandler(OSCPATH_START, self.event_tracking_start)
-        self.m_server.addMsgHandler(OSCPATH_ENTRY, self.event_tracking_entry)
-        self.m_server.addMsgHandler(OSCPATH_EXIT, self.event_tracking_exit)
-        self.m_server.addMsgHandler(OSCPATH_UPDATE, self.event_tracking_update)
-        self.m_server.addMsgHandler(OSCPATH_FRAME, self.event_tracking_frame)
-        self.m_server.addMsgHandler(OSCPATH_STOP, self.event_tracking_stop)
-        for post in OSCPATH_SET_DICT:
-            self.m_server.addMsgHandler(OSCPATH_SET+OSCPATH_SET_DICT[post],
-                                        self.event_tracking_set)
+        for i in self.EVENTFUNC:
+            self.m_server.addMsgHandler(OSCPATH[i], self.EVENTFUNC[i])
 
     # user script that's called by the game engine every frame
     def each_frame(self):
@@ -238,8 +250,10 @@ class OSCHandler(object):
         """Tracking has stopped."""
         print "OSC: stop:",args
 
+
 if __name__ == "__main__":
 
+    field = conductorsys.Field()
     osc = OSCHandler(field)
     # simulate a "game engine"
     while osc.m_run:

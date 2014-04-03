@@ -194,34 +194,6 @@ class Update(object):
     
     """
 
-    UPDATEFUNC = {
-        'artifact':self.update_artifact,
-        'fromcenter':self.update_fromcenter,
-        'fromothers':self.update_fromothers,
-        'dance':self.update_dance,
-        'speed':self.update_speed,
-        'kinetic':self.update_kinetic,
-        'lopside':self.update_lopside,
-        'kinetic':self.update_kinetic,
-        'interactive':self.update_interactive,
-        'timelong':self.update_timelong,
-        'timelong':self.update_timelong,
-        'biggroup1':self.update_biggroup1,
-        'biggroup2':self.update_biggroup2,
-        'fision':self.update_fision,
-        'fusion':self.update_fusion,
-        'friends':self.update_friends,
-        'grouped':self.update_grouped,
-        'coord':self.update_coord,
-        'fof':self.update_fof,
-        'leastconx':self.update_leastconx,
-        'mirror':self.update_mirror,
-        'nearby':self.update_nearby,
-        'strangers':self.update_strangers,
-        'tag':self.update_tag,
-        'irlbuds':self.update_irlbuds,
-    }
-
     def __init__(self, update_mgr, freq, type, uid=0, uid2=0, gid=0, value=0, num=0):
         self.m_update_mgr = update_mgr
         self.m_freq = freq
@@ -233,6 +205,34 @@ class Update(object):
         self.m_num = num
         self.m_count = 0
 
+        self.UPDATEFUNC = {
+            'artifact': self.update_artifact,
+            'fromcenter': self.update_fromcenter,
+            'fromothers': self.update_fromothers,
+            'dance': self.update_dance,
+            'speed': self.update_speed,
+            'kinetic': self.update_kinetic,
+            'lopside': self.update_lopside,
+            'kinetic': self.update_kinetic,
+            'interactive': self.update_interactive,
+            'timelong': self.update_timelong,
+            'timelong': self.update_timelong,
+            'biggroup1': self.update_biggroup1,
+            'biggroup2': self.update_biggroup2,
+            'fision': self.update_fision,
+            'fusion': self.update_fusion,
+            'friends': self.update_friends,
+            'grouped': self.update_grouped,
+            'coord': self.update_coord,
+            'fof': self.update_fof,
+            'leastconx': self.update_leastconx,
+            'mirror': self.update_mirror,
+            'nearby': self.update_nearby,
+            'strangers': self.update_strangers,
+            'tag': self.update_tag,
+            'irlbuds': self.update_irlbuds,
+        }
+
     def updateUpdate(self, value):
         self.m_value = value
 
@@ -243,7 +243,7 @@ class Update(object):
         # for the "timed" freq, an update is sent at the start and end.
         # otherwise, we send an update everytime until the timer runs out
         # or the update is killed
-        if self.m_freq == FREQ['timed'] and 
+        if self.m_freq == FREQ['timed'] and \
              (self.m_count != 0 and self.m_count != self.m_num-1):
             return
         UPDATEFUNC[self.m_type]()
@@ -322,7 +322,6 @@ class Update(object):
 
     def update_irlbuds(self):
         pass
-
 
 
 class UpdateMgr(object):

@@ -1,1 +1,14 @@
 *.pyc
+test.*
+killme*
+*~
+*.swp
+*.swo
+*.htpasswd
+*.gzip
+*.zip
+*.tar
+.htaccess
+htaccess
+.htpasswd
+htpasswd

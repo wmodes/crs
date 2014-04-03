@@ -121,13 +121,16 @@ class Field(object):
         cell.update(p, r, orient, effects, color)
 
     def delCell(self, id):
+        cell = self.m_cell_dict[id]
         # delete all connectors from master list of connectors
-        #for connector in cell.m_connector_dict.values():
-            #del self.m_connector_dict[connector.m_id]
+        for conxid in cell.m_connector_dict:
+            if conxid in self.m_connector_dict:
+                del self.m_connector_dict[conxid]
         # have cell disconnect all of its connections and refs
-        self.m_cell_dict[id].cellDisconnect()
-        # delete the cell master list of cells
-        del self.m_cell_dict[id]
+        if id in self.m_cell_dict:
+            cell.cellDisconnect()
+            # delete from the cell master list of cells
+            del self.m_cell_dict[id]
 
     def renderCell(self,cell):
         cell.render()
@@ -155,11 +158,11 @@ class Field(object):
         self.m_connector_dict[id] = connector
 
     def delConnector(self,id):
-        connector = self.m_connector_dict[id]
-        # delete the connector in the cells attached to the connector
-        connector.conxDisconnect()
-        # delete from the connector list
-        del self.m_connector_dict[id]
+        if id in self.m_connector_dict:
+            # delete the connector in the cells attached to the connector
+            self.m_connectior_dict[id].conxDisconnect()
+            # delete from the connector list
+            del self.m_connector_dict[id]
 
     def renderConnector(self,connector):
         connector.render()
@@ -193,23 +196,22 @@ class Field(object):
         return ((cell0.m_location[0]-cell1.m_location[0])**2 + 
                 (cell0.m_location[1]-cell1.m_location[1])**2)
 
-    def resetDistances(self):
-        self.distance = {}
-
     def calcDistances(self):
-        for cell0 in self.m_cell_dict.values():
-            for cell1 in self.m_cell_dict.values():
-                conxid = str(cell0.m_id)+'.'+str(cell1.m_id)
-                conxid_ = str(cell1.m_id)+'.'+str(cell0.m_id)
-                #if self.distance[conxid] == 0:
-                if cell0 != cell1:
-                    dist = self.dist_sqd(cell0,cell1)
+        self.distance = {}
+        for id0,c0 in self.m_cell_dict.iteritems():
+            for id1,c1 in self.m_cell_dict.iteritems():
+                conxid = str(id0)+'.'+str(id1)
+                conxid_ = str(id1)+'.'+str(id0)
+                if c0 != c1 and not (conxid in self.distance):
+                #if c0 != c1 and not (conxid in self.m_cell_dict) and \
+                        #not (conxid_ in self.m_cell_dict):
+                    dist = self.dist_sqd(c0,c1)
                     #print "Calculating distance",conxid,"dist:",dist
                     self.distance[conxid] = dist
                     self.distance[conxid_] = dist
-                    #self.distance[str(cell1.m_id)+'.'+str(cell0.m_id)] = dist
+                    #self.distance[str(c1.m_id)+'.'+str(c0.m_id)] = dist
                     if dist < MIN_CONX_DIST:
-                        self.createConnector(conxid,cell0,cell1)
+                        self.createConnector(conxid,c0,c1)
 
     # Paths
 
@@ -230,6 +232,7 @@ class Field(object):
         #self.allpaths = []
 
     def pathScoreCells(self):
+        #print "***Before path: ",self.m_cell_dict
         for cell in self.m_cell_dict.values():
             self.path_grid.set_blocked(self.scale2path(cell.m_location),\
                                     self.scale2path(cell.m_radius),BLOCK_FUZZ)
@@ -264,10 +267,10 @@ class Field(object):
         # paths, reserving A* for the ones that are blocked and need more
         # smarts. We sort the connectors by distance and do easy paths for the
         # closest ones first.
-        path = list(self.path_grid.easy_path(start, goal))
+        #path = list(self.path_grid.easy_path(start, goal))
         #print "connector:id",connector.m_id,"path:",path
-        if not path:
-            path = list(self.pathfinder.compute_path(start, goal))
+        #if not path:
+        path = list(self.pathfinder.compute_path(start, goal))
         # take results of found paths and block them on the map
         self.path_grid.set_block_line(path)
         #self.allpaths = self.allpaths + path
@@ -479,7 +482,8 @@ class Cell(GraphElement):
         self.m_connector_dict[connector.m_id] = connector
 
     def delConnector(self, connector):
-        del self.m_connector_dict[connector.m_id]
+        if connector.m_id in self.m_connector_dict:
+            del self.m_connector_dict[connector.m_id]
 
     def render(self):
         self.m_shape = Circle(self.m_field,self.m_location,self.m_radius,
@@ -502,19 +506,24 @@ class Cell(GraphElement):
         class.
         """
         print "Disconnecting cell",self.m_id
+        # we make a copy because we can't iterate over the dict if we are
+        # deleting stuff from it!
         new_connector_dict = self.m_connector_dict.copy()
         # for each connector attached to this cell...
         for connector in new_connector_dict.values():
             # OPTION: for simplicity's sake, we do the work rather than passing to
             # the object to do the work
             # delete the connector from its two cells
-            del connector.m_cell0.m_connector_dict[connector.m_id]
-            del connector.m_cell1.m_connector_dict[connector.m_id]
+            if connector.m_id in connector.m_cell0.m_connector_dict:
+                del connector.m_cell0.m_connector_dict[connector.m_id]
+            if connector.m_id in connector.m_cell1.m_connector_dict:
+                del connector.m_cell1.m_connector_dict[connector.m_id]
             # delete cells ref'd from this connector
             connector.m_cell0 = None
             connector.m_cell1 = None
             # now delete from this cell's list
-            del self.m_connector_dict[connector.m_id]
+            if connector.m_id in self.m_connector_dict:
+                del self.m_connector_dict[connector.m_id]
 
             # OPTION: Let the objects do the work
             #connector.conxDisconnect()
@@ -572,8 +581,10 @@ class Connector(GraphElement):
         # OPTION: for simplicity's sake, we do the work rather than passing to
         # the object to do the work
         # delete the connector from its two cells
-        del self.m_cell0.m_connector_dict[self.m_cell0.m_id]
-        del self.m_cell1.m_connector_dict[self.m_cell1.m_id]
+        if self.m_id in self.m_cell0.m_connector_dict:
+            del self.m_cell0.m_connector_dict[self.m_id]
+        if self.m_id in self.m_cell1.m_connector_dict:
+            del self.m_cell1.m_connector_dict[self.m_id]
         # delete the refs to those two cells
         self.m_cell0 = None
         self.m_cell1 = None
@@ -733,18 +744,18 @@ class Line(GraphicObject):
             square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
             return square_dist < radius ** 2
 
-        def findIntersect(inpt, outpt, center, radius):
+        def findIntersect(outpt, inpt, center, radius):
             # Here instead of checking whether the point is on the circle, 
             # we just see if the points have converged on each other.
             sum_dist = abs(inpt[0] - outpt[0]) + abs(inpt[1] - outpt[1])
             #print "sum dist:",sum_dist
-            if sum_dist <= 2:
+            if sum_dist < 2:
                 return inpt
-            midpt = midpoint(inpt, outpt)
+            midpt = midpoint(outpt, inpt)
             if inCircle(center, radius, midpt):
-                return findIntersect(midpt, outpt, center, radius)
+                return findIntersect(outpt, midpt, center, radius)
             else:
-                return findIntersect(inpt,midpt, center, radius)
+                return findIntersect(midpt, inpt, center, radius)
 
         (x0,y0)=p0
         (x1,y1)=p1
@@ -765,18 +776,19 @@ class Line(GraphicObject):
             thispt = path[i]
             nextpt = path[i+1]
             # Remove parts of path within the radius of cell
+            # TODO: Ensure that the logic here works in every case
             # if both ends of this line segment are inside a circle fugetaboutit
             if (inCircle(p0, r0, thispt) and inCircle(p0, r0, nextpt)) or\
                 (inCircle(p1, r1, thispt) and inCircle(p1, r1, nextpt)):
                 continue
-            # if one end of this line segment is inside a circle
-            if inCircle(p0, r0, thispt) and not inCircle(p0, r0, nextpt):
+            # if near end of this line segment is inside a circle
+            if inCircle(p0, r0, thispt):
                 # find the point intersecting the circle
-                thispt = findIntersect(thispt, nextpt, p0, r0)
-            # if one end of this line segment is inside the other circle
-            if inCircle(p1, r1, nextpt) and not inCircle(p1, r1, thispt):
+                thispt = findIntersect(nextpt, thispt, p0, r0)
+            # if far end of this line segment is inside the other circle
+            elif inCircle(p1, r1, nextpt):
                 # find the point intersecting the circle
-                nextpt = findIntersect(nextpt, thispt, p1, r1)
+                nextpt = findIntersect(thispt, nextpt, p1, r1)
             """
             # if one end of this line segment is inside a circle
             if inCircle(p1, r1, thispt) and not inCircle(p1, r1, nextpt):
@@ -894,8 +906,8 @@ if __name__ == "__main__":
     xmax = XMAX-rmax
     ymin = rmax
     ymax = YMAX-rmax
-    people = 10
-    connections = 7
+    people = 6
+    connections = 6
 
     # make cells
     #cell_list=[]
@@ -924,7 +936,6 @@ if __name__ == "__main__":
 
     def on_draw():
         start = time.clock()
-        field.resetDistances()
         field.calcDistances()
         field.resetPathGrid()
         field.pathScoreCells()

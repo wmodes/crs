@@ -11,7 +11,7 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-__appname__ = "osc.py"
+__appname__ = "oschandlers.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -26,12 +26,13 @@ from OSC import OSCServer
 
 # local modules
 import config
-import visualsys
+import conductorsys
 
 # Constants
 OSCPORT = config.oscport
 OSCHOST = config.oschost if config.oschost else "localhost"
 OSCTIMEOUT = config.osctimeout
+OSCPATH_PING = config.oscpath_ping
 OSCPATH_START = config.oscpath_start
 OSCPATH_ENTRY = config.oscpath_entry
 OSCPATH_EXIT = config.oscpath_exit
@@ -66,6 +67,7 @@ class OSCHandler(object):
         import types
         self.m_server.handle_timeout = types.MethodType(handle_timeout, self.m_server)
 
+        self.m_server.addMsgHandler(OSCPATH_PING, self.event_tracking_ping)
         self.m_server.addMsgHandler(OSCPATH_START, self.event_tracking_start)
         self.m_server.addMsgHandler(OSCPATH_ENTRY, self.event_tracking_entry)
         self.m_server.addMsgHandler(OSCPATH_EXIT, self.event_tracking_exit)
@@ -91,13 +93,17 @@ class OSCHandler(object):
         # tags will contain 'fff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
-        print ("Now do something with", user,args[2],args[0],1-args[1]) 
+        #print ("Now do something with", user,args[2],args[0],1-args[1]) 
 
     def quit_callback(self, path, tags, args, source):
-        # don't do this at home (or it'll quit blender)
         self.m_run = False
 
     # Event handlers
+
+    def event_tracking_ping(self, path, tags, args, source):
+        """Ping from tracking system."""
+        #print "OSC: ping:",args,source
+        pass
 
     def event_tracking_start(self, path, tags, args, source):
         """Tracking system is starting.
@@ -110,7 +116,7 @@ class OSCHandler(object):
             channel - channel number assigned
 
         """
-        print "OSC start:",path,args,source
+        print "OSC: start:",args
 
     def event_tracking_set(self, path, tags, args, source):
         """Tracking subsystem is setting params.
@@ -123,25 +129,19 @@ class OSCHandler(object):
         """
         split = path.split("/")
         param = split.pop()
-        print "OSC set:",path,param,args,source
+        print "OSC: set:",path,param,args,source
         if param == OSCPATH_SET_DICT['minx']:
-            self.m_xmin = int(100*args[0])
+            self.m_field.setparam(xmin=int(100*args[0]))
         elif param == OSCPATH_SET_DICT['miny']:
-            self.m_ymin = int(100*args[0])
+            self.m_field.setparam(ymin=int(100*args[0]))
         elif param == OSCPATH_SET_DICT['maxx']:
-            self.m_xmax = int(100*args[0])
+            self.m_field.setparam(xmax=int(100*args[0]))
         elif param == OSCPATH_SET_DICT['maxy']:
-            self.m_ymax = int(100*args[0])
+            self.m_field.setparam(ymax=int(100*args[0]))
         elif param == OSCPATH_SET_DICT['npeople']:
-            pass
+            self.m_field.setparam(npeople=args[0])
         else:
             pass
-        print "setting xmin:",self.m_xmin,"ymin:",self.m_ymin,"xmax:",self.m_xmax,"ymax:",self.m_ymax
-        if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
-            print "updateScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-            self.m_field.updateScaling((self.m_xmin,self.m_ymin),(self.m_xmax,self.m_ymax))
-            self.m_field.updateScreen()
-            
 
     def event_tracking_entry(self, path, tags, args, source):
         """Event when person enters field.
@@ -155,8 +155,7 @@ class OSCHandler(object):
             channel - channel number assigned
 
         """
-        print "OSC entry:",path,args,source
-        print "args:",args,args[0],args[1],args[2]
+        print "OSC: entry:",args
         sample = args[0]
         time = args[1]
         id = args[2]
@@ -171,15 +170,11 @@ class OSCHandler(object):
              target - UID of target
 
         """
-        print "OSC exit:",path,args,source
+        print "OSC: exit:",args
         sample = args[0]
         time = args[1]
         id = args[2]
-        print "BEFORE: cells:",self.m_field.m_cell_dict
-        print "BEFORE: conx:",self.m_field.m_connector_dict
         self.m_field.delCell(id)
-        print "AFTER: cells:",self.m_field.m_cell_dict
-        print "AFTER: conx:",self.m_field.m_connector_dict
 
     def event_tracking_update(self, path, tags, args, source):
         """Information about people's movement within field.
@@ -197,7 +192,7 @@ class OSCHandler(object):
             channel - channel number assigned
 
         """
-        #print "OSC update:",path,args,source
+        #print "OSC: update:",args
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = 0
@@ -218,7 +213,7 @@ class OSCHandler(object):
         # alternately, we can just turn all cells invisible each frame and then
         # make them visible as we get an update
         #print "field.updateCell(",id,",",(x,y),",",major,")"
-        self.m_field.updateCell(id,(x,y),major)
+        self.m_field.updateCell(id,x,y,vx,vy,major,minor,gid,gsize)
         # TODO: What happens to connections when someone joins a group? Oh god.
         # In our OSC messages, when two cells become a group, a gid is assigned 
         # the groupsize is incremented, and only one of the cells gets updated
@@ -235,45 +230,20 @@ class OSCHandler(object):
             samp - sample number
 
         """
-        print "OSC frame:",path,args,source
-        pass
+        self.m_field.m_samp = args[0]
+        #print "OSC: frame:",args
+        self.m_field.fullStatus()
 
     def event_tracking_stop(self, path, tags, args, source):
         """Tracking has stopped."""
-        print "OSC stop:",path,args,source
-        pass
+        print "OSC: stop:",args
 
 if __name__ == "__main__":
-
-    # initialize field
-    field = visualsys.Field()
-    # initialize pyglet 
-    field.initScreen()
-
-    def on_draw():
-        start = time.clock()
-        field.calcDistances()
-        field.resetPathGrid()
-        field.pathScoreCells()
-        for connector in field.m_connector_dict.values():
-            connector.addPath(field.findPath(connector))
-        field.m_screen.clear()
-        field.renderAll()
-        field.drawAll()
-        #print "draw loop in",(time.clock() - start)*1000,"ms"
-
-    field.m_screen.on_draw = on_draw
-    #visualsys.pyglet.app.run()
 
     osc = OSCHandler(field)
     # simulate a "game engine"
     while osc.m_run:
-        # do the game stuff:
-        #for window in visualsys.pyglet.app.windows:
-        field.m_screen.switch_to()
-        field.m_screen.dispatch_events()
-        field.m_screen.dispatch_event('on_draw')
-        field.m_screen.flip()
+        # main loop
         # call user script
         osc.each_frame()
 

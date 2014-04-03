@@ -116,7 +116,7 @@ class Field(object):
         # add to the cell list
         self.m_cell_dict[id] = cell
 
-    def updateCell(self, id, p=(), r=0, orient=0, effects=None color=0):
+    def updateCell(self, id, p=(), r=0, orient=0, effects=None, color=0):
         if effects is None:
             effects = []
         cell = self.m_cell_dict[id]

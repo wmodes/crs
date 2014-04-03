@@ -25,24 +25,6 @@ oscport = 7010
 oschost = ""
 osctimeout = 0
 
-"""
-oscpath_ping = "/ping"
-oscpath_start = "/pf/started"
-oscpath_entry = "/pf/entry"
-oscpath_exit = "/pf/exit"
-oscpath_update = "/pf/update"
-oscpath_frame = "/pf/frame"
-oscpath_stop = "/pf/stopped"
-oscpath_set = "/pf/set/"
-oscpath_set_dict = {
-    "minx": "minx",
-    "maxx": "maxx",
-    "miny": "miny",
-    "maxy": "maxy",
-    "npeople": "npeople",
-}
-"""
-
 oscpath = {
     # Incoming OSC from the tracking subsys, pf=pulsefield
     'ping': "/ping",
@@ -63,4 +45,39 @@ oscpath = {
     'rollcall': "/conducter/rollcall",
     'event': "/conducter/event",
     'conx': "/conducter/conx",
+}
+
+osctype = {
+    'artifact':"artifact",
+    'entry':"entry",
+    'exit':"exit",
+    'fromcenter':"fromcenter",
+    'fromothers':"fromothers",
+    'x/y location':"x/y location",
+    'dance':"dance",
+    'fast':"fast",
+    'kinetic':"kinetic",
+    'lopside':"lopside",
+    'static':"static",
+    'interactive':"interactive",
+    'timelong':"timelong",
+    'timemed':"timemed",
+    'biggroup1':"biggroup1",
+    'biggroup2':"biggroup2",
+    'join':"join",
+    'unjoin':"unjoin",
+    'empty':"empty",
+    'rollcall':"rollcall",
+    'fission':"fission",
+    'fusion':"fusion",
+    'friends':"friends",
+    'grouped':"grouped",
+    'coord':"coord",
+    'fof':"fof",
+    'leastconx':"leastconx",
+    'mirror':"mirror",
+    'nearby':"nearby",
+    'strangers':"strangers",
+    'tag':"tag",
+    'irlbuds':"irlbuds",
 }

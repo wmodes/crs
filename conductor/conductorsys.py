@@ -43,6 +43,12 @@ T3 = "            "
 
 FREQ = {'regular':1, 'once':2, 'event':3, 'repeat':4, 'timed':5}
 
+OSCPORT = config.oscport
+OSCHOST = config.oschost if config.oschost else "localhost"
+OSCTIMEOUT = config.osctimeout
+OSCPATH = config.oscpath
+OSCTYPE = config.osctype
+
 # create logger
 logger = logging.getLogger(__appname__)
 logging.basicConfig(filename=LOGFILE,level=logging.DEBUG,
@@ -194,7 +200,7 @@ class Update(object):
     
     """
 
-    def __init__(self, update_mgr, freq, type, uid=0, uid2=0, gid=0, value=0, num=0):
+    def __init__(self, update_mgr, freq, type, uid=0, uid2=0, gid=0, value=0, max=0):
         self.m_update_mgr = update_mgr
         self.m_freq = freq
         self.m_type = type
@@ -202,7 +208,7 @@ class Update(object):
         self.m_uid2 = uid2
         self.m_gid = gid
         self.m_value = value
-        self.m_num = num
+        self.m_maxcount = max
         self.m_count = 0
 
         self.UPDATEFUNC = {
@@ -215,7 +221,6 @@ class Update(object):
             'lopside': self.update_lopside,
             'kinetic': self.update_kinetic,
             'interactive': self.update_interactive,
-            'timelong': self.update_timelong,
             'timelong': self.update_timelong,
             'biggroup1': self.update_biggroup1,
             'biggroup2': self.update_biggroup2,
@@ -231,96 +236,238 @@ class Update(object):
             'strangers': self.update_strangers,
             'tag': self.update_tag,
             'irlbuds': self.update_irlbuds,
+            'rollcall': self.update_rollcall,
         }
 
     def updateUpdate(self, value):
         self.m_value = value
 
     def killUpdate(self):
-        self.m_timer = 0
+        self.m_count = self.m_maxcount
 
     def sendUpdate(self):
         # for the "timed" freq, an update is sent at the start and end.
         # otherwise, we send an update everytime until the timer runs out
         # or the update is killed
         if self.m_freq == FREQ['timed'] and \
-             (self.m_count != 0 and self.m_count != self.m_num-1):
+             (self.m_count != 0 and self.m_count != self.m_maxcount-1):
             return
         UPDATEFUNC[self.m_type]()
 
     def update_artifact(self):
-        pass
+        """suspected artifact
+        Indication: Velocity drops to zero for several frames and other values 
+            don't change either
+        Interal: update sent
+        OSC: /attribute,"artifact",uid,1.0,time
+        """
+        print OSCPATH['attribute']+',"'+OSCTYPE['attribute']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_fromcenter(self):
+        """distance from center
+        Indication: Distance from geographic center of people
+        Internal: Geographical center computed each frame, distance computed;
+            update send
+        OSC: /attribute,"fromcenter",uid,distance
+        """
         pass
 
     def update_fromothers(self):
+        """distance from others
+        Indication: Distance from nearest other people
+        Internal: Smallest value taken from column of distance matrix; update
+            sent
+        OSC: /attribute,"fromothers",uid,distance
+        """
         pass
 
     def update_dance(self):
+        """Person dancing to the music
+        Indication: Motion tempo matches music tempo
+        Internal: data added to person's record; update sent
+        OSC: /attribute,"dance",uid,1.0,time
+        """
         pass
 
     def update_speed(self):
+        """Fast traversal
+        Indication: Person has high average speed and high average velocity
+        Internal: data added to person's record; update sent
+        OSC: /attribute,"speed",uid,1.0,time
+        """
         pass
 
     def update_kinetic(self):
+        """Kinetic movement
+        Indication: Person has high average speed and low average velocity
+        Internal: data added to person's record; update sent
+        OSC: /attribute,"kinetic",uid,1.0,time
+        """
         pass
 
     def update_lopside(self):
+        """unusual ratio between minor and major axis
+        Indication: Person has high ratio between major and minor axis
+        Internal: data added to person's record; update sent
+        OSC: /attribute,"lopside",uid,1.0,time
+        """
         pass
 
     def update_kinetic(self):
+        """Stationary movement
+        Indication: Person has low average speed and low average velocity
+        Internal: data added to person's record; update sent
+        OSC: /attribute,"kinetic",uid,0.0,time
+        """
         pass
 
     def update_interactive(self):
+        """Super interactive, lots of interaction over time
+        Indication: Person has high count of interactions
+        Internal: data added to person's record; update sent
+        OSC: /attribute,"interactive",uid,1.0,time
+        """
         pass
 
     def update_timelong(self):
-        pass
-
-    def update_timelong(self):
+        """Longtime in space
+        Indication: Length of time in space is larger than threshold
+        Internal: data added to person's record; update sent
+        OSC: /attribute,"timelong",uid,1.0,time
+        """
         pass
 
     def update_biggroup1(self):
+        """Group threshold1
+        Indication: Group size reaches threashold size
+        Internal: update sent
+        OSC: /attribute,"biggroup1",uid,1.0,time
+        """
         pass
 
     def update_biggroup2(self):
+        """Group threshold2
+        Indication: Group size reaches threashold size
+        Internal: update sent
+        OSC: /attribute,"biggroup2",uid,1.0,time
+        """
         pass
 
     def update_fision(self):
+        """Persons increase distance during cell collision
+        Indication: Centers plus radii overlap with increasing distance
+        Internal: relationship data updated; connector created; update sent
+        OSC: /event,"fision",uid1,uid2,1.0
+        """
         pass
 
     def update_fusion(self):
+        """Persons decrease distance during cell collision
+        Indication: Centers plus radii overlap with decreasing distance
+        Internal: relationship data updated; update sent
+        OSC: /event,"fusion",uid1,uid2,1.0
+        """
         pass
 
     def update_friends(self):
+        """People appear to be friendly
+        Indication: Stood close together for some time
+        Internal: data added to person's record; new connector created; update
+            sent
+        notification
+        OSC: /conx,"friends",uid1,uid2,1.0
+        """
         pass
 
     def update_grouped(self):
+        """People were grouped together recently
+        Indication: Were part of a group together
+        Internal: data added to person's record; new connector created; update
+            sent
+        OSC: /conx,"grouped",uid1,uid2,1.0
+        """
         pass
 
     def update_coord(self):
+        """Coordinated movement
+        Indication: Two people have similar avg speed and avg velocity
+        Internal: data added to person's record; new connector created; update
+            sent
+        OSC: /conx,"coord",uid1,uid2,1.0
+        """
         pass
 
     def update_fof(self):
+        """Friend of a friend
+        Indication: Two people who share a connection with another
+        Internal: data added to person's record; new connector created; update
+            sent
+        OSC: /conx,"fof",uid1,uid2,1.0
+        """
         pass
 
     def update_leastconx(self):
+        """Least connected
+        Indication: Two people who have no or the longest chain of connections
+        Internal: data added to person's record; new connector created; update
+            sent
+        notification
+        OSC: /conx,"leastconx",uid1,uid2,1.0
+        """
         pass
 
     def update_mirror(self):
+        """Coordinated movment mirrorwise
+        Indication: Two people have similar avg speed and avg velocity but 
+            opposite current velocity
+        Internal: data added to person's record; new connector created; update
+            sent
+        OSC: /conx,"mirror",uid1,uid2,1.0
+        """
         pass
 
     def update_nearby(self):
+        """Neighbors
+        Indication: Two people who are merely near each other
+        Internal: data added to person's record; new connector created; update
+            sent
+        OSC: /conx,"nearby",uid1,uid2,1.0
+        """
         pass
 
     def update_strangers(self):
+        """Don't know each other
+        Indication: No connections have been made between these people yet
+        Internal: new connector created; update sent
+        OSC: /conx,"strangers",uid1,uid2,1.0
+        """
         pass
 
     def update_tag(self):
+        """Possible touch or tag
+        Indication: high speed approach someone, enter their space, high 
+            speed withdrawl
+        Internal: data added to person's record; new connector created; update
+            sent
+        OSC: /conx,"tag",uid1,uid2,1.0
+        """
         pass
 
     def update_irlbuds(self):
+        """In Real Life friends
+        Indication: Entered field near each other
+        Internal: data added to person's record; update sent
+        OSC: /conx,"irlbuds",uid1,uid2,1.0
+        """
+        pass
+
+    def update_rollcall(self):
+        """People highlighted in field
+        Indication: Depends on scene
+        Internal: Conductor lists actively highlighted cells; update sent
+        OSC: /rollcall [list of uids]
+        """
         pass
 
 
@@ -329,17 +476,17 @@ class UpdateMgr(object):
 
     Kind of updates (freq):
     * Regular updates (rollcall, fromcenter, fromothers)
-        time = -1
+        maxcount = 0
     * Report once when event happens (artifact, biggroup, empty)
-        time = 1
+        maxcount = 1
     * Event reported repeatedly until event ends (fission, fusion)
-        time = -1
+        maxcount = 0
     * Report start and repeatedly until behavior ends (fast, kinetic, artifact)
-        time = -1
+        maxcount = 0
     * Report start and when timer end (friends, groups, coord)
-        time = timer_value
+        maxcount = timer_value
     * Report start, when timer ends, & occ revisit (interactive, timelong, irlbuds)
-        time = timer_value
+        maxcount = timer_value
 
     """
 
@@ -352,15 +499,13 @@ class UpdateMgr(object):
 
     def countUpdates(self):
         for i in self.m_active_updates:
-            # if counter hasn't reached max num
-            if i.m_count >= i.m_num:
+            # increase the count
+            m_count += 1
+            # if not perpetual update and counter has reached max num
+            # TODO: Double check for off-by-one errror here
+            if i.m_maxcount > 0 and i.m_count >= i.m_maxcount:
                 # remove update
                 self.m_active_updates.remove(i)
-            # and if it is not negative
-            elif i.m_count > 0:
-                # increase the count
-                m_count += 1
-            # else timer is negative and doesn't expire
 
 
 # Basic data elements

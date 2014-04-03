@@ -116,7 +116,9 @@ class Field(object):
         # add to the cell list
         self.m_cell_dict[id] = cell
 
-    def updateCell(self, id, p=(), r=0, orient=0, effects=[], color=0):
+    def updateCell(self, id, p=(), r=0, orient=0, effects=None color=0):
+        if effects is None:
+            effects = []
         cell = self.m_cell_dict[id]
         cell.update(p, r, orient, effects, color)
 
@@ -167,7 +169,7 @@ class Field(object):
     def renderConnector(self,connector):
         connector.render()
 
-    def drawConnector(self,cell):
+    def drawConnector(self,connector):
         connector.draw()
 
     def renderAllConnectors(self):
@@ -413,10 +415,13 @@ class GraphElement(object):
 
     """
 
-    def __init__(self,field,effects=[], color=DEF_LINECOLOR):
+    def __init__(self,field,effects=None, color=DEF_LINECOLOR):
+        if effects is None:
+            effects = []
         self.m_field=field
         self.m_leffects=effects
         self.m_color=color
+        self.m_shape = object
         # TODO: init points, index, color
 
     def addEffects(self, effects):
@@ -446,8 +451,10 @@ class Cell(GraphElement):
     """
 
     def __init__(self, field, id, p=(), r=DEF_RADIUS, orient=DEF_ORIENT,
-            effects=[], color=DEF_LINECOLOR):
+            effects=None, color=DEF_LINECOLOR):
         """Store basic info and create a GraphElement object"""
+        if effects is None:
+            effects = []
         self.m_id = id
         self.m_location = p
         self.m_blob_radius = r
@@ -458,7 +465,7 @@ class Cell(GraphElement):
         self.m_connector_dict = {}
         GraphElement.__init__(self,field,effects,color)
 
-    def update(self, p=(), r=0, orient=0, effects=[], color=0):
+    def update(self, p=(), r=0, orient=0, effects=None, color=0):
         """Store basic info and create a GraphElement object"""
         if p:
             self.m_location = p
@@ -467,7 +474,7 @@ class Cell(GraphElement):
             self.m_radius = r*RAD_PAD
         if orient:
             self.m_oriend = orient
-        if effects:
+        if effects is not None:
             self.m_leffects = effects
         if color:
             self.m_color = color
@@ -544,8 +551,10 @@ class Connector(GraphElement):
 
     """
 
-    def __init__(self, field, id, cell0, cell1, effect=[], color=DEF_LINECOLOR):
+    def __init__(self, field, id, cell0, cell1, effect=None, color=DEF_LINECOLOR):
         """Store basic info and create a GraphElement object"""
+        if effect is None:
+            effect = []
         self.m_id = id
         # store the cells we are connected to
         self.m_cell0 = cell0
@@ -596,6 +605,7 @@ class Connector(GraphElement):
         # delete cells ref'd from this connector
         #self.m_cell0 = None
         #self.m_cell1 = None
+
 
 # graphic primatives
 

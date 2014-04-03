@@ -160,7 +160,7 @@ class Field(object):
     def delConnector(self,id):
         if id in self.m_connector_dict:
             # delete the connector in the cells attached to the connector
-            self.m_connectior_dict[id].conxDisconnect()
+            self.m_connector_dict[id].conxDisconnect()
             # delete from the connector list
             del self.m_connector_dict[id]
 
@@ -420,9 +420,9 @@ class GraphElement(object):
         # TODO: init points, index, color
 
     def addEffects(self, effects):
-        self.m_leffect += effects
+        self.m_leffects += effects
         
-    def applyEffects():
+    def applyEffects(self):
         pass
 
     def draw(self):

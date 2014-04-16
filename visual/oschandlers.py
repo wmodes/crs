@@ -11,7 +11,7 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-__appname__ = "osc.py"
+__appname__ = "oschandlers.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -32,14 +32,7 @@ import visualsys
 OSCPORT = config.oscport
 OSCHOST = config.oschost if config.oschost else "localhost"
 OSCTIMEOUT = config.osctimeout
-OSCPATH_START = config.oscpath_start
-OSCPATH_ENTRY = config.oscpath_entry
-OSCPATH_EXIT = config.oscpath_exit
-OSCPATH_UPDATE = config.oscpath_update
-OSCPATH_FRAME = config.oscpath_frame
-OSCPATH_STOP = config.oscpath_stop
-OSCPATH_SET = config.oscpath_set
-OSCPATH_SET_DICT = config.oscpath_set_dict
+OSCPATH = config.oscpath
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
@@ -62,21 +55,44 @@ class OSCHandler(object):
         self.m_xmax = 0
         self.m_ymax = 0
 
+        self.EVENTFUNC = {
+            'ping': self.event_tracking_ping,
+            'start': self.event_tracking_start,
+            'stop': self.event_tracking_stop,
+            'entry': self.event_tracking_entry,
+            'exit': self.event_tracking_exit,
+            'update': self.event_tracking_update,
+            'frame': self.event_tracking_frame,
+            'minx': self.event_tracking_set,
+            'miny': self.event_tracking_set,
+            'maxx': self.event_tracking_set,
+            'maxy': self.event_tracking_set,
+            'npeople': self.event_tracking_set,
+        }
+
         # add a method to an instance of the class
         import types
         self.m_server.handle_timeout = types.MethodType(handle_timeout, self.m_server)
 
-        self.m_server.addMsgHandler(OSCPATH_START, self.event_tracking_start)
-        self.m_server.addMsgHandler(OSCPATH_ENTRY, self.event_tracking_entry)
-        self.m_server.addMsgHandler(OSCPATH_EXIT, self.event_tracking_exit)
-        self.m_server.addMsgHandler(OSCPATH_UPDATE, self.event_tracking_update)
-        self.m_server.addMsgHandler(OSCPATH_FRAME, self.event_tracking_frame)
-        self.m_server.addMsgHandler(OSCPATH_STOP, self.event_tracking_stop)
-        for post in OSCPATH_SET_DICT:
-            self.m_server.addMsgHandler(OSCPATH_SET+OSCPATH_SET_DICT[post],
-                                        self.event_tracking_set)
+        for i in self.EVENTFUNC:
+            self.m_server.addMsgHandler(OSCPATH[i], self.EVENTFUNC[i])
 
-    # user script that's called by the game engine every frame
+        # this registers a 'default' handler (for unmatched messages), 
+        # an /'error' handler, an '/info' handler.
+        # And, if the client supports it, a '/subscribe' &
+        # '/unsubscribe' handler
+        self.m_server.addDefaultHandlers()
+        self.m_server.addMsgHandler("default", self.default_handler)
+        # TODO: Handle errors from OSCServer
+        #self.m_server.addErrorHandlers()
+        #self.m_server.addMsgHandler("error", self.default_handler)
+        self.honey_im_home()
+
+    def honey_im_home(self):
+        """Broadcast a hello message to the network."""
+        # TODO: Broadcast hello message
+        return True
+
     def each_frame(self):
         # clear timed_out flag
         self.m_server.timed_out = False
@@ -98,6 +114,13 @@ class OSCHandler(object):
         self.m_run = False
 
     # Event handlers
+
+    def default_handler(self, path, tags, args, source):
+        #print "OSC: No handler registered for ", path
+        return None
+
+    def event_tracking_ping(self, path, tags, args, source):
+        return None
 
     def event_tracking_start(self, path, tags, args, source):
         """Tracking system is starting.
@@ -121,26 +144,33 @@ class OSCHandler(object):
             npeople - number of people currently present
 
         """
-        split = path.split("/")
-        param = split.pop()
-        print "OSC set:",path,param,args,source
-        if param == OSCPATH_SET_DICT['minx']:
+        print "OSC set:",path,args,source
+        if path == OSCPATH['minx']:
             self.m_xmin = int(100*args[0])
-        elif param == OSCPATH_SET_DICT['miny']:
+            # we might not have everything yet, but we udate with what we have
+            self.m_field.updateScaling(pmin_field=(self.m_xmin,self.m_ymin))
+        elif path == OSCPATH['miny']:
             self.m_ymin = int(100*args[0])
-        elif param == OSCPATH_SET_DICT['maxx']:
+            # we might not have everything yet, but we udate with what we have
+            self.m_field.updateScaling(pmin_field=(self.m_xmin,self.m_ymin))
+        elif path == OSCPATH['maxx']:
             self.m_xmax = int(100*args[0])
-        elif param == OSCPATH_SET_DICT['maxy']:
+            # we might not have everything yet, but we udate with what we have
+            self.m_field.updateScaling(pmax_field=(self.m_xmax,self.m_ymax))
+        elif path == OSCPATH['maxy']:
             self.m_ymax = int(100*args[0])
-        elif param == OSCPATH_SET_DICT['npeople']:
+            # we might not have everything yet, but we udate with what we have
+            self.m_field.updateScaling(pmax_field=(self.m_xmax,self.m_ymax))
+        elif path == OSCPATH['npeople']:
             pass
         else:
             pass
-        print "setting xmin:",self.m_xmin,"ymin:",self.m_ymin,"xmax:",self.m_xmax,"ymax:",self.m_ymax
-        if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
+        print "updateScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
+        self.m_field.updateScreen()
+        """if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
             print "updateScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             self.m_field.updateScaling((self.m_xmin,self.m_ymin),(self.m_xmax,self.m_ymax))
-            self.m_field.updateScreen()
+            self.m_field.updateScreen()"""
             
 
     def event_tracking_entry(self, path, tags, args, source):
@@ -156,7 +186,7 @@ class OSCHandler(object):
 
         """
         print "OSC entry:",path,args,source
-        print "args:",args,args[0],args[1],args[2]
+        #print "args:",args,args[0],args[1],args[2]
         sample = args[0]
         time = args[1]
         id = args[2]
@@ -175,11 +205,11 @@ class OSCHandler(object):
         sample = args[0]
         time = args[1]
         id = args[2]
-        print "BEFORE: cells:",self.m_field.m_cell_dict
-        print "BEFORE: conx:",self.m_field.m_connector_dict
+        #print "BEFORE: cells:",self.m_field.m_cell_dict
+        #print "BEFORE: conx:",self.m_field.m_connector_dict
         self.m_field.delCell(id)
-        print "AFTER: cells:",self.m_field.m_cell_dict
-        print "AFTER: conx:",self.m_field.m_connector_dict
+        #print "AFTER: cells:",self.m_field.m_cell_dict
+        #print "AFTER: conx:",self.m_field.m_connector_dict
 
     def event_tracking_update(self, path, tags, args, source):
         """Information about people's movement within field.
@@ -197,13 +227,18 @@ class OSCHandler(object):
             channel - channel number assigned
 
         """
-        #print "OSC update:",path,args,source
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = 0
         samp = args[0]
         time = args[1]
         id = args[2]
+        # TODO: Create cell if we don't have a record of it
+        # TODO: If npeople doesn't match our record of how many people, we drop
+        # them all and let the above functionality handle them
+        if id not in self.m_field.m_cell_dict:
+            print "Error: no id",id,"in registered id list"
+            return False
         x = int(100*args[3])       # comes in meters, convert to cm
         y = int(100*args[4])
         vx = int(100*args[5])
@@ -213,6 +248,9 @@ class OSCHandler(object):
         gid = args[9]
         gsize = args[10]
         channel = args[11]
+        #print "OSC update:",path,args,source
+        if samp%50 == 0:
+            print "OSC update:",path,args,source
         # TODO: if gid is not equal to 0 than we have a grouping, we need to
         # stop mapping the cell(s) that are not getting updated in new frames
         # alternately, we can just turn all cells invisible each frame and then
@@ -227,6 +265,7 @@ class OSCHandler(object):
         #   /pf/update 410 28.8 4 0.9 -1.0 -0.2 -2.4 nan nan 1 2 4
         #   /pf/update 411 28.8 4 0.9 -1.0 nan nan nan nan 1 2 4
         #   /pf/update 412 29.0 4 0.9 -1.0 nan nan nan nan 1 2 4
+        #print "OSC update: Done"
 
     def event_tracking_frame(self, path, tags, args, source):
         """New frame event.
@@ -235,13 +274,13 @@ class OSCHandler(object):
             samp - sample number
 
         """
-        print "OSC frame:",path,args,source
-        pass
+        #print "OSC frame:",path,args,source
+        return None
 
     def event_tracking_stop(self, path, tags, args, source):
         """Tracking has stopped."""
         print "OSC stop:",path,args,source
-        pass
+        return None
 
 if __name__ == "__main__":
 

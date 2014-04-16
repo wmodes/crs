@@ -252,7 +252,7 @@ class Update(object):
         if self.m_freq == FREQ['timed'] and \
              (self.m_count != 0 and self.m_count != self.m_maxcount-1):
             return
-        UPDATEFUNC[self.m_type]()
+        self.UPDATEFUNC[self.m_type]()
 
     def update_artifact(self):
         """suspected artifact
@@ -271,6 +271,12 @@ class Update(object):
             update send
         OSC: /attribute,"fromcenter",uid,distance
         """
+        # TODO: In each frame write the locations of all cells to x and y numpy
+        # arrays within the field object. That allows us to do things like find
+        # center rapidly
+        # TODO: the center is the avg of the x & y coords, then we calc
+        # distance from that center
+        # ...but do we have access to vars stored in field from here?
         pass
 
     def update_fromothers(self):
@@ -280,6 +286,9 @@ class Update(object):
             sent
         OSC: /attribute,"fromothers",uid,distance
         """
+        # TODO: In each frame we compute a distance matrix as a numpy array
+        # within the field object
+        # TODO: Here we find the lowest value along the matching column (or row)
         pass
 
     def update_dance(self):
@@ -288,7 +297,9 @@ class Update(object):
         Internal: data added to person's record; update sent
         OSC: /attribute,"dance",uid,1.0,time
         """
-        pass
+        # TODO: What does the value here represent? The amount of "Dancey-ness?"
+        print OSCPATH['dance']+',"'+OSCTYPE['dance']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_speed(self):
         """Fast traversal
@@ -296,7 +307,9 @@ class Update(object):
         Internal: data added to person's record; update sent
         OSC: /attribute,"speed",uid,1.0,time
         """
-        pass
+        # TODO: What does the value here represent? 
+        print OSCPATH['speed']+',"'+OSCTYPE['speed']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_kinetic(self):
         """Kinetic movement
@@ -304,7 +317,9 @@ class Update(object):
         Internal: data added to person's record; update sent
         OSC: /attribute,"kinetic",uid,1.0,time
         """
-        pass
+        # TODO: What does the value here represent? 
+        print OSCPATH['kinetic']+',"'+OSCTYPE['kinetic']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_lopside(self):
         """unusual ratio between minor and major axis
@@ -312,15 +327,9 @@ class Update(object):
         Internal: data added to person's record; update sent
         OSC: /attribute,"lopside",uid,1.0,time
         """
-        pass
-
-    def update_kinetic(self):
-        """Stationary movement
-        Indication: Person has low average speed and low average velocity
-        Internal: data added to person's record; update sent
-        OSC: /attribute,"kinetic",uid,0.0,time
-        """
-        pass
+        # TODO: What does the value here represent? 
+        print OSCPATH['lopside']+',"'+OSCTYPE['lopside']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_interactive(self):
         """Super interactive, lots of interaction over time
@@ -328,7 +337,9 @@ class Update(object):
         Internal: data added to person's record; update sent
         OSC: /attribute,"interactive",uid,1.0,time
         """
-        pass
+        # TODO: What does the value here represent? 
+        print OSCPATH['interactive']+',"'+OSCTYPE['interactive']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_timelong(self):
         """Longtime in space
@@ -336,7 +347,9 @@ class Update(object):
         Internal: data added to person's record; update sent
         OSC: /attribute,"timelong",uid,1.0,time
         """
-        pass
+        # TODO: What does the value here represent? 
+        print OSCPATH['timelong']+',"'+OSCTYPE['timelong']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_biggroup1(self):
         """Group threshold1
@@ -344,7 +357,9 @@ class Update(object):
         Internal: update sent
         OSC: /attribute,"biggroup1",uid,1.0,time
         """
-        pass
+        # TODO: What does the value here represent? 
+        print OSCPATH['biggroup1']+',"'+OSCTYPE['biggroup1']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_biggroup2(self):
         """Group threshold2
@@ -352,7 +367,9 @@ class Update(object):
         Internal: update sent
         OSC: /attribute,"biggroup2",uid,1.0,time
         """
-        pass
+        # TODO: What does the value here represent? 
+        print OSCPATH['biggroup2']+',"'+OSCTYPE['biggroup2']+'",'+\
+            str(self.m_uid)+",1.0,"+self.m_count
 
     def update_fision(self):
         """Persons increase distance during cell collision
@@ -360,7 +377,8 @@ class Update(object):
         Internal: relationship data updated; connector created; update sent
         OSC: /event,"fision",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['fission']+',"'+OSCTYPE['fission']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_fusion(self):
         """Persons decrease distance during cell collision
@@ -368,7 +386,8 @@ class Update(object):
         Internal: relationship data updated; update sent
         OSC: /event,"fusion",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['fusion']+',"'+OSCTYPE['fusion']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_friends(self):
         """People appear to be friendly
@@ -378,7 +397,8 @@ class Update(object):
         notification
         OSC: /conx,"friends",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['friends']+',"'+OSCTYPE['friends']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_grouped(self):
         """People were grouped together recently
@@ -387,7 +407,8 @@ class Update(object):
             sent
         OSC: /conx,"grouped",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['grouped']+',"'+OSCTYPE['grouped']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_coord(self):
         """Coordinated movement
@@ -396,7 +417,8 @@ class Update(object):
             sent
         OSC: /conx,"coord",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['coord']+',"'+OSCTYPE['coord']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_fof(self):
         """Friend of a friend
@@ -405,7 +427,8 @@ class Update(object):
             sent
         OSC: /conx,"fof",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['fof']+',"'+OSCTYPE['fof']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_leastconx(self):
         """Least connected
@@ -415,7 +438,8 @@ class Update(object):
         notification
         OSC: /conx,"leastconx",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['leastconx']+',"'+OSCTYPE['leastconx']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_mirror(self):
         """Coordinated movment mirrorwise
@@ -425,7 +449,8 @@ class Update(object):
             sent
         OSC: /conx,"mirror",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['mirror']+',"'+OSCTYPE['mirror']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_nearby(self):
         """Neighbors
@@ -434,7 +459,8 @@ class Update(object):
             sent
         OSC: /conx,"nearby",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['nearby']+',"'+OSCTYPE['nearby']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_strangers(self):
         """Don't know each other
@@ -442,7 +468,8 @@ class Update(object):
         Internal: new connector created; update sent
         OSC: /conx,"strangers",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['strangers']+',"'+OSCTYPE['strangers']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_tag(self):
         """Possible touch or tag
@@ -450,9 +477,9 @@ class Update(object):
             speed withdrawl
         Internal: data added to person's record; new connector created; update
             sent
-        OSC: /conx,"tag",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['tag']+',"'+OSCTYPE['tag']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_irlbuds(self):
         """In Real Life friends
@@ -460,7 +487,8 @@ class Update(object):
         Internal: data added to person's record; update sent
         OSC: /conx,"irlbuds",uid1,uid2,1.0
         """
-        pass
+        print OSCPATH['irlbuds']+',"'+OSCTYPE['irlbuds']+'",'+\
+            str(self.m_uid)+","+str(self.m_uid2)+",1.0,"+self.m_count
 
     def update_rollcall(self):
         """People highlighted in field
@@ -468,7 +496,7 @@ class Update(object):
         Internal: Conductor lists actively highlighted cells; update sent
         OSC: /rollcall [list of uids]
         """
-        pass
+        print OSCPATH['rollcall']+',"'+OSCTYPE['rollcall']+'",'
 
 
 class UpdateMgr(object):

@@ -34,18 +34,6 @@ OSCHOST = config.oschost if config.oschost else "localhost"
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
 
-"""
-OSCPATH_PING = config.oscpath_ping
-OSCPATH_START = config.oscpath_start
-OSCPATH_ENTRY = config.oscpath_entry
-OSCPATH_EXIT = config.oscpath_exit
-OSCPATH_UPDATE = config.oscpath_update
-OSCPATH_FRAME = config.oscpath_frame
-OSCPATH_STOP = config.oscpath_stop
-OSCPATH_SET = config.oscpath_set
-OSCPATH_SET_DICT = config.oscpath_set_dict
-"""
-
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
 # set to False

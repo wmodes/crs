@@ -37,6 +37,7 @@ import pathfinder
 from gridmap import GridMap
 from pathfinder import PathFinder
 import bezier
+import oschandlers
 
 
 # constants
@@ -45,22 +46,28 @@ DEF_RADIUS = config.default_radius
 DEF_ORIENT = config.default_orient
 DEF_LINECOLOR = config.default_linecolor
 DEF_BLOBCOLOR = config.default_blobcolor
+DEF_GUIDECOLOR = config.default_guidecolor
 DEF_BKGDCOLOR = config.default_bkgdcolor
 DRAW_BLOBS = config.draw_blobs
 
 RAD_PAD = config.radius_padding     # increased radius of circle around blobs
 CURVE_SEGS = config.curve_segments  # number of line segs in a curve
 
-XMIN = config.xmin
-YMIN = config.ymin
-XMAX = config.xmax
-YMAX = config.ymax
-MIN_LASER = config.min_laser
-MAX_LASER = config.max_laser
-MIN_SCREEN = config.min_screen
-MAX_SCREEN = config.max_screen
+XMIN_FIELD = config.xmin_field
+YMIN_FIELD = config.ymin_field
+XMAX_FIELD = config.xmax_field
+YMAX_FIELD = config.ymax_field
+XMIN_VECTOR = config.xmin_vector
+YMIN_VECTOR = config.ymin_vector
+XMAX_VECTOR = config.xmax_vector
+YMAX_VECTOR = config.ymax_vector
+XMIN_SCREEN = config.xmin_screen
+YMIN_SCREEN = config.ymin_screen
+XMAX_SCREEN = config.xmax_screen
+YMAX_SCREEN = config.ymax_screen
+DEF_MARGIN = config.default_margin
 MODE_SCREEN = 0
-MODE_LASER = 1
+MODE_VECTOR = 1
 PATH_UNIT = config.path_unit
 BLOCK_FUZZ = config.fuzzy_area_for_cells
 
@@ -85,27 +92,57 @@ class Field(object):
         self.m_cell_dict = {}
         self.m_connector_dict = {}
         #self.allpaths = []
-        self.initScaling((XMIN,YMIN), (XMAX,YMAX), 
-                         (MIN_LASER,MIN_LASER), (MAX_LASER,MAX_LASER), 
-                         (MIN_SCREEN,MIN_SCREEN), (MAX_SCREEN,MAX_SCREEN), 
+        self.initScaling((XMIN_FIELD,YMIN_FIELD), (XMAX_FIELD,YMAX_FIELD), 
+                         (XMIN_VECTOR,YMIN_VECTOR), (XMAX_VECTOR,YMAX_VECTOR), 
+                         (XMIN_SCREEN,YMIN_SCREEN), (XMAX_SCREEN,YMAX_SCREEN), 
                          PATH_UNIT, MODE_SCREEN)
         self.makePathGrid()
 
     def initScreen(self):
         # initialize pyglet 
-        (xmax,ymax) = self.screenMax()
-        self.m_screen = pyglet.window.Window(width=xmax,height=ymax)
+        #(xmax_screen,ymax_screen) = self.screenMax()
+        #self.m_screen = pyglet.window.Window(width=xmax_screen,height=ymax_screen)
+        width = self.m_xmax_screen - self.m_xmin_screen
+        height = self.m_ymax_screen - self.m_ymin_screen
+        self.m_screen = pyglet.window.Window(width=width,height=height)
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
         pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
 
     def updateScreen(self):
         # initialize pyglet 
-        (xmax,ymax) = self.screenMax()
-        self.m_screen.set_size(xmax, ymax)
+        #(xmax_screen,ymax_screen) = self.screenMax()
+        width = self.m_xmax_screen - self.m_xmin_screen
+        height = self.m_ymax_screen - self.m_ymin_screen
+        self.m_screen.set_size(width, height)
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
         pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+
+    # Guides
+
+    def drawGuides(self):
+        # draw boundaries of field (if in screen mode)
+        if self.m_output_mode == MODE_SCREEN:
+            pyglet.gl.glColor3f(DEF_GUIDECOLOR[0],DEF_GUIDECOLOR[1],DEF_GUIDECOLOR[2])
+            points = [(self.m_xmin_field,self.m_ymin_field),
+                      (self.m_xmin_field,self.m_ymax_field),
+                      (self.m_xmax_field,self.m_ymax_field),
+                      (self.m_xmax_field,self.m_ymin_field)]
+            #print "boundary points (field):",points
+            index = [0,1,1,2,2,3,3,0]
+            screen_pts = self.rescale_pt2out(points)
+            #print "boundary points (screen):",screen_pts
+            #print "proc screen_pts:",tuple(chain(*screen_pts))
+            pyglet.graphics.draw_indexed(len(screen_pts), pyglet.gl.GL_LINES,
+                index,
+                ('v2i',tuple(chain(*screen_pts))),
+            )
+            #point = (self.m_xmin_field,self.m_ymin_field)
+            #radius = self.rescale_num2out(DEF_RADIUS)
+            #shape = Circle(self,point,radius,DEF_LINECOLOR,solid=False)
+            #shape.render()
+            #shape.draw()
 
     # Cells
 
@@ -116,7 +153,7 @@ class Field(object):
         # add to the cell list
         self.m_cell_dict[id] = cell
 
-    def updateCell(self, id, p=(), r=0, orient=0, effects=None, color=0):
+    def updateCell(self, id, p=None, r=None, orient=None, effects=None, color=None):
         if effects is None:
             effects = []
         cell = self.m_cell_dict[id]
@@ -191,6 +228,7 @@ class Field(object):
         """Draw all the cells and connectors."""
         self.drawAllCells()
         self.drawAllConnectors()
+        self.drawGuides()
 
     # Distances - TODO: temporary -- this info will come from the conduction subsys
 
@@ -223,8 +261,8 @@ class Field(object):
     def makePathGrid(self):
         # for our pathfinding, we're going to overlay a grid over the field with
         # squares that are sized by a constant in the config file
-        self.path_grid = GridMap(self.scale2path(self.m_xmax),
-                                 self.scale2path(self.m_ymax))
+        self.path_grid = GridMap(self.scale2path(self.m_xmax_field),
+                                 self.scale2path(self.m_ymax_field))
         self.pathfinder = PathFinder(self.path_grid.successors, self.path_grid.move_cost, 
                                      self.path_grid.estimate)
 
@@ -283,8 +321,8 @@ class Field(object):
 
     # Scaling
 
-    def initScaling(self,pmin,pmax,pmin_laser,pmax_laser,
-                    pmin_screen,pmax_screen,path_unit,mode):
+    def initScaling(self, pmin_field, pmax_field, pmin_vector, pmax_vector,
+                    pmin_screen, pmax_screen, path_unit, mode):
         """Set up scaling in the field.
 
         A word about graphics scaling:
@@ -297,72 +335,129 @@ class Field(object):
          instead of floats), and then convert it to the appropriate units before 
          display depending on the output mode
         """
-        self.m_xmin = xmin = pmin[0]
-        self.m_ymin = ymin = pmin[1]
-        self.m_xmax = xmax = pmax[0]
-        self.m_ymax = ymax = pmax[1]
-        self.m_min_laser = min_laser = pmin_laser[0]
-        self.m_max_laser  = max_laser = pmax_laser[0]
-        self.m_min_screen = min_screen = pmin_screen[0]
-        self.m_max_screen = max_screen = pmax_screen[0]
-        self.m_mode = mode
+        self.m_xmin_field = xmin_field = pmin_field[0]
+        self.m_ymin_field = ymin_field = pmin_field[1]
+        self.m_xmax_field = xmax_field = pmax_field[0]
+        self.m_ymax_field = ymax_field = pmax_field[1]
+        self.m_xmin_vector = xmin_vector = pmin_vector[0]
+        self.m_ymin_vector = ymin_vector = pmin_vector[1]
+        self.m_xmax_vector = xmax_vector = pmax_vector[0]
+        self.m_ymax_vector = ymax_vector = pmax_vector[1]
+        self.m_xmin_screen = xmin_screen = pmin_screen[0]
+        self.m_ymin_screen = ymin_screen = pmin_screen[1]
+        self.m_xmax_screen = xmax_screen = pmax_screen[0]
+        self.m_ymax_screen = ymax_screen = pmax_screen[1]
         self.m_path_unit = path_unit
-        if xmax > ymax:
-            self.m_laser_scale = float(max_laser-min_laser)/(xmax-xmin)
-            self.m_screen_scale = float(max_screen-min_screen)/(xmax-xmin)
+        self.m_output_mode = mode
+
+        # in order to find out how to display this,
+        #   1) we find the aspect ratio (x/y) of the screen or vector (depending on the
+        #      mode). 
+        #   2) Then if the aspect ratio (x/y) of the reported field is greater, we
+        #      set the x axis to stretch to the edges of screen (or vector) and then use
+        #      that value to determine the scaling.
+        #   3) But if the aspect ratio (x/y) of the reported field is less than,
+        #      we set the y axis to stretch to the top and bottom of screen (or
+        #      vector) and use that value to determine the scaling.
+        if self.m_output_mode == MODE_SCREEN:
+            display_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
         else:
-            self.m_laser_scale = float(max_laser-min_laser)/(ymax-ymin)
-            self.m_screen_scale = float(max_screen-min_screen)/(ymax-ymin)
+            display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
+        field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
+        if field_aspect > display_aspect:
+            print "Longer in the x dimension"
+            self.m_vector_scale = \
+                float(xmax_vector-xmin_vector)/(xmax_field-xmin_field)
+            self.m_screen_scale = \
+                float(xmax_screen-xmin_screen-(DEF_MARGIN*2))/(xmax_field-xmin_field)
+            self.m_xmargin = DEF_MARGIN
+            self.m_ymargin = ((ymax_screen-ymin_screen)-int((ymax_field-ymin_field)*self.m_screen_scale)) / 2
+        else:
+            print "Longer in the y dimension"
+            self.m_vector_scale = \
+                float(ymax_vector-ymin_vector)/(ymax_field-ymin_field)
+            self.m_screen_scale = \
+                float(ymax_screen-ymin_screen-(DEF_MARGIN*2))/(ymax_field-ymin_field)
+            self.m_xmargin = ((xmax_screen-xmin_screen)-int((xmax_field-xmin_field)*self.m_screen_scale)) / 2
+            self.m_ymargin = DEF_MARGIN
         #print "path unit:",path_unit," path_scale:",float(1)/path_unit
         self.m_path_scale = float(1)/path_unit
-        #print "SCREEN SCALE:",self.m_screen_scale
-        #print "REAL SCALING:",(xmin,ymin),(xmax,ymax)
-        #print "SCREEN SCALING:",self.scale2out((xmin,ymin)),self.scale2out((xmax,ymax))
-        #print "SCREEN SCALING(alt):",self.screenMax()
+        #print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
+        #print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
+        #print "Screen scale:",self.m_screen_scale
+        #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
+        #print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
 
-    def updateScaling(self,pmin=0,pmax=0,pmin_laser=0,pmax_laser=0,
-                      pmin_screen=0,pmax_screen=0):
+    def updateScaling(self,pmin_field=None,pmax_field=None,pmin_vector=None,pmax_vector=None,
+                      pmin_screen=None,pmax_screen=None):
         """Update scaling in the field. """
-        if pmin:
-            self.m_xmin = pmin[0]
-            self.m_ymin = pmin[1]
-        if pmax:
-            self.m_xmax = pmax[0]
-            self.m_ymax = pmax[1]
-        if pmin_laser:
-            self.m_min_laser = pmin_laser[0]
-        if pmax_laser:
-            self.m_max_laser  = pmax_laser[0]
-        if pmin_screen:
-            self.m_min_screen = pmin_screen[0]
-        if pmax_screen:
-            self.m_max_screen = pmax_screen[0]
-        xmin = self.m_xmin
-        ymin = self.m_ymin
-        xmax = self.m_xmax
-        ymax = self.m_ymax
-        min_laser = self.m_min_laser
-        max_laser = self.m_max_laser
-        min_screen = self.m_min_screen
-        max_screen = self.m_max_screen
-        if xmax > ymax:
-            self.m_laser_scale = float(max_laser-min_laser)/(xmax-xmin)
-            self.m_screen_scale = float(max_screen-min_screen)/(xmax-xmin)
+        if pmin_field is not None:
+            self.m_xmin_field = pmin_field[0]
+            self.m_ymin_field = pmin_field[1]
+        if pmax_field is not None:
+            self.m_xmax_field = pmax_field[0]
+            self.m_ymax_field = pmax_field[1]
+        if pmin_vector is not None:
+            self.m_xmin_vector = pmin_vector[0]
+            self.m_ymin_vector = pmin_vector[1]
+        if pmax_vector is not None:
+            self.m_xmax_vector  = pmax_vector[0]
+            self.m_ymax_vector  = pmax_vector[1]
+        if pmin_screen is not None:
+            self.m_xmin_screen = pmin_screen[0]
+            self.m_ymin_screen = pmin_screen[1]
+        if pmax_screen is not None:
+            self.m_xmax_screen = pmax_screen[0]
+            self.m_ymax_screen = pmax_screen[1]
+        xmin_field = self.m_xmin_field
+        ymin_field = self.m_ymin_field
+        xmax_field = self.m_xmax_field
+        ymax_field = self.m_ymax_field
+        xmin_vector = self.m_xmin_vector
+        ymin_vector = self.m_ymin_vector
+        xmax_vector = self.m_xmax_vector
+        ymax_vector = self.m_ymax_vector
+        xmin_screen = self.m_xmin_screen
+        ymin_screen = self.m_ymin_screen
+        xmax_screen = self.m_xmax_screen
+        ymax_screen = self.m_ymax_screen
+        
+        if self.m_output_mode == MODE_SCREEN:
+            display_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
         else:
-            self.m_laser_scale = float(max_laser-min_laser)/(ymax-ymin)
-            self.m_screen_scale = float(max_screen-min_screen)/(ymax-ymin)
-        #print "SCREEN SCALE:",self.m_screen_scale
-        #print "REAL SCALING:",(xmin,ymin),(xmax,ymax)
-        #print "SCREEN SCALING:",self.scale2out((xmin,ymin)),self.scale2out((xmax,ymax))
-        #print "SCREEN SCALING(alt):",self.screenMax()
+            display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
+        field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
+        if field_aspect > display_aspect:
+            print "Longer in the x dimension"
+            self.m_vector_scale = \
+                float(xmax_vector-xmin_vector)/(xmax_field-xmin_field)
+            self.m_screen_scale = \
+                float(xmax_screen-xmin_screen-(DEF_MARGIN*2))/(xmax_field-xmin_field)
+            self.m_xmargin = DEF_MARGIN
+            self.m_ymargin = ((ymax_screen-ymin_screen)-int((ymax_field-ymin_field)*self.m_screen_scale)) / 2
+        else:
+            print "Longer in the y dimension"
+            self.m_vector_scale = \
+                float(ymax_vector-ymin_vector)/(ymax_field-ymin_field)
+            self.m_screen_scale = \
+                float(ymax_screen-ymin_screen-(DEF_MARGIN*2))/(ymax_field-ymin_field)
+            self.m_xmargin = ((xmax_screen-xmin_screen)-int((xmax_field-xmin_field)*self.m_screen_scale)) / 2
+            self.m_ymargin = DEF_MARGIN
+        #print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
+        #print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
+        #print "Screen scale:",self.m_screen_scale
+        #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
+        #print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
 
-    def laserMax(self):
-        return (int((self.m_xmax-self.m_xmin)*self.m_laser_scale) + self.m_min_laser,
-            int((self.m_ymax-self.m_ymin)*self.m_laser_scale) + self.m_min_laser)
+    """ TODO: kill this?
+    def vectorMax(self):
+        return (int((self.m_xmax_field-self.m_xmin_field)*self.m_vector_scale) + self.m_min_vector,
+            int((self.m_ymax_field-self.m_ymin_field)*self.m_vector_scale) + self.m_min_vector)
 
     def screenMax(self):
-        return (int((self.m_xmax-self.m_xmin)*self.m_screen_scale) + self.m_min_screen,
-            int((self.m_ymax-self.m_ymin)*self.m_screen_scale) + self.m_min_screen)
+        return (int((self.m_xmax_field-self.m_xmin_field)*self.m_screen_scale) + self.m_min_screen,
+            int((self.m_ymax_field-self.m_ymin_field)*self.m_screen_scale) + self.m_min_screen)
+    """
 
     def _convert(self,obj,scale,min1,min2):
         """Recursively converts numbers in an object.
@@ -385,19 +480,68 @@ class Field(object):
             return tuple(mylist)
 
     def scale2out(self,n):
-        """Convert internal unit (cm) to units usable for the laser or screen. """
-        if self.m_mode == MODE_SCREEN:
-            return self._convert(n,self.m_screen_scale,self.m_xmin,self.m_min_screen)
-        return self._convert(n,self.m_laser_scale,self.m_xmin,self.m_min_laser)
+        """Convert internal unit (cm) to units usable for the vector or screen. """
+        if self.m_output_mode == MODE_SCREEN:
+            return self._convert(n,self.m_screen_scale,self.m_xmin_field,self.m_xmin_screen)
+        return self._convert(n,self.m_vector_scale,self.m_xmin_field,self.m_xmin_vector)
 
     def scale2path(self,n):
         """Convert internal unit (cm) to units usable for pathfinding. """
-        return self._convert(n,self.m_path_scale,self.m_xmin,0)
+        return self._convert(n,self.m_path_scale,self.m_xmin_field,0)
 
     def path2scale(self,n):
         """Convert pathfinding units to internal unit (cm). """
         #print "m_path_scale",self.m_path_scale
-        return self._convert(n,1/self.m_path_scale,0,self.m_xmin)
+        return self._convert(n,1/self.m_path_scale,0,self.m_xmin_field)
+
+    def _rescale_pts(self,obj,scale,orig_pmin,new_pmin):
+        """Recursively rescales points or lists of points.
+
+        This function accepts single integers, tuples, lists, or combinations.
+
+        """
+        # if this is a point, rescale it
+        if isinstance(obj, tuple) and len(obj) == 2 and \
+           isinstance(obj[0], (int,float)) and isinstance(obj[1], (int,float)):
+            x = int((obj[0]-orig_pmin[0])*scale) + new_pmin[0]
+            y = int((obj[1]-orig_pmin[1])*scale) + new_pmin[1]
+            return (x,y)
+        # if this is a list, examine each element, return list
+        elif isinstance(obj, (list,tuple)):
+            mylist = []
+            for i in obj:
+                mylist.append(self._rescale_pts(i,scale,orig_pmin,new_pmin))
+            return mylist
+        # if this is a tuple, examine each element, return tuple
+        elif isinstance(obj, tuple):
+            mylist = []
+            for i in obj:
+                mylist.append(self._rescale_pts(i,scale,orig_pmin,new_pmin))
+            return tuple(mylist)
+        # otherwise, we don't know what to do with it, return it
+        # TODO: Consider throwing an exception
+        else:
+            print "ERROR: Can only rescale a point, not",obj
+            return obj
+
+    def rescale_pt2out(self,p):
+        """Convert coord in internal units (cm) to units usable for the vector or screen. """
+        orig_pmin = (self.m_xmin_field,self.m_ymin_field)
+        if self.m_output_mode == MODE_SCREEN:
+            scale = self.m_screen_scale
+            new_pmin = (self.m_xmin_screen+self.m_xmargin,self.m_ymin_screen+self.m_ymargin)
+        else:
+            scale = self.m_screen_vector
+            new_pmin = (self.m_xmin_vector,self.m_ymin_vector)
+        return self._rescale_pts(p,scale,orig_pmin,new_pmin)
+
+    def rescale_num2out(self,n):
+        """Convert num in internal units (cm) to units usable for the vector or screen. """
+        if self.m_output_mode == MODE_SCREEN:
+            scale = self.m_screen_scale
+        else:
+            scale = self.m_screen_vector
+        return n*scale
 
 
 class GraphElement(object):
@@ -465,18 +609,18 @@ class Cell(GraphElement):
         self.m_connector_dict = {}
         GraphElement.__init__(self,field,effects,color)
 
-    def update(self, p=(), r=0, orient=0, effects=None, color=0):
+    def update(self, p=None, r=None, orient=None, effects=None, color=None):
         """Store basic info and create a GraphElement object"""
-        if p:
+        if p is not None:
             self.m_location = p
-        if r:
+        if r is not None:
             self.m_blob_radius = r
             self.m_radius = r*RAD_PAD
-        if orient:
+        if orient is not None:
             self.m_oriend = orient
         if effects is not None:
             self.m_leffects = effects
-        if color:
+        if color is not None:
             self.m_color = color
 
     def setLocation(self, p):
@@ -660,11 +804,14 @@ class GraphicObject(object):
         #print "index:",self.m_index
         for i in range(len(self.m_index)):
             points = self.m_points[i]
+            #print "Points:",points
+            scaled_pts = self.m_field.rescale_pt2out(points)
+            #print "Scaled_pts:",scaled_pts
             index = self.m_index[i]
             pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
-            pyglet.graphics.draw_indexed(len(points), pyglet.gl.GL_LINES,
+            pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_LINES,
                 index,
-                ('v2i',self.m_field.scale2out(tuple(chain(*points)))),
+                ('v2i',tuple(chain(*scaled_pts))),
             )
         
 
@@ -717,17 +864,20 @@ class Circle(GraphicObject):
     def draw(self):
         for i in range(len(self.m_index)):
             points = self.m_points[i]
+            #print "Points:",points
+            scaled_pts = self.m_field.rescale_pt2out(points)
+            #print "Scaled_pts:",scaled_pts
             index = self.m_index[i]
             pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
             if not self.m_solid:
-                pyglet.graphics.draw_indexed(len(points), pyglet.gl.GL_LINES,
+                pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_LINES,
                     index,
-                    ('v2i',self.m_field.scale2out(tuple(chain(*points)))),
+                    ('v2i',tuple(chain(*scaled_pts))),
                 )
             else:
-                pyglet.graphics.draw_indexed(len(points), pyglet.gl.GL_POLYGON,
+                pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_POLYGON,
                     index,
-                    ('v2i',self.m_field.scale2out(tuple(chain(*points)))),
+                    ('v2i',tuple(chain(*scaled_pts))),
                 )
 
 class Line(GraphicObject):
@@ -912,10 +1062,10 @@ if __name__ == "__main__":
     # generate test data
     rmin = 20
     rmax = 70
-    xmin = rmax
-    xmax = XMAX-rmax
-    ymin = rmax
-    ymax = YMAX-rmax
+    xmin_field = rmax
+    xmax_field = XMAX_FIELD-rmax
+    ymin_field = rmax
+    ymax_field = YMAX_FIELD-rmax
     people = 6
     connections = 6
 
@@ -923,7 +1073,7 @@ if __name__ == "__main__":
     #cell_list=[]
     for i in range(people):
         cell = field.createCell(i)
-        p = (randint(xmin,xmax), randint(ymin,ymax))
+        p = (randint(xmin_field,xmax_field), randint(ymin_field,ymax_field))
         r = randint(rmin,rmax)
         field.updateCell(i,p,r)
 

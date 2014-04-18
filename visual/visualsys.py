@@ -73,6 +73,8 @@ BLOCK_FUZZ = config.fuzzy_area_for_cells
 
 MIN_CONX_DIST = config.minimum_connection_distance
 
+MAX_LOST_PATIENCE = config.max_lost_patience
+
 # create logger
 logger = logging.getLogger(__appname__)
 logging.basicConfig(filename=LOGFILE,level=logging.DEBUG,
@@ -89,14 +91,23 @@ class Field(object):
     def __init__(self):
         # we could use a list here which would make certain things easier, but
         # we need to do deletions and references pretty regularly.
+        self.m_our_cell_count = 0
+        self.m_reported_cell_count = 0
+        # TODO: Consider making these dict into lists
         self.m_cell_dict = {}
         self.m_connector_dict = {}
+        # a hash of counts of missing connectors, indexed by id
+        self.m_suspect_conxs = {}
+        # a hash of counts of missing cells, indexed by id
+        self.m_suspect_cells = {}
         #self.allpaths = []
-        self.initScaling((XMIN_FIELD,YMIN_FIELD), (XMAX_FIELD,YMAX_FIELD), 
+        self.setScaling((XMIN_FIELD,YMIN_FIELD), (XMAX_FIELD,YMAX_FIELD), 
                          (XMIN_VECTOR,YMIN_VECTOR), (XMAX_VECTOR,YMAX_VECTOR), 
                          (XMIN_SCREEN,YMIN_SCREEN), (XMAX_SCREEN,YMAX_SCREEN), 
                          PATH_UNIT, MODE_SCREEN)
         self.makePathGrid()
+
+    # Screen stuff
 
     def initScreen(self):
         # initialize pyglet 
@@ -104,20 +115,213 @@ class Field(object):
         #self.m_screen = pyglet.window.Window(width=xmax_screen,height=ymax_screen)
         width = self.m_xmax_screen - self.m_xmin_screen
         height = self.m_ymax_screen - self.m_ymin_screen
-        self.m_screen = pyglet.window.Window(width=width,height=height)
+        self.m_screen = pyglet.window.Window(width=width,height=height,
+                                             resizable=True)
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
         pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+        # register draw routing with pyglet
+        self.m_screen.on_draw = self.on_draw
+        self.m_screen.on_resize = self.on_resize
+        self.m_screen.set_minimum_size(XMAX_SCREEN/4, YMAX_SCREEN/4)
+        #self.m_screen.set_maximum_size(XMAX_SCREEN, YMAX_SCREEN)
+        #visualsys.pyglet.app.run()
 
-    def updateScreen(self):
-        # initialize pyglet 
-        #(xmax_screen,ymax_screen) = self.screenMax()
+    def resizeScreen(self):
         width = self.m_xmax_screen - self.m_xmin_screen
         height = self.m_ymax_screen - self.m_ymin_screen
         self.m_screen.set_size(width, height)
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
         pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+
+    def on_resize(self, width, height):
+        self.setScaling(pmin_screen=(0,0),pmax_screen=(width,height))
+        self.on_draw()
+
+    def on_draw(self):
+        start = time.clock()
+        #self.calcDistances()
+        #self.resetPathGrid()
+        #self.pathScoreCells()
+        #self.pathfindConnectors()
+        self.m_screen.clear()
+        self.renderAll()
+        self.drawAll()
+        #print "draw loop in",(time.clock() - start)*1000,"ms"
+
+    # Scaling
+
+    #def initScaling(self, pmin_field, pmax_field, pmin_vector, pmax_vector,
+                    #pmin_screen, pmax_screen, path_unit, mode):
+        """Set up scaling in the field.
+
+        A word about graphics scaling:
+         * The vision tracking system (our input data) measures in meters.
+         * The laser DAC measures in uh, int16? -32,768 to 32,768
+         * Pyglet measures in pixels at the screen resolution of the window you create
+         * The pathfinding units are each some ratio of the smallest expected radius
+
+         So we will keep eveything internally in centemeters (so we can use ints
+         instead of floats), and then convert it to the appropriate units before 
+         display depending on the output mode
+
+        """
+        """
+
+        self.m_xmin_field = xmin_field = pmin_field[0]
+        self.m_ymin_field = ymin_field = pmin_field[1]
+        self.m_xmax_field = xmax_field = pmax_field[0]
+        self.m_ymax_field = ymax_field = pmax_field[1]
+        self.m_xmin_vector = xmin_vector = pmin_vector[0]
+        self.m_ymin_vector = ymin_vector = pmin_vector[1]
+        self.m_xmax_vector = xmax_vector = pmax_vector[0]
+        self.m_ymax_vector = ymax_vector = pmax_vector[1]
+        self.m_xmin_screen = xmin_screen = pmin_screen[0]
+        self.m_ymin_screen = ymin_screen = pmin_screen[1]
+        self.m_xmax_screen = xmax_screen = pmax_screen[0]
+        self.m_ymax_screen = ymax_screen = pmax_screen[1]
+        self.m_path_unit = path_unit
+        self.m_output_mode = mode
+
+        # in order to find out how to display this,
+        #   1) we find the aspect ratio (x/y) of the screen or vector (depending on the
+        #      mode). 
+        #   2) Then if the aspect ratio (x/y) of the reported field is greater, we
+        #      set the x axis to stretch to the edges of screen (or vector) and then use
+        #      that value to determine the scaling.
+        #   3) But if the aspect ratio (x/y) of the reported field is less than,
+        #      we set the y axis to stretch to the top and bottom of screen (or
+        #      vector) and use that value to determine the scaling.
+        if self.m_output_mode == MODE_SCREEN:
+            display_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
+        else:
+            display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
+        field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
+        if field_aspect > display_aspect:
+            self.m_xmargin = int(xmax_screen*DEF_MARGIN)
+            print "Longer in the x dimension"
+            self.m_vector_scale = \
+                float(xmax_vector-xmin_vector)/(xmax_field-xmin_field)
+            self.m_screen_scale = \
+                float(xmax_screen-xmin_screen-(self.m_xmargin*2))/(xmax_field-xmin_field)
+            self.m_ymargin = \
+                int(((ymax_screen-ymin_screen)-((ymax_field-ymin_field)*self.m_screen_scale)) / 2)
+        else:
+            print "Longer in the y dimension"
+            self.m_ymargin = int(ymax_screen*DEF_MARGIN)
+            self.m_vector_scale = \
+                float(ymax_vector-ymin_vector)/(ymax_field-ymin_field)
+            self.m_screen_scale = \
+                float(ymax_screen-ymin_screen-(self.m_ymargin*2))/(ymax_field-ymin_field)
+            self.m_xmargin = \
+                int(((xmax_screen-xmin_screen)-((xmax_field-xmin_field)*self.m_screen_scale)) / 2)
+        #print "path unit:",path_unit," path_scale:",float(1)/path_unit
+        self.m_path_scale = float(1)/path_unit
+        print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
+        print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
+        print "Screen scale:",self.m_screen_scale
+        print "Screen margins:",(self.m_xmargin,self.m_ymargin)
+        print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
+        """
+
+    def setScaling(self,pmin_field=None,pmax_field=None,pmin_vector=None,pmax_vector=None,
+                      pmin_screen=None,pmax_screen=None,path_unit=None,output_mode=None):
+        """Set up scaling in the field.
+
+        A word about graphics scaling:
+         * The vision tracking system (our input data) measures in meters.
+         * The laser DAC measures in uh, int16? -32,768 to 32,768
+         * Pyglet measures in pixels at the screen resolution of the window you create
+         * The pathfinding units are each some ratio of the smallest expected radius
+
+         So we will keep eveything internally in centemeters (so we can use ints
+         instead of floats), and then convert it to the appropriate units before 
+         display depending on the output mode
+
+         """
+
+        if pmin_field is not None:
+            self.m_xmin_field = pmin_field[0]
+            self.m_ymin_field = pmin_field[1]
+        if pmax_field is not None:
+            self.m_xmax_field = pmax_field[0]
+            self.m_ymax_field = pmax_field[1]
+        if pmin_vector is not None:
+            self.m_xmin_vector = pmin_vector[0]
+            self.m_ymin_vector = pmin_vector[1]
+        if pmax_vector is not None:
+            self.m_xmax_vector  = pmax_vector[0]
+            self.m_ymax_vector  = pmax_vector[1]
+        if pmin_screen is not None:
+            self.m_xmin_screen = pmin_screen[0]
+            self.m_ymin_screen = pmin_screen[1]
+        if pmax_screen is not None:
+            self.m_xmax_screen = pmax_screen[0]
+            self.m_ymax_screen = pmax_screen[1]
+        if path_unit is not None:
+            self.m_path_unit = path_unit
+            self.m_path_scale = float(1)/path_unit
+        if output_mode is not None:
+            self.m_output_mode = output_mode
+        xmin_field = self.m_xmin_field
+        ymin_field = self.m_ymin_field
+        xmax_field = self.m_xmax_field
+        ymax_field = self.m_ymax_field
+        xmin_vector = self.m_xmin_vector
+        ymin_vector = self.m_ymin_vector
+        xmax_vector = self.m_xmax_vector
+        ymax_vector = self.m_ymax_vector
+        xmin_screen = self.m_xmin_screen
+        ymin_screen = self.m_ymin_screen
+        xmax_screen = self.m_xmax_screen
+        ymax_screen = self.m_ymax_screen
+
+        # in order to find out how to display this,
+        #   1) we find the aspect ratio (x/y) of the screen or vector (depending on the
+        #      mode). 
+        #   2) Then if the aspect ratio (x/y) of the reported field is greater, we
+        #      set the x axis to stretch to the edges of screen (or vector) and then use
+        #      that value to determine the scaling.
+        #   3) But if the aspect ratio (x/y) of the reported field is less than,
+        #      we set the y axis to stretch to the top and bottom of screen (or
+        #      vector) and use that value to determine the scaling.
+
+        # our default margins, one will be overwriten below
+        self.m_xmargin = int(xmax_screen*DEF_MARGIN)
+        self.m_ymargin = int(ymax_screen*DEF_MARGIN)
+
+        # aspect ratios used only for comparison
+        field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
+        if self.m_output_mode == MODE_SCREEN:
+            display_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
+        else:
+            display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
+        if field_aspect > display_aspect:
+            print "Longer in the x dimension"
+            field_xlen=xmax_field-xmin_field
+            if field_xlen:
+                self.m_vector_scale = \
+                    float(xmax_vector-xmin_vector)/field_xlen
+                self.m_screen_scale = \
+                    float(xmax_screen-xmin_screen-(self.m_xmargin*2))/field_xlen
+                self.m_ymargin = \
+                    int(((ymax_screen-ymin_screen)-((ymax_field-ymin_field)*self.m_screen_scale)) / 2)
+        else:
+            print "Longer in the y dimension"
+            field_ylen=ymax_field-ymin_field
+            if field_ylen:
+                self.m_vector_scale = \
+                    float(ymax_vector-ymin_vector)/field_ylen
+                self.m_screen_scale = \
+                    float(ymax_screen-ymin_screen-(self.m_ymargin*2))/field_ylen
+                self.m_xmargin = \
+                    int(((xmax_screen-xmin_screen)-((xmax_field-xmin_field)*self.m_screen_scale)) / 2)
+        #print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
+        print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
+        #print "Screen scale:",self.m_screen_scale
+        #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
+        print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
 
     # Guides
 
@@ -147,43 +351,149 @@ class Field(object):
     # Cells
 
     def createCell(self, id):
+        """Create a cell.
+        """
         # create cell - note we pass self since we want a back reference to
-        # feild instance
-        cell = Cell(self, id)
-        # add to the cell list
-        self.m_cell_dict[id] = cell
+        # field instance
+        # If it already exists, don't create it
+        if not id in self.m_cell_dict:
+            cell = Cell(self, id)
+            # add to the cell list
+            self.m_cell_dict[id] = cell
+            self.m_our_cell_count += 1
+            print "Field:createCell:count:",self.m_our_cell_count
+        # but if it already exists
+        else:
+            # let's make sure it is no longer suspect
+            if id in self.m_suspect_cells:
+                print "Field:createCell:Cell",id,"was suspected lost but is now above suspicion"
+                del self.m_suspect_cells[id]
 
     def updateCell(self, id, p=None, r=None, orient=None, effects=None, color=None):
+        """ Update a cells information.
+
+        Possibilities:
+            * Cell does not exist:
+                create it, remove from suspect list, update it, increment count
+            * Cell exists, but is on the suspect list
+                remove from suspect list, increment count
+            * Cell exists in master list and is not suspect:
+                update its info; count unchanged
+        """ 
         if effects is None:
             effects = []
-        cell = self.m_cell_dict[id]
-        cell.update(p, r, orient, effects, color)
+        # if cell does not exist:
+        if not id in self.m_cell_dict:
+            # create it and increment count
+            self.createCell(id)
+            # remove from suspect list
+            if id in self.m_suspect_cells:
+                del self.m_suspect_cells[id]
+            print "Field:updateCell:Cell",id,"was lost and has been recreated"
+        # if cell exists, but is on suspect list
+        elif id in self.m_suspect_cells:
+            # remove from suspect list
+            del self.m_suspect_cells[id]
+            # increment count
+            self.m_our_cell_count += 1
+            print "Field:updateCell:Cell",id,"was suspected lost but is now above suspicion"
+        # update cell's info
+        self.m_cell_dict[id].update(p, r, orient, effects, color)
+
+    def isCellGoodToGo(self, id):
+        """Test if cell is good to be rendered.
+        Returns True if cell is on master list and not suspect.
+        """
+        if not id in self.m_cell_dict:
+            return False
+        if id in self.m_suspect_cells:
+            return False
+        if self.m_cell_dict[id].m_location is None:
+            return False
+        return True
 
     def delCell(self, id):
-        cell = self.m_cell_dict[id]
-        # delete all connectors from master list of connectors
-        for conxid in cell.m_connector_dict:
-            if conxid in self.m_connector_dict:
-                del self.m_connector_dict[conxid]
+        """Delete a cell.
+        We used to delete all of it's connections, now we just delete it and
+        let the connector sort it out. This allows us to defer connector
+        deletion -- instead we keep a cound of suspicious connectors. That way, 
+        if the cells reappear, we can reconnect them without losing their
+        connectors.
+        """
+        #cell = self.m_cell_dict[id]
+        # delete all cell's connectors from master list of connectors
+        #for conxid in cell.m_connector_dict:
+        #    if conxid in self.m_connector_dict:
+        #        del self.m_connector_dict[conxid]
         # have cell disconnect all of its connections and refs
+        # Note: connector checks if cell still exists before rendering
         if id in self.m_cell_dict:
-            cell.cellDisconnect()
+            #cell.cellDisconnect()
             # delete from the cell master list of cells
+            print "Field:delCell:deleting",id
             del self.m_cell_dict[id]
+            if id in self.m_suspect_cells:
+                del self.m_suspect_cells[id]
+            else:
+                self.m_our_cell_count -= 1
+            print "Field:delCell:count:",self.m_our_cell_count
+
+    def checkPeopleCount(self,reported_count):
+        self.m_reported_cell_count = reported_count
+        our_count = self.m_our_cell_count
+        print "Field:checkPeopleCount:count:",our_count,"- Reported:",self.m_reported_cell_count
+        if reported_count != our_count:
+            print "Field:checkPeopleCount:Count mismatch"
+            self.hideAllCells()
+            self.m_out_cell_count = 0
+
+    def hideCell(self, id):
+        """Hide a cell.
+        We don't delete cells unless we have to.
+        Instead we add them to a suspect list (actually a count of how
+        suspicous they are)
+        """
+        self.m_suspect_cells[id] = 1
+        self.m_our_cell_count -= 1
+        print "Field:hideCell:count:",self.m_our_cell_count
+
+    def hideAllCells(self):
+        print "Field:hideAllCells"
+        for id in self.m_cell_dict:
+            self.hideCell(id)
 
     def renderCell(self,cell):
-        cell.render()
+        """Render a cell.
+
+        We first check if the cell is good.
+        If not, we increment its suspect count
+        If yes, render it.
+        """
+        if self.isCellGoodToGo(cell.m_id):
+            cell.render()
+            #del self.m_suspect_cells[cell.m_id]
+        else:
+            print "Field:renderCell:Cell",cell.m_id,"is suspected lost for",\
+                  self.m_suspect_cells[cell.m_id],"frames"
+            if self.m_suspect_cells[cell.m_id] > MAX_LOST_PATIENCE:
+                self.delCell(cell.m_id)
+            else:
+                self.m_suspect_cells[cell.m_id] += 1
+
+    def renderAllCells(self):
+        # we don't call the Cell's render-er directly because we have some
+        # logic here at this level
+        for cell in self.m_cell_dict.values():
+            self.renderCell(cell)
 
     def drawCell(self,cell):
         cell.draw()
 
-    def renderAllCells(self):
-        for cell in self.m_cell_dict.values():
-            cell.render()
-
     def drawAllCells(self):
+        # we don't call the Cell's draw-er directly because we may want
+        # to introduce logic at this level
         for cell in self.m_cell_dict.values():
-            cell.draw()
+            self.drawCell(cell)
 
     # Connectors
 
@@ -196,26 +506,48 @@ class Field(object):
         # add to the connector list
         self.m_connector_dict[id] = connector
 
-    def delConnector(self,id):
-        if id in self.m_connector_dict:
-            # delete the connector in the cells attached to the connector
-            self.m_connector_dict[id].conxDisconnect()
+    def delConnector(self,conxid):
+        if conxid in self.m_connector_dict:
+            # make sure the cells that this connector is attached to, delete
+            # refs to it
+            self.m_connector_dict[id].conxDisconnectThyself()
             # delete from the connector list
-            del self.m_connector_dict[id]
+            del self.m_connector_dict[conxid]
 
     def renderConnector(self,connector):
-        connector.render()
+        """Render a connector.
+
+        We first check if the connector's two cells are both good.
+        If not, we increment its suspect count
+        If yes, render it.
+        """
+        if self.isCellGoodToGo(connector.m_cell0.m_id) and \
+           self.isCellGoodToGo(connector.m_cell1.m_id):
+            connector.render()
+            if connector.m_id in self.m_suspect_conxs:
+                del self.m_suspect_conxs[connector.m_id]
+        else:
+            print "Field:renderConnector:Conx",connector.m_id,"between",\
+                connector.m_cell0.m_id,"and",connector.m_cell1.m_id,"is suspected lost"
+            if self.m_suspect_conxs[connector.m_id] > MAX_LOST_PATIENCE:
+                self.delConnector(connector.m_id)
+            else:
+                self.m_suspect_conxs[connector.m_id] += 1
+
+    def renderAllConnectors(self):
+        # we don't call the Connector's render-er directly because we have some
+        # logic here at this level
+        for connector in self.m_connector_dict.values():
+            self.renderConnector(connector)
 
     def drawConnector(self,connector):
         connector.draw()
 
-    def renderAllConnectors(self):
-        for connector in self.m_connector_dict.values():
-            connector.render()
-
     def drawAllConnectors(self):
+        # we don't call the Connector's draw-er directly because we may want
+        # to introduce logic at this level
         for connector in self.m_connector_dict.values():
-            connector.draw()
+            self.drawConnector(connector)
 
     # Everything
 
@@ -318,146 +650,7 @@ class Field(object):
         
     def printGrid(self):
         self.path_grid.printme()
-
-    # Scaling
-
-    def initScaling(self, pmin_field, pmax_field, pmin_vector, pmax_vector,
-                    pmin_screen, pmax_screen, path_unit, mode):
-        """Set up scaling in the field.
-
-        A word about graphics scaling:
-         * The vision tracking system (our input data) measures in meters.
-         * The laser DAC measures in uh, int16? -32,768 to 32,768
-         * Pyglet measures in pixels at the screen resolution of the window you create
-         * The pathfinding units are each some ratio of the smallest expected radius
-
-         So we will keep eveything internally in centemeters (so we can use ints
-         instead of floats), and then convert it to the appropriate units before 
-         display depending on the output mode
-        """
-        self.m_xmin_field = xmin_field = pmin_field[0]
-        self.m_ymin_field = ymin_field = pmin_field[1]
-        self.m_xmax_field = xmax_field = pmax_field[0]
-        self.m_ymax_field = ymax_field = pmax_field[1]
-        self.m_xmin_vector = xmin_vector = pmin_vector[0]
-        self.m_ymin_vector = ymin_vector = pmin_vector[1]
-        self.m_xmax_vector = xmax_vector = pmax_vector[0]
-        self.m_ymax_vector = ymax_vector = pmax_vector[1]
-        self.m_xmin_screen = xmin_screen = pmin_screen[0]
-        self.m_ymin_screen = ymin_screen = pmin_screen[1]
-        self.m_xmax_screen = xmax_screen = pmax_screen[0]
-        self.m_ymax_screen = ymax_screen = pmax_screen[1]
-        self.m_path_unit = path_unit
-        self.m_output_mode = mode
-
-        # in order to find out how to display this,
-        #   1) we find the aspect ratio (x/y) of the screen or vector (depending on the
-        #      mode). 
-        #   2) Then if the aspect ratio (x/y) of the reported field is greater, we
-        #      set the x axis to stretch to the edges of screen (or vector) and then use
-        #      that value to determine the scaling.
-        #   3) But if the aspect ratio (x/y) of the reported field is less than,
-        #      we set the y axis to stretch to the top and bottom of screen (or
-        #      vector) and use that value to determine the scaling.
-        if self.m_output_mode == MODE_SCREEN:
-            display_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
-        else:
-            display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
-        field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
-        if field_aspect > display_aspect:
-            print "Longer in the x dimension"
-            self.m_vector_scale = \
-                float(xmax_vector-xmin_vector)/(xmax_field-xmin_field)
-            self.m_screen_scale = \
-                float(xmax_screen-xmin_screen-(DEF_MARGIN*2))/(xmax_field-xmin_field)
-            self.m_xmargin = DEF_MARGIN
-            self.m_ymargin = ((ymax_screen-ymin_screen)-int((ymax_field-ymin_field)*self.m_screen_scale)) / 2
-        else:
-            print "Longer in the y dimension"
-            self.m_vector_scale = \
-                float(ymax_vector-ymin_vector)/(ymax_field-ymin_field)
-            self.m_screen_scale = \
-                float(ymax_screen-ymin_screen-(DEF_MARGIN*2))/(ymax_field-ymin_field)
-            self.m_xmargin = ((xmax_screen-xmin_screen)-int((xmax_field-xmin_field)*self.m_screen_scale)) / 2
-            self.m_ymargin = DEF_MARGIN
-        #print "path unit:",path_unit," path_scale:",float(1)/path_unit
-        self.m_path_scale = float(1)/path_unit
-        #print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
-        #print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
-        #print "Screen scale:",self.m_screen_scale
-        #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
-        #print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
-
-    def updateScaling(self,pmin_field=None,pmax_field=None,pmin_vector=None,pmax_vector=None,
-                      pmin_screen=None,pmax_screen=None):
-        """Update scaling in the field. """
-        if pmin_field is not None:
-            self.m_xmin_field = pmin_field[0]
-            self.m_ymin_field = pmin_field[1]
-        if pmax_field is not None:
-            self.m_xmax_field = pmax_field[0]
-            self.m_ymax_field = pmax_field[1]
-        if pmin_vector is not None:
-            self.m_xmin_vector = pmin_vector[0]
-            self.m_ymin_vector = pmin_vector[1]
-        if pmax_vector is not None:
-            self.m_xmax_vector  = pmax_vector[0]
-            self.m_ymax_vector  = pmax_vector[1]
-        if pmin_screen is not None:
-            self.m_xmin_screen = pmin_screen[0]
-            self.m_ymin_screen = pmin_screen[1]
-        if pmax_screen is not None:
-            self.m_xmax_screen = pmax_screen[0]
-            self.m_ymax_screen = pmax_screen[1]
-        xmin_field = self.m_xmin_field
-        ymin_field = self.m_ymin_field
-        xmax_field = self.m_xmax_field
-        ymax_field = self.m_ymax_field
-        xmin_vector = self.m_xmin_vector
-        ymin_vector = self.m_ymin_vector
-        xmax_vector = self.m_xmax_vector
-        ymax_vector = self.m_ymax_vector
-        xmin_screen = self.m_xmin_screen
-        ymin_screen = self.m_ymin_screen
-        xmax_screen = self.m_xmax_screen
-        ymax_screen = self.m_ymax_screen
-        
-        if self.m_output_mode == MODE_SCREEN:
-            display_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
-        else:
-            display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
-        field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
-        if field_aspect > display_aspect:
-            print "Longer in the x dimension"
-            self.m_vector_scale = \
-                float(xmax_vector-xmin_vector)/(xmax_field-xmin_field)
-            self.m_screen_scale = \
-                float(xmax_screen-xmin_screen-(DEF_MARGIN*2))/(xmax_field-xmin_field)
-            self.m_xmargin = DEF_MARGIN
-            self.m_ymargin = ((ymax_screen-ymin_screen)-int((ymax_field-ymin_field)*self.m_screen_scale)) / 2
-        else:
-            print "Longer in the y dimension"
-            self.m_vector_scale = \
-                float(ymax_vector-ymin_vector)/(ymax_field-ymin_field)
-            self.m_screen_scale = \
-                float(ymax_screen-ymin_screen-(DEF_MARGIN*2))/(ymax_field-ymin_field)
-            self.m_xmargin = ((xmax_screen-xmin_screen)-int((xmax_field-xmin_field)*self.m_screen_scale)) / 2
-            self.m_ymargin = DEF_MARGIN
-        #print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
-        #print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
-        #print "Screen scale:",self.m_screen_scale
-        #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
-        #print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
-
-    """ TODO: kill this?
-    def vectorMax(self):
-        return (int((self.m_xmax_field-self.m_xmin_field)*self.m_vector_scale) + self.m_min_vector,
-            int((self.m_ymax_field-self.m_ymin_field)*self.m_vector_scale) + self.m_min_vector)
-
-    def screenMax(self):
-        return (int((self.m_xmax_field-self.m_xmin_field)*self.m_screen_scale) + self.m_min_screen,
-            int((self.m_ymax_field-self.m_ymin_field)*self.m_screen_scale) + self.m_min_screen)
-    """
+    # Scaling conversions
 
     def _convert(self,obj,scale,min1,min2):
         """Recursively converts numbers in an object.
@@ -677,7 +870,7 @@ class Cell(GraphElement):
                 del self.m_connector_dict[connector.m_id]
 
             # OPTION: Let the objects do the work
-            #connector.conxDisconnect()
+            #connector.conxDisconnectThyself()
             # we may not need this because the connector calls the same thing
             # for it's two cells, including this one
             #self.delConnector(connector)
@@ -723,7 +916,7 @@ class Connector(GraphElement):
         #print ("Render Connector(%s):%s to %s" % (self.m_id,cell0.m_location,cell1.m_location))
         self.m_shape.render()
 
-    def conxDisconnect(self):
+    def conxDisconnectThyself(self):
         """Disconnect cells this connector refs & this connector ref'd by them.
         
         To actually delete it, remove it from the list of connectors in the Field
@@ -731,7 +924,7 @@ class Connector(GraphElement):
         """
         print "Disconnecting connector",self.m_id,"between",\
                 self.m_cell0.m_id,"and",self.m_cell1.m_id
-        # OPTION: for simplicity's sake, we do the work rather than passing to
+        # for simplicity's sake, we do the work rather than passing to
         # the object to do the work
         # delete the connector from its two cells
         if self.m_id in self.m_cell0.m_connector_dict:
@@ -741,15 +934,6 @@ class Connector(GraphElement):
         # delete the refs to those two cells
         self.m_cell0 = None
         self.m_cell1 = None
-
-        # OPTION: We let the objects do the work
-        # delete the connector from its two cells
-        #self.m_cell0.delConnector(self)
-        #self.m_cell1.delConnector(self)
-        # delete cells ref'd from this connector
-        #self.m_cell0 = None
-        #self.m_cell1 = None
-
 
 # graphic primatives
 
@@ -1093,20 +1277,6 @@ if __name__ == "__main__":
     #for connector in field.m_connector_dict.values():
         #connector.addPath(field.findPath(connector))
     #field.printGrid()
-
-    def on_draw():
-        start = time.clock()
-        field.calcDistances()
-        field.resetPathGrid()
-        field.pathScoreCells()
-        field.pathfindConnectors()
-        field.m_screen.clear()
-        field.renderAll()
-        field.drawAll()
-        #print "draw loop in",(time.clock() - start)*1000,"ms"
-
-    field.m_screen.on_draw = on_draw
-    #visualsys.pyglet.app.run()
 
     def on_key_press(symbol, modifiers):
         MOVEME = 25

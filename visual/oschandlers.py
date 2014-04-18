@@ -33,6 +33,7 @@ OSCPORT = config.oscport
 OSCHOST = config.oschost if config.oschost else "localhost"
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
+FREQ_REG_REPORT = config.freq_regular_reports
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
@@ -116,7 +117,7 @@ class OSCHandler(object):
     # Event handlers
 
     def default_handler(self, path, tags, args, source):
-        #print "OSC: No handler registered for ", path
+        #print "OSC:default_handler:No handler registered for ", path
         return None
 
     def event_tracking_ping(self, path, tags, args, source):
@@ -127,13 +128,16 @@ class OSCHandler(object):
 
         Sent before first /pf/update message for that target
         args:
+            [ aparently no params now]
             samp - sample number
             t - time of sample (elapsed time in seconds since beginning of run)
             target - UID of target
             channel - channel number assigned
 
         """
-        print "OSC start:",path,args,source
+        #sample = args[0]
+        #print "OSC:event_start:",sample
+        print "OSC:event_start"
 
     def event_tracking_set(self, path, tags, args, source):
         """Tracking subsystem is setting params.
@@ -144,32 +148,32 @@ class OSCHandler(object):
             npeople - number of people currently present
 
         """
-        print "OSC set:",path,args,source
+        print "OSC:event_set:",path,args,source
         if path == OSCPATH['minx']:
             self.m_xmin = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
-            self.m_field.updateScaling(pmin_field=(self.m_xmin,self.m_ymin))
+            self.m_field.setScaling(pmin_field=(self.m_xmin,self.m_field.m_ymin_field))
         elif path == OSCPATH['miny']:
             self.m_ymin = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
-            self.m_field.updateScaling(pmin_field=(self.m_xmin,self.m_ymin))
+            self.m_field.setScaling(pmin_field=(self.m_field.m_xmin_field,self.m_ymin))
         elif path == OSCPATH['maxx']:
             self.m_xmax = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
-            self.m_field.updateScaling(pmax_field=(self.m_xmax,self.m_ymax))
+            self.m_field.setScaling(pmax_field=(self.m_xmax,self.m_field.m_ymax_field))
         elif path == OSCPATH['maxy']:
             self.m_ymax = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
-            self.m_field.updateScaling(pmax_field=(self.m_xmax,self.m_ymax))
+            self.m_field.setScaling(pmax_field=(self.m_field.m_xmax_field,self.m_ymax))
         elif path == OSCPATH['npeople']:
-            pass
-        else:
-            pass
-        print "updateScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-        self.m_field.updateScreen()
+            self.m_field.checkPeopleCount(args[0])
+        print "setScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
+        # we used to resize the screen, not we just rescale the action within
+        # the screen
+        #self.m_field.setScreen()
         """if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
-            print "updateScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-            self.m_field.updateScaling((self.m_xmin,self.m_ymin),(self.m_xmax,self.m_ymax))
+            print "setScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
+            self.m_field.setScaling((self.m_xmin,self.m_ymin),(self.m_xmax,self.m_ymax))
             self.m_field.updateScreen()"""
             
 
@@ -185,11 +189,12 @@ class OSCHandler(object):
             channel - channel number assigned
 
         """
-        print "OSC entry:",path,args,source
+        #print "OSC:event_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
         sample = args[0]
         time = args[1]
         id = args[2]
+        print "OSC:event_entry:cell:",id
         self.m_field.createCell(id)
 
     def event_tracking_exit(self, path, tags, args, source):
@@ -201,10 +206,11 @@ class OSCHandler(object):
              target - UID of target
 
         """
-        print "OSC exit:",path,args,source
+        #print "OSC:event_exit:",path,args,source
         sample = args[0]
         time = args[1]
         id = args[2]
+        print "OSC:event_exit:cell:",id
         #print "BEFORE: cells:",self.m_field.m_cell_dict
         #print "BEFORE: conx:",self.m_field.m_connector_dict
         self.m_field.delCell(id)
@@ -230,7 +236,7 @@ class OSCHandler(object):
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = 0
-        samp = args[0]
+        sample = args[0]
         time = args[1]
         id = args[2]
         # TODO: Create cell if we don't have a record of it
@@ -248,9 +254,10 @@ class OSCHandler(object):
         gid = args[9]
         gsize = args[10]
         channel = args[11]
-        #print "OSC update:",path,args,source
-        if samp%50 == 0:
-            print "OSC update:",path,args,source
+        #print "OSC:event_update:",path,args,source
+        if sample%FREQ_REG_REPORT == 0:
+            #print "OSC:event_update:",path,args,source
+            print "    OSC:event_update:id:",id,"pos:",(x,y),"axis:",major
         # TODO: if gid is not equal to 0 than we have a grouping, we need to
         # stop mapping the cell(s) that are not getting updated in new frames
         # alternately, we can just turn all cells invisible each frame and then
@@ -265,7 +272,7 @@ class OSCHandler(object):
         #   /pf/update 410 28.8 4 0.9 -1.0 -0.2 -2.4 nan nan 1 2 4
         #   /pf/update 411 28.8 4 0.9 -1.0 nan nan nan nan 1 2 4
         #   /pf/update 412 29.0 4 0.9 -1.0 nan nan nan nan 1 2 4
-        #print "OSC update: Done"
+        #print "OSC:event_update: Done"
 
     def event_tracking_frame(self, path, tags, args, source):
         """New frame event.
@@ -274,12 +281,16 @@ class OSCHandler(object):
             samp - sample number
 
         """
-        #print "OSC frame:",path,args,source
+        #print "OSC:event_frame:",path,args,source
+        sample = args[0]
+        if sample%FREQ_REG_REPORT == 0:
+            #print "OSC:event_update:",path,args,source
+            print "    OSC:event_frame::",sample
         return None
 
     def event_tracking_stop(self, path, tags, args, source):
         """Tracking has stopped."""
-        print "OSC stop:",path,args,source
+        print "OSC:event_stop:",path,args,source
         return None
 
 if __name__ == "__main__":
@@ -291,28 +302,27 @@ if __name__ == "__main__":
 
     def on_draw():
         start = time.clock()
-        field.calcDistances()
-        field.resetPathGrid()
-        field.pathScoreCells()
-        for connector in field.m_connector_dict.values():
-            connector.addPath(field.findPath(connector))
+        #field.calcDistances()
+        #field.resetPathGrid()
+        #field.pathScoreCells()
+        #for connector in field.m_connector_dict.values():
+            #connector.addPath(field.findPath(connector))
         field.m_screen.clear()
         field.renderAll()
         field.drawAll()
         #print "draw loop in",(time.clock() - start)*1000,"ms"
 
-    field.m_screen.on_draw = on_draw
+    #field.m_screen.on_draw = on_draw
     #visualsys.pyglet.app.run()
 
     osc = OSCHandler(field)
-    # simulate a "game engine"
     while osc.m_run:
-        # do the game stuff:
-        #for window in visualsys.pyglet.app.windows:
-        field.m_screen.switch_to()
-        field.m_screen.dispatch_events()
-        field.m_screen.dispatch_event('on_draw')
-        field.m_screen.flip()
+        visualsys.pyglet.clock.tick()
+        for window in visualsys.pyglet.app.windows:
+            field.m_screen.switch_to()
+            field.m_screen.dispatch_events()
+            field.m_screen.dispatch_event('on_draw')
+            field.m_screen.flip()
         # call user script
         osc.each_frame()
 

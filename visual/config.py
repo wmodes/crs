@@ -4,12 +4,17 @@
 draw_blobs = True
 default_radius = 75
 default_orient = 0
-default_linecolor = (1,1,1)     # white
-#default_linecolor = (0,0,0)     # black
-default_blobcolor = (.1,.1,.1)  # gray
-default_guidecolor = (.1,.1,.1)  # dark dark gray
-default_bkgdcolor = (.25, .25, .25, 1)    # dark gray
-#default_bkgdcolor = (1, 1, 1, 1)    # white
+inverse=False
+if inverse:
+    default_bkgdcolor = (.25, .25, .25, 1)    # dark gray
+    default_guidecolor = (0,0,0)  # dark dark gray
+    default_linecolor = (1,1,1)     # white
+    default_blobcolor = (0,0,0)  # gray
+else:
+    default_bkgdcolor = (1, 1, 1, 1)    # white
+    default_guidecolor = (.1,.1,.1)  # dark dark gray
+    default_linecolor = (0,0,0)     # black
+    default_blobcolor = (.1,.1,.1)  # gray
 
 radius_padding = 1.5      # increased radius of circle around blobs
 curve_segments = 12     # number of line segs in a curve
@@ -28,16 +33,19 @@ xmax_vector = 32768
 ymax_vector = 32768
 xmin_screen = 0
 ymin_screen = 0
-xmax_screen = 1425
-ymax_screen = 800
+xmax_screen = 1440
+ymax_screen = 795
 
-default_margin=20
+default_margin=.05
 
 #path_unit = 20   # 20cm = about 8in
 #path_unit = 40   # 20cm = about 8in
 path_unit = 30   # 20cm = about 8in
 
 logfile="crs-visual.log"
+freq_regular_reports = 100
+
+max_lost_patience = 10
 
 # OSC configuration
 

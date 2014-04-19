@@ -152,7 +152,7 @@ class Field(object):
         self.m_screen.set_size(width, height)
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
-        pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+        #pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
 
     def on_window_close(self,window):
         print "field:on_window_close"
@@ -163,13 +163,6 @@ class Field(object):
     def on_resize(self, width, height):
         self.setScaling(pmin_screen=(0,0),pmax_screen=(width,height))
         print "Field:on_resize:width=",width,"height=",height
-
-    def on_cycle(self):
-        pyglet.clock.tick()
-        #self.m_screen.switch_to()
-        self.m_screen.dispatch_events()
-        self.m_screen.dispatch_event('on_draw')
-        #self.m_screen.flip()
 
     def on_draw(self):
         start = time.clock()
@@ -349,18 +342,17 @@ class Field(object):
                 index,
                 ('v2i',tuple(chain(*screen_pts))),
             )
-            point = (self.m_xmin_field,self.m_ymin_field)
-            radius = self.rescale_num2out(DEF_RADIUS)
-            shape = Circle(self,point,radius,DEF_LINECOLOR,solid=False)
-            shape.render()
-            shape.draw()
+            #point = (self.m_xmin_field,self.m_ymin_field)
+            #radius = self.rescale_num2out(DEF_RADIUS)
+            #shape = Circle(self,point,radius,DEF_LINECOLOR,solid=False)
+            #shape.render()
+            #shape.draw()
             #print "Field:drawGuides"
 
     # Cells
 
     def createCell(self, id):
-        """Create a cell.
-        """
+        """Create a cell.  """
         # create cell - note we pass self since we want a back reference to
         # field instance
         # If it already exists, don't create it

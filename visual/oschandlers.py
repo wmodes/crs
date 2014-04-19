@@ -301,53 +301,6 @@ if __name__ == "__main__":
     field.initScreen()
 
     # pyglet stuff
-    """
-
-    def on_draw():
-        start = time.clock()
-        #field.calcDistances()
-        #field.resetPathGrid()
-        #field.pathScoreCells()
-        #field.pathfindConnectors()
-        field.m_screen.clear()
-        field.renderAll()
-        field.drawAll()
-        #print "draw loop in",(time.clock() - start)*1000,"ms"
-
-    def on_key_press(symbol, modifiers):
-        MOVEME = 25
-        print "key press.",
-        if symbol == visualsys.pyglet.window.key.SPACE:
-            print "SPACE"
-            field.m_screen.clear()
-            field.renderAll()
-            return
-        elif symbol == visualsys.pyglet.window.key.LEFT:
-            print "LEFT"
-            rx = -MOVEME
-            ry = 0
-        elif symbol == visualsys.pyglet.window.key.RIGHT:
-            print "RIGHT"
-            rx = MOVEME
-            ry = 0
-        elif symbol == visualsys.pyglet.window.key.UP:
-            print "UP"
-            rx = 0
-            ry = MOVEME
-        elif symbol == visualsys.pyglet.window.key.DOWN:
-            print "DOWN"
-            rx = 0
-            ry = -MOVEME
-        else:
-            return
-        # move cell
-        #playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
-
-    field.m_screen.on_draw = on_draw
-    field.m_screen.on_key_press = on_key_press
-    field.m_screen.set_visible()
-    """
-
     #visualsys.pyglet.app.run()
 
     osc = OSCHandler(field)

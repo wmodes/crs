@@ -4,12 +4,12 @@
 draw_blobs = True
 default_radius = 75
 default_orient = 0
-inverse=False
+inverse=True
 if inverse:
-    default_bkgdcolor = (.25, .25, .25, 1)    # dark gray
-    default_guidecolor = (0,0,0)  # dark dark gray
+    default_bkgdcolor = (.3375, .3375, .3375, 1)    # med gray
+    default_guidecolor = (0,0,0)  # black
     default_linecolor = (1,1,1)     # white
-    default_blobcolor = (0,0,0)  # gray
+    default_blobcolor = (.1,.1,.1)  # dark dark gray
 else:
     default_bkgdcolor = (1, 1, 1, 1)    # white
     default_guidecolor = (.1,.1,.1)  # dark dark gray

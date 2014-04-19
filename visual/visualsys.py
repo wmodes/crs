@@ -38,8 +38,6 @@ from gridmap import GridMap
 from pathfinder import PathFinder
 import bezier
 import oschandlers
-from field_class import Field
-from graphelement_classes import GraphElement,Cell,Connector
 
 # constants
 LOGFILE = config.logfile
@@ -90,10 +88,11 @@ class Field(object):
     """An object representing the field.  """
 
     def __init__(self):
-        # we could use a list here which would make certain things easier, but
-        # we need to do deletions and references pretty regularly.
+        self.m_still_running = True
         self.m_our_cell_count = 0
         self.m_reported_cell_count = 0
+        # we could use a list here which would make certain things easier, but
+        # we need to do deletions and references pretty regularly.
         # TODO: Consider making these dict into lists
         self.m_cell_dict = {}
         self.m_connector_dict = {}
@@ -116,8 +115,6 @@ class Field(object):
         #self.m_screen = pyglet.window.Window(width=xmax_screen,height=ymax_screen)
         width = self.m_xmax_screen - self.m_xmin_screen
         height = self.m_ymax_screen - self.m_ymin_screen
-        self.m_screen = pyglet.window.Window(width=width,height=height,
-                                             resizable=True)
         print "field:initScreen"
         pygopt = 'debug_gl'
         pyglet.options[pygopt] = True
@@ -128,15 +125,26 @@ class Field(object):
         pygopt = 'debug_trace'
         pyglet.options[pygopt] = True
         print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
+        self.m_screen = pyglet.window.Window(width=width,height=height,\
+                             resizable=True,visible=False)
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
+        # ... perform some additional initialisation
         pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+        self.m_screen.clear()
         # register draw routing with pyglet
+        # TESTED: These functions are being called correctly, and params are
+        # being passed correctly
         self.m_screen.on_draw = self.on_draw
         self.m_screen.on_resize = self.on_resize
+        #self.m_screen.on_window_close = self.on_window_close
+        self.m_screen.on_key_press = self.on_key_press
         self.m_screen.set_minimum_size(XMAX_SCREEN/4, YMAX_SCREEN/4)
         #self.m_screen.set_maximum_size(XMAX_SCREEN, YMAX_SCREEN)
         #visualsys.pyglet.app.run()
+        self.m_screen.set_visible()
+
+    # pyglet stuff
 
     def resizeScreen(self):
         width = self.m_xmax_screen - self.m_xmin_screen
@@ -146,9 +154,22 @@ class Field(object):
         # each value goes from 0.0 to 1.0
         pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
 
+    def on_window_close(self,window):
+        print "field:on_window_close"
+        self.m_still_running = False
+        event_loop.exit()
+        return pyglet.event.EVENT_HANDLED
+
     def on_resize(self, width, height):
         self.setScaling(pmin_screen=(0,0),pmax_screen=(width,height))
-        self.on_draw()
+        print "Field:on_resize:width=",width,"height=",height
+
+    def on_cycle(self):
+        pyglet.clock.tick()
+        #self.m_screen.switch_to()
+        self.m_screen.dispatch_events()
+        self.m_screen.dispatch_event('on_draw')
+        #self.m_screen.flip()
 
     def on_draw(self):
         start = time.clock()
@@ -160,6 +181,35 @@ class Field(object):
         self.renderAll()
         self.drawAll()
         #print "draw loop in",(time.clock() - start)*1000,"ms"
+
+    def on_key_press(self, symbol, modifiers):
+        MOVEME = 25
+        print "key press.",
+        if symbol == pyglet.window.key.SPACE:
+            print "SPACE"
+            self.m_screen.clear()
+            self.renderAll()
+            return
+        elif symbol == pyglet.window.key.LEFT:
+            print "LEFT"
+            rx = -MOVEME
+            ry = 0
+        elif symbol == pyglet.window.key.RIGHT:
+            print "RIGHT"
+            rx = MOVEME
+            ry = 0
+        elif symbol == pyglet.window.key.UP:
+            print "UP"
+            rx = 0
+            ry = MOVEME
+        elif symbol == pyglet.window.key.DOWN:
+            print "DOWN"
+            rx = 0
+            ry = -MOVEME
+        else:
+            return
+        # move cell
+        #playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
 
     # Scaling
 
@@ -261,6 +311,19 @@ class Field(object):
         #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
         print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
 
+    # Everything
+
+    def renderAll(self):
+        """Render all the cells and connectors."""
+        self.renderAllCells()
+        self.renderAllConnectors()
+
+    def drawAll(self):
+        """Draw all the cells and connectors."""
+        self.drawGuides()
+        self.drawAllCells()
+        self.drawAllConnectors()
+
     # Guides
 
     def drawGuides(self):
@@ -278,10 +341,10 @@ class Field(object):
             # boundary points (screen): [(72, 73), (72, 721), (1368, 721), (1368, 73)]
             #print "proc screen_pts:",tuple(chain(*screen_pts))
             # proc screen_pts: (72, 73, 72, 721, 1368, 721, 1368, 73)
-            print "PYGLET:pyglet.graphics.draw_indexed(",len(screen_pts),", pyglet.gl.GL_LINES,"
-            print "           ",index
-            print "           ('v2i',",tuple(chain(*screen_pts)),"),"
-            print "       )"
+            #print "PYGLET:pyglet.graphics.draw_indexed(",len(screen_pts),", pyglet.gl.GL_LINES,"
+            #print "           ",index
+            #print "           ('v2i',",tuple(chain(*screen_pts)),"),"
+            #print "       )"
             pyglet.graphics.draw_indexed(len(screen_pts), pyglet.gl.GL_LINES,
                 index,
                 ('v2i',tuple(chain(*screen_pts))),
@@ -493,19 +556,6 @@ class Field(object):
         # to introduce logic at this level
         for connector in self.m_connector_dict.values():
             self.drawConnector(connector)
-
-    # Everything
-
-    def renderAll(self):
-        """Render all the cells and connectors."""
-        self.renderAllCells()
-        self.renderAllConnectors()
-
-    def drawAll(self):
-        """Draw all the cells and connectors."""
-        self.drawAllCells()
-        self.drawAllConnectors()
-        self.drawGuides()
 
     # Distances - TODO: temporary -- this info will come from the conduction subsys
 
@@ -1225,36 +1275,6 @@ if __name__ == "__main__":
         #connector.addPath(field.findPath(connector))
     #field.printGrid()
 
-    def on_key_press(symbol, modifiers):
-        MOVEME = 25
-        print "key press.",
-        if symbol == pyglet.window.key.SPACE:
-            print "SPACE"
-            field.m_screen.clear()
-            field.renderAll()
-            return
-        elif symbol == pyglet.window.key.LEFT:
-            print "LEFT"
-            rx = -MOVEME
-            ry = 0
-        elif symbol == pyglet.window.key.RIGHT:
-            print "RIGHT"
-            rx = MOVEME
-            ry = 0
-        elif symbol == pyglet.window.key.UP:
-            print "UP"
-            rx = 0
-            ry = MOVEME
-        elif symbol == pyglet.window.key.DOWN:
-            print "DOWN"
-            rx = 0
-            ry = -MOVEME
-        else:
-            return
-        # move cell
-        playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
-
-    field.m_screen.on_key_press = on_key_press
     pyglet.app.run()
 
 

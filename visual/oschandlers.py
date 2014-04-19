@@ -20,6 +20,7 @@ __license__ = "GNU GPL 3.0 or later"
 import sys
 import time
 from time import sleep
+import types
 
 # installed modules
 from OSC import OSCServer
@@ -72,7 +73,6 @@ class OSCHandler(object):
         }
 
         # add a method to an instance of the class
-        import types
         self.m_server.handle_timeout = types.MethodType(handle_timeout, self.m_server)
 
         for i in self.EVENTFUNC:
@@ -294,36 +294,79 @@ class OSCHandler(object):
         return None
 
 if __name__ == "__main__":
-
+        
     # initialize field
     field = visualsys.Field()
     # initialize pyglet 
     field.initScreen()
+
+    # pyglet stuff
+    """
 
     def on_draw():
         start = time.clock()
         #field.calcDistances()
         #field.resetPathGrid()
         #field.pathScoreCells()
-        #for connector in field.m_connector_dict.values():
-            #connector.addPath(field.findPath(connector))
+        #field.pathfindConnectors()
         field.m_screen.clear()
         field.renderAll()
         field.drawAll()
         #print "draw loop in",(time.clock() - start)*1000,"ms"
 
-    #field.m_screen.on_draw = on_draw
+    def on_key_press(symbol, modifiers):
+        MOVEME = 25
+        print "key press.",
+        if symbol == visualsys.pyglet.window.key.SPACE:
+            print "SPACE"
+            field.m_screen.clear()
+            field.renderAll()
+            return
+        elif symbol == visualsys.pyglet.window.key.LEFT:
+            print "LEFT"
+            rx = -MOVEME
+            ry = 0
+        elif symbol == visualsys.pyglet.window.key.RIGHT:
+            print "RIGHT"
+            rx = MOVEME
+            ry = 0
+        elif symbol == visualsys.pyglet.window.key.UP:
+            print "UP"
+            rx = 0
+            ry = MOVEME
+        elif symbol == visualsys.pyglet.window.key.DOWN:
+            print "DOWN"
+            rx = 0
+            ry = -MOVEME
+        else:
+            return
+        # move cell
+        #playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
+
+    field.m_screen.on_draw = on_draw
+    field.m_screen.on_key_press = on_key_press
+    field.m_screen.set_visible()
+    """
+
     #visualsys.pyglet.app.run()
 
     osc = OSCHandler(field)
-    while osc.m_run:
+
+    keep_running = True
+    while keep_running:
+
         visualsys.pyglet.clock.tick()
-        #for window in visualsys.pyglet.app.windows:
-        field.m_screen.switch_to()
-        field.m_screen.dispatch_events()
-        field.m_screen.dispatch_event('on_draw')
-        field.m_screen.flip()
+
+        for window in visualsys.pyglet.app.windows:
+            window.switch_to()
+            window.dispatch_events()
+            window.dispatch_event('on_draw')
+            window.flip()
+
+        # do all the things
+        #field.on_cycle()
         # call user script
         osc.each_frame()
+        keep_running = osc.m_run and field.m_still_running
 
     osc.m_server.close()

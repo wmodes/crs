@@ -38,7 +38,8 @@ from gridmap import GridMap
 from pathfinder import PathFinder
 import bezier
 import oschandlers
-
+from field_class import Field
+from graphelement_classes import GraphElement,Cell,Connector
 
 # constants
 LOGFILE = config.logfile
@@ -117,6 +118,16 @@ class Field(object):
         height = self.m_ymax_screen - self.m_ymin_screen
         self.m_screen = pyglet.window.Window(width=width,height=height,
                                              resizable=True)
+        print "field:initScreen"
+        pygopt = 'debug_gl'
+        pyglet.options[pygopt] = True
+        print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
+        pygopt = 'debug_gl_trace'
+        pyglet.options[pygopt] = True
+        print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
+        pygopt = 'debug_trace'
+        pyglet.options[pygopt] = True
+        print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
         pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
@@ -151,79 +162,6 @@ class Field(object):
         #print "draw loop in",(time.clock() - start)*1000,"ms"
 
     # Scaling
-
-    #def initScaling(self, pmin_field, pmax_field, pmin_vector, pmax_vector,
-                    #pmin_screen, pmax_screen, path_unit, mode):
-        """Set up scaling in the field.
-
-        A word about graphics scaling:
-         * The vision tracking system (our input data) measures in meters.
-         * The laser DAC measures in uh, int16? -32,768 to 32,768
-         * Pyglet measures in pixels at the screen resolution of the window you create
-         * The pathfinding units are each some ratio of the smallest expected radius
-
-         So we will keep eveything internally in centemeters (so we can use ints
-         instead of floats), and then convert it to the appropriate units before 
-         display depending on the output mode
-
-        """
-        """
-
-        self.m_xmin_field = xmin_field = pmin_field[0]
-        self.m_ymin_field = ymin_field = pmin_field[1]
-        self.m_xmax_field = xmax_field = pmax_field[0]
-        self.m_ymax_field = ymax_field = pmax_field[1]
-        self.m_xmin_vector = xmin_vector = pmin_vector[0]
-        self.m_ymin_vector = ymin_vector = pmin_vector[1]
-        self.m_xmax_vector = xmax_vector = pmax_vector[0]
-        self.m_ymax_vector = ymax_vector = pmax_vector[1]
-        self.m_xmin_screen = xmin_screen = pmin_screen[0]
-        self.m_ymin_screen = ymin_screen = pmin_screen[1]
-        self.m_xmax_screen = xmax_screen = pmax_screen[0]
-        self.m_ymax_screen = ymax_screen = pmax_screen[1]
-        self.m_path_unit = path_unit
-        self.m_output_mode = mode
-
-        # in order to find out how to display this,
-        #   1) we find the aspect ratio (x/y) of the screen or vector (depending on the
-        #      mode). 
-        #   2) Then if the aspect ratio (x/y) of the reported field is greater, we
-        #      set the x axis to stretch to the edges of screen (or vector) and then use
-        #      that value to determine the scaling.
-        #   3) But if the aspect ratio (x/y) of the reported field is less than,
-        #      we set the y axis to stretch to the top and bottom of screen (or
-        #      vector) and use that value to determine the scaling.
-        if self.m_output_mode == MODE_SCREEN:
-            display_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
-        else:
-            display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
-        field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
-        if field_aspect > display_aspect:
-            self.m_xmargin = int(xmax_screen*DEF_MARGIN)
-            print "Longer in the x dimension"
-            self.m_vector_scale = \
-                float(xmax_vector-xmin_vector)/(xmax_field-xmin_field)
-            self.m_screen_scale = \
-                float(xmax_screen-xmin_screen-(self.m_xmargin*2))/(xmax_field-xmin_field)
-            self.m_ymargin = \
-                int(((ymax_screen-ymin_screen)-((ymax_field-ymin_field)*self.m_screen_scale)) / 2)
-        else:
-            print "Longer in the y dimension"
-            self.m_ymargin = int(ymax_screen*DEF_MARGIN)
-            self.m_vector_scale = \
-                float(ymax_vector-ymin_vector)/(ymax_field-ymin_field)
-            self.m_screen_scale = \
-                float(ymax_screen-ymin_screen-(self.m_ymargin*2))/(ymax_field-ymin_field)
-            self.m_xmargin = \
-                int(((xmax_screen-xmin_screen)-((xmax_field-xmin_field)*self.m_screen_scale)) / 2)
-        #print "path unit:",path_unit," path_scale:",float(1)/path_unit
-        self.m_path_scale = float(1)/path_unit
-        print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
-        print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
-        print "Screen scale:",self.m_screen_scale
-        print "Screen margins:",(self.m_xmargin,self.m_ymargin)
-        print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
-        """
 
     def setScaling(self,pmin_field=None,pmax_field=None,pmin_vector=None,pmax_vector=None,
                       pmin_screen=None,pmax_screen=None,path_unit=None,output_mode=None):
@@ -337,16 +275,23 @@ class Field(object):
             index = [0,1,1,2,2,3,3,0]
             screen_pts = self.rescale_pt2out(points)
             #print "boundary points (screen):",screen_pts
+            # boundary points (screen): [(72, 73), (72, 721), (1368, 721), (1368, 73)]
             #print "proc screen_pts:",tuple(chain(*screen_pts))
+            # proc screen_pts: (72, 73, 72, 721, 1368, 721, 1368, 73)
+            print "PYGLET:pyglet.graphics.draw_indexed(",len(screen_pts),", pyglet.gl.GL_LINES,"
+            print "           ",index
+            print "           ('v2i',",tuple(chain(*screen_pts)),"),"
+            print "       )"
             pyglet.graphics.draw_indexed(len(screen_pts), pyglet.gl.GL_LINES,
                 index,
                 ('v2i',tuple(chain(*screen_pts))),
             )
-            #point = (self.m_xmin_field,self.m_ymin_field)
-            #radius = self.rescale_num2out(DEF_RADIUS)
-            #shape = Circle(self,point,radius,DEF_LINECOLOR,solid=False)
-            #shape.render()
-            #shape.draw()
+            point = (self.m_xmin_field,self.m_ymin_field)
+            radius = self.rescale_num2out(DEF_RADIUS)
+            shape = Circle(self,point,radius,DEF_LINECOLOR,solid=False)
+            shape.render()
+            shape.draw()
+            #print "Field:drawGuides"
 
     # Cells
 
@@ -736,6 +681,8 @@ class Field(object):
             scale = self.m_screen_vector
         return n*scale
 
+
+# basic data elements
 
 class GraphElement(object):
 

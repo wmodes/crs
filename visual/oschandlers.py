@@ -318,11 +318,11 @@ if __name__ == "__main__":
     osc = OSCHandler(field)
     while osc.m_run:
         visualsys.pyglet.clock.tick()
-        for window in visualsys.pyglet.app.windows:
-            field.m_screen.switch_to()
-            field.m_screen.dispatch_events()
-            field.m_screen.dispatch_event('on_draw')
-            field.m_screen.flip()
+        #for window in visualsys.pyglet.app.windows:
+        field.m_screen.switch_to()
+        field.m_screen.dispatch_events()
+        field.m_screen.dispatch_event('on_draw')
+        field.m_screen.flip()
         # call user script
         osc.each_frame()
 

@@ -116,15 +116,15 @@ class Field(object):
         width = self.m_xmax_screen - self.m_xmin_screen
         height = self.m_ymax_screen - self.m_ymin_screen
         print "field:initScreen"
-        pygopt = 'debug_gl'
-        pyglet.options[pygopt] = True
-        print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
-        pygopt = 'debug_gl_trace'
-        pyglet.options[pygopt] = True
-        print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
-        pygopt = 'debug_trace'
-        pyglet.options[pygopt] = True
-        print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
+        #pygopt = 'debug_gl'
+        #pyglet.options[pygopt] = True
+        #print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
+        #pygopt = 'debug_gl_trace'
+        #pyglet.options[pygopt] = True
+        #print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
+        #pygopt = 'debug_trace'
+        #pyglet.options[pygopt] = True
+        #print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
         self.m_screen = pyglet.window.Window(width=width,height=height,\
                              resizable=True,visible=False)
         # set window background color = r, g, b, alpha
@@ -137,11 +137,8 @@ class Field(object):
         # being passed correctly
         self.m_screen.on_draw = self.on_draw
         self.m_screen.on_resize = self.on_resize
-        #self.m_screen.on_window_close = self.on_window_close
         self.m_screen.on_key_press = self.on_key_press
         self.m_screen.set_minimum_size(XMAX_SCREEN/4, YMAX_SCREEN/4)
-        #self.m_screen.set_maximum_size(XMAX_SCREEN, YMAX_SCREEN)
-        #visualsys.pyglet.app.run()
         self.m_screen.set_visible()
 
     # pyglet stuff
@@ -152,7 +149,6 @@ class Field(object):
         self.m_screen.set_size(width, height)
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
-        #pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
 
     def on_window_close(self,window):
         print "field:on_window_close"
@@ -314,8 +310,8 @@ class Field(object):
     def drawAll(self):
         """Draw all the cells and connectors."""
         self.drawGuides()
-        self.drawAllCells()
-        self.drawAllConnectors()
+        #self.drawAllCells()
+        #self.drawAllConnectors()
 
     # Guides
 
@@ -338,6 +334,7 @@ class Field(object):
             #print "           ",index
             #print "           ('v2i',",tuple(chain(*screen_pts)),"),"
             #print "       )"
+            # TESTED: This callis sending the correct params
             pyglet.graphics.draw_indexed(len(screen_pts), pyglet.gl.GL_LINES,
                 index,
                 ('v2i',tuple(chain(*screen_pts))),

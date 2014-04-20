@@ -38,9 +38,11 @@ from gridmap import GridMap
 from pathfinder import PathFinder
 import bezier
 import oschandlers
+import debug
 
 # constants
 LOGFILE = config.logfile
+
 DEF_RADIUS = config.default_radius
 DEF_ORIENT = config.default_orient
 DEF_LINECOLOR = config.default_linecolor
@@ -74,6 +76,9 @@ MIN_CONX_DIST = config.minimum_connection_distance
 
 MAX_LOST_PATIENCE = config.max_lost_patience
 
+# init debugging
+dbug = debug.Debug()
+
 # create logger
 logger = logging.getLogger(__appname__)
 logging.basicConfig(filename=LOGFILE,level=logging.DEBUG,
@@ -81,6 +86,83 @@ logging.basicConfig(filename=LOGFILE,level=logging.DEBUG,
 logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 warnings.filterwarnings('ignore')
 
+
+# Pyglet stuff
+
+class Window(pyglet.window.Window):
+
+    def __init__(self,field,width,height):
+        # initialize pyglet 
+        #(xmax_screen,ymax_screen) = self.screenMax()
+        #self.m_screen = pyglet.window.Window(width=xmax_screen,height=ymax_screen)
+        self.m_field = field
+        if dbug.LEV & dbug.PYG: print "Window:init"
+        #super(Window, self).__init__(width, height, *args)
+        super(Window, self).__init__(width, height,resizable=True,visible=False)
+
+        # set window background color = r, g, b, alpha
+        # each value goes from 0.0 to 1.0
+        # ... perform some additional initialisation
+        pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+        self.clear()
+
+    def resize(self,width,height):
+        self.set_size(width, height)
+        self.m_field.m_xmax_screen = width
+        self.m_field.m_ymax_screen = height
+
+    def on_close(self, width, height):
+        self.m_field.m_still_running = False
+        if dbug.LEV & dbug.PYG: print "Window:on_close:exiting"
+        self.close()
+        #super(Window, self).on_close()
+
+    def on_resize(self, width, height):
+        self.m_field.setScaling(pmin_screen=(0,0),pmax_screen=(width,height))
+        if dbug.LEV & dbug.PYG: print "Window:on_resize:width=",width,"height=",height
+        super(Window, self).on_resize(width, height)
+
+    def on_draw(self):
+        #self.calcDistances()
+        #self.resetPathGrid()
+        #self.pathScoreCells()
+        #self.pathfindConnectors()
+        self.clear()
+        self.m_field.renderAll()
+        self.m_field.drawAll()
+        #print "draw loop in",(time.clock() - start)*1000,"ms"
+
+    def on_key_press(self, symbol, modifiers):
+        MOVEME = 25
+        if symbol == pyglet.window.key.SPACE:
+            if dbug.LEV & dbug.PYG: print "Window:KeyPress:SPACE"
+            self.clear()
+            self.m_field.renderAll()
+            return
+        elif symbol == pyglet.window.key.LEFT:
+            if dbug.LEV & dbug.PYG: print "Window:KeyPress:LEFT"
+            rx = -MOVEME
+            ry = 0
+        elif symbol == pyglet.window.key.RIGHT:
+            if dbug.LEV & dbug.PYG: print "Window:KeyPress:RIGHT"
+            rx = MOVEME
+            ry = 0
+        elif symbol == pyglet.window.key.UP:
+            if dbug.LEV & dbug.PYG: print "Window:KeyPress:UP"
+            rx = 0
+            ry = MOVEME
+        elif symbol == pyglet.window.key.DOWN:
+            if dbug.LEV & dbug.PYG: print "Window:KeyPress:DOWN"
+            rx = 0
+            ry = -MOVEME
+        elif symbol == pyglet.window.key.ESCAPE:
+            if dbug.LEV & dbug.PYG: print "Window:KeyPress:ESCAPE:exiting"
+            self.m_field.m_still_running = False
+            self.dispatch_event('on_close')
+        else:
+            if dbug.LEV & dbug.PYG: print "Window:KeyPress:unhandled"
+            return
+        # move cell
  
 # basic data elements
 
@@ -107,26 +189,16 @@ class Field(object):
                          PATH_UNIT, MODE_SCREEN)
         self.makePathGrid()
 
-    # Screen stuff
+    # Screen Stuff
 
     def initScreen(self):
-        # initialize pyglet 
+        # initialize window
         #(xmax_screen,ymax_screen) = self.screenMax()
         #self.m_screen = pyglet.window.Window(width=xmax_screen,height=ymax_screen)
         width = self.m_xmax_screen - self.m_xmin_screen
         height = self.m_ymax_screen - self.m_ymin_screen
-        print "field:initScreen"
-        #pygopt = 'debug_gl'
-        #pyglet.options[pygopt] = True
-        #print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
-        #pygopt = 'debug_gl_trace'
-        #pyglet.options[pygopt] = True
-        #print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
-        #pygopt = 'debug_trace'
-        #pyglet.options[pygopt] = True
-        #print "pyglet.options[",pygopt,"] = ",pyglet.options[pygopt]
-        self.m_screen = pyglet.window.Window(width=width,height=height,\
-                             resizable=True,visible=False)
+        if dbug.LEV & dbug.FIELD: print "field:initScreen"
+        self.m_screen = Window(self,width=width,height=height)
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
         # ... perform some additional initialisation
@@ -135,70 +207,8 @@ class Field(object):
         # register draw routing with pyglet
         # TESTED: These functions are being called correctly, and params are
         # being passed correctly
-        self.m_screen.on_draw = self.on_draw
-        self.m_screen.on_resize = self.on_resize
-        self.m_screen.on_key_press = self.on_key_press
         self.m_screen.set_minimum_size(XMAX_SCREEN/4, YMAX_SCREEN/4)
         self.m_screen.set_visible()
-
-    # pyglet stuff
-
-    def resizeScreen(self):
-        width = self.m_xmax_screen - self.m_xmin_screen
-        height = self.m_ymax_screen - self.m_ymin_screen
-        self.m_screen.set_size(width, height)
-        # set window background color = r, g, b, alpha
-        # each value goes from 0.0 to 1.0
-
-    def on_window_close(self,window):
-        print "field:on_window_close"
-        self.m_still_running = False
-        event_loop.exit()
-        return pyglet.event.EVENT_HANDLED
-
-    def on_resize(self, width, height):
-        self.setScaling(pmin_screen=(0,0),pmax_screen=(width,height))
-        print "Field:on_resize:width=",width,"height=",height
-
-    def on_draw(self):
-        start = time.clock()
-        #self.calcDistances()
-        #self.resetPathGrid()
-        #self.pathScoreCells()
-        #self.pathfindConnectors()
-        self.m_screen.clear()
-        self.renderAll()
-        self.drawAll()
-        #print "draw loop in",(time.clock() - start)*1000,"ms"
-
-    def on_key_press(self, symbol, modifiers):
-        MOVEME = 25
-        print "key press.",
-        if symbol == pyglet.window.key.SPACE:
-            print "SPACE"
-            self.m_screen.clear()
-            self.renderAll()
-            return
-        elif symbol == pyglet.window.key.LEFT:
-            print "LEFT"
-            rx = -MOVEME
-            ry = 0
-        elif symbol == pyglet.window.key.RIGHT:
-            print "RIGHT"
-            rx = MOVEME
-            ry = 0
-        elif symbol == pyglet.window.key.UP:
-            print "UP"
-            rx = 0
-            ry = MOVEME
-        elif symbol == pyglet.window.key.DOWN:
-            print "DOWN"
-            rx = 0
-            ry = -MOVEME
-        else:
-            return
-        # move cell
-        #playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
 
     # Scaling
 
@@ -275,7 +285,7 @@ class Field(object):
         else:
             display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
         if field_aspect > display_aspect:
-            print "Longer in the x dimension"
+            if dbug.LEV & dbug.FIELD: print "Field:SetScaling:Longer in the x dimension"
             field_xlen=xmax_field-xmin_field
             if field_xlen:
                 self.m_vector_scale = \
@@ -285,7 +295,7 @@ class Field(object):
                 self.m_ymargin = \
                     int(((ymax_screen-ymin_screen)-((ymax_field-ymin_field)*self.m_screen_scale)) / 2)
         else:
-            print "Longer in the y dimension"
+            if dbug.LEV & dbug.FIELD: print "Field:SetScaling:Longer in the y dimension"
             field_ylen=ymax_field-ymin_field
             if field_ylen:
                 self.m_vector_scale = \
@@ -294,11 +304,11 @@ class Field(object):
                     float(ymax_screen-ymin_screen-(self.m_ymargin*2))/field_ylen
                 self.m_xmargin = \
                     int(((xmax_screen-xmin_screen)-((xmax_field-xmin_field)*self.m_screen_scale)) / 2)
-        #print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
-        print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
+        if dbug.LEV & dbug.MORE: print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
+        if dbug.LEV & dbug.MORE: print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
         #print "Screen scale:",self.m_screen_scale
         #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
-        print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
+        if dbug.LEV & dbug.MORE: print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
 
     # Everything
 
@@ -310,8 +320,8 @@ class Field(object):
     def drawAll(self):
         """Draw all the cells and connectors."""
         self.drawGuides()
-        #self.drawAllCells()
-        #self.drawAllConnectors()
+        self.drawAllCells()
+        self.drawAllConnectors()
 
     # Guides
 
@@ -323,18 +333,17 @@ class Field(object):
                       (self.m_xmin_field,self.m_ymax_field),
                       (self.m_xmax_field,self.m_ymax_field),
                       (self.m_xmax_field,self.m_ymin_field)]
-            #print "boundary points (field):",points
+            if dbug.LEV & dbug.GRAPH: print "boundary points (field):",points
             index = [0,1,1,2,2,3,3,0]
             screen_pts = self.rescale_pt2out(points)
-            #print "boundary points (screen):",screen_pts
+            if dbug.LEV & dbug.GRAPH: print "boundary points (screen):",screen_pts
             # boundary points (screen): [(72, 73), (72, 721), (1368, 721), (1368, 73)]
-            #print "proc screen_pts:",tuple(chain(*screen_pts))
+            if dbug.LEV & dbug.GRAPH: print "proc screen_pts:",tuple(chain(*screen_pts))
             # proc screen_pts: (72, 73, 72, 721, 1368, 721, 1368, 73)
-            #print "PYGLET:pyglet.graphics.draw_indexed(",len(screen_pts),", pyglet.gl.GL_LINES,"
-            #print "           ",index
-            #print "           ('v2i',",tuple(chain(*screen_pts)),"),"
-            #print "       )"
-            # TESTED: This callis sending the correct params
+            if dbug.LEV & dbug.GRAPH: print "PYGLET:pyglet.graphics.draw_indexed(",len(screen_pts),", pyglet.gl.GL_LINES,"
+            if dbug.LEV & dbug.GRAPH: print "           ",index
+            if dbug.LEV & dbug.GRAPH: print "           ('v2i',",tuple(chain(*screen_pts)),"),"
+            if dbug.LEV & dbug.GRAPH: print "       )"
             pyglet.graphics.draw_indexed(len(screen_pts), pyglet.gl.GL_LINES,
                 index,
                 ('v2i',tuple(chain(*screen_pts))),
@@ -344,7 +353,7 @@ class Field(object):
             #shape = Circle(self,point,radius,DEF_LINECOLOR,solid=False)
             #shape.render()
             #shape.draw()
-            #print "Field:drawGuides"
+            if dbug.LEV & dbug.MORE: print "Field:drawGuides"
 
     # Cells
 
@@ -358,12 +367,12 @@ class Field(object):
             # add to the cell list
             self.m_cell_dict[id] = cell
             self.m_our_cell_count += 1
-            print "Field:createCell:count:",self.m_our_cell_count
+            if dbug.LEV & dbug.FIELD: print "Field:createCell:count:",self.m_our_cell_count
         # but if it already exists
         else:
             # let's make sure it is no longer suspect
             if id in self.m_suspect_cells:
-                print "Field:createCell:Cell",id,"was suspected lost but is now above suspicion"
+                if dbug.LEV & dbug.FIELD: print "Field:createCell:Cell",id,"was suspected lost but is now above suspicion"
                 del self.m_suspect_cells[id]
 
     def updateCell(self, id, p=None, r=None, orient=None, effects=None, color=None):
@@ -386,14 +395,14 @@ class Field(object):
             # remove from suspect list
             if id in self.m_suspect_cells:
                 del self.m_suspect_cells[id]
-            print "Field:updateCell:Cell",id,"was lost and has been recreated"
+            if dbug.LEV & dbug.FIELD: print "Field:updateCell:Cell",id,"was lost and has been recreated"
         # if cell exists, but is on suspect list
         elif id in self.m_suspect_cells:
             # remove from suspect list
             del self.m_suspect_cells[id]
             # increment count
             self.m_our_cell_count += 1
-            print "Field:updateCell:Cell",id,"was suspected lost but is now above suspicion"
+            if dbug.LEV & dbug.FIELD: print "Field:updateCell:Cell",id,"was suspected lost but is now above suspicion"
         # update cell's info
         self.m_cell_dict[id].update(p, r, orient, effects, color)
 
@@ -427,20 +436,20 @@ class Field(object):
         if id in self.m_cell_dict:
             #cell.cellDisconnect()
             # delete from the cell master list of cells
-            print "Field:delCell:deleting",id
+            if dbug.LEV & dbug.FIELD: print "Field:delCell:deleting",id
             del self.m_cell_dict[id]
             if id in self.m_suspect_cells:
                 del self.m_suspect_cells[id]
             else:
                 self.m_our_cell_count -= 1
-            print "Field:delCell:count:",self.m_our_cell_count
+            if dbug.LEV & dbug.FIELD: print "Field:delCell:count:",self.m_our_cell_count
 
     def checkPeopleCount(self,reported_count):
         self.m_reported_cell_count = reported_count
         our_count = self.m_our_cell_count
-        print "Field:checkPeopleCount:count:",our_count,"- Reported:",self.m_reported_cell_count
+        if dbug.LEV & dbug.FIELD: print "Field:checkPeopleCount:count:",our_count,"- Reported:",self.m_reported_cell_count
         if reported_count != our_count:
-            print "Field:checkPeopleCount:Count mismatch"
+            if dbug.LEV & dbug.FIELD: print "Field:checkPeopleCount:Count mismatch"
             self.hideAllCells()
             self.m_out_cell_count = 0
 
@@ -452,10 +461,10 @@ class Field(object):
         """
         self.m_suspect_cells[id] = 1
         self.m_our_cell_count -= 1
-        print "Field:hideCell:count:",self.m_our_cell_count
+        if dbug.LEV & dbug.FIELD: print "Field:hideCell:count:",self.m_our_cell_count
 
     def hideAllCells(self):
-        print "Field:hideAllCells"
+        if dbug.LEV & dbug.FIELD: print "Field:hideAllCells"
         for id in self.m_cell_dict:
             self.hideCell(id)
 
@@ -470,7 +479,7 @@ class Field(object):
             cell.render()
             #del self.m_suspect_cells[cell.m_id]
         else:
-            print "Field:renderCell:Cell",cell.m_id,"is suspected lost for",\
+            if dbug.LEV & dbug.FIELD: print "Field:renderCell:Cell",cell.m_id,"is suspected lost for",\
                   self.m_suspect_cells[cell.m_id],"frames"
             if self.m_suspect_cells[cell.m_id] > MAX_LOST_PATIENCE:
                 self.delCell(cell.m_id)
@@ -524,7 +533,7 @@ class Field(object):
             if connector.m_id in self.m_suspect_conxs:
                 del self.m_suspect_conxs[connector.m_id]
         else:
-            print "Field:renderConnector:Conx",connector.m_id,"between",\
+            if dbug.LEV & dbug.FIELD: print "Field:renderConnector:Conx",connector.m_id,"between",\
                 connector.m_cell0.m_id,"and",connector.m_cell1.m_id,"is suspected lost"
             if self.m_suspect_conxs[connector.m_id] > MAX_LOST_PATIENCE:
                 self.delConnector(connector.m_id)
@@ -835,7 +844,7 @@ class Cell(GraphElement):
         To actually delete it, remove it from the list of cells in the Field
         class.
         """
-        print "Disconnecting cell",self.m_id
+        if dbug.LEV & dbug.DATA: print "Cell:cellDisconnect:Disconnecting ",self.m_id
         # we make a copy because we can't iterate over the dict if we are
         # deleting stuff from it!
         new_connector_dict = self.m_connector_dict.copy()
@@ -908,7 +917,7 @@ class Connector(GraphElement):
         To actually delete it, remove it from the list of connectors in the Field
         class.
         """
-        print "Disconnecting connector",self.m_id,"between",\
+        if dbug.LEV & dbug.DATA: print "Connector:conxDisconnectThyself:Disconnecting ",self.m_id,"between",\
                 self.m_cell0.m_id,"and",self.m_cell1.m_id
         # for simplicity's sake, we do the work rather than passing to
         # the object to do the work
@@ -948,8 +957,8 @@ class GraphicObject(object):
     def render(self):
         # e.g., self.m_arcpoints = [(10,5),(15,5),(15,10),(15,15),(10,15),(5,15),(5,10)]
         # e.g., self.m_arcindex = [(0,1,2,3),(3,4,5,6)]
-        #print "self.m_arcpoints = ",self.m_arcpoints
-        #print "self.m_arcindex = ",self.m_arcindex
+        if dbug.LEV & dbug.GRAPH: print "Graph:render:self.m_arcpoints = ",self.m_arcpoints
+        if dbug.LEV & dbug.GRAPH: print "Graph:render:self.m_arcindex = ",self.m_arcindex
 
         for i in range(len(self.m_arcindex)):
             # e.g., self.m_arcindex[i] = (0,1,2,3)
@@ -970,13 +979,13 @@ class GraphicObject(object):
             self.m_index.append(index)
 
     def draw(self):
-        #print "points:",self.m_points
-        #print "index:",self.m_index
+        if dbug.LEV & dbug.GRAPH: print "Graph:draw:self.m_points =",self.m_points
+        if dbug.LEV & dbug.GRAPH: print "Graph:draw:index:",self.m_index
         for i in range(len(self.m_index)):
             points = self.m_points[i]
-            #print "Points:",points
+            if dbug.LEV & dbug.GRAPH: print "Graph:draw:points =",points
             scaled_pts = self.m_field.rescale_pt2out(points)
-            #print "Scaled_pts:",scaled_pts
+            if dbug.LEV & dbug.GRAPH: print "Graph:draw:scaled_points =",scaled_points
             index = self.m_index[i]
             pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
             pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_LINES,
@@ -1034,9 +1043,9 @@ class Circle(GraphicObject):
     def draw(self):
         for i in range(len(self.m_index)):
             points = self.m_points[i]
-            #print "Points:",points
+            if dbug.LEV & dbug.GRAPH: print "Cirlce:draw:Points =",points
             scaled_pts = self.m_field.rescale_pt2out(points)
-            #print "Scaled_pts:",scaled_pts
+            if dbug.LEV & dbug.GRAPH: print "Cirlce:draw:Scaled_pts =",scaled_pts
             index = self.m_index[i]
             pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
             if not self.m_solid:
@@ -1219,68 +1228,33 @@ class EffectDouble(Effect):
         # do double
         return prim
 
-
-
 if __name__ == "__main__":
-
-
+        
     # initialize field
     field = Field()
     # initialize pyglet 
     field.initScreen()
 
-    # generate test data
-    rmin = 20
-    rmax = 70
-    xmin_field = rmax
-    xmax_field = XMAX_FIELD-rmax
-    ymin_field = rmax
-    ymax_field = YMAX_FIELD-rmax
-    people = 6
-    connections = 6
+    # pyglet stuff
+    #pyglet.app.run()
 
-    # make cells
-    #cell_list=[]
-    for i in range(people):
-        cell = field.createCell(i)
-        p = (randint(xmin_field,xmax_field), randint(ymin_field,ymax_field))
-        r = randint(rmin,rmax)
-        field.updateCell(i,p,r)
+    osc = oschandlers.OSCHandler(field)
 
-    # make connectors
-    connector_list=[]
-    for i in range(connections):
-        cell0 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
-        #print "cell0:",cell0.m_id," loc:",cell0.m_location
-        cell1 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
-        while cell0 == cell1:
-            cell1 = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
-        #print "cell1:",cell1.m_id," loc:",cell1.m_location
-        field.createConnector(i,cell0,cell1)
+    keep_running = True
+    while keep_running:
 
-    playcell = field.m_cell_dict[random.choice(field.m_cell_dict.keys())]
+        # call user script
+        osc.each_frame()
 
-    #for connector in field.m_connector_dict.values():
-        #connector.addPath(field.findPath(connector))
-    #field.printGrid()
+        pyglet.clock.tick()
 
-    pyglet.app.run()
+        for window in pyglet.app.windows:
+            window.switch_to()
+            window.dispatch_events()
+            if field.m_still_running:
+                window.dispatch_event('on_draw')
+                window.flip()
 
+        keep_running = osc.m_run and field.m_still_running
 
-    """
-    realizing I can't create the classes until I know how I'm going to use them,
-    I'll pseudocode the control loop here at the highest level
-
-    while True:
-        for each tracking msg on OSC stack
-            record the position,radius of cells
-        for each conductor msg on OSC stack
-            record new connectors
-            record style,intensity for cells
-            record style,intensity for connectors
-            record the rollcall
-        for each of the cells in the rollcall
-            draw them
-        for each of the connectors with two cells in the rollcall
-            draw them
-    """
+    osc.m_server.close()

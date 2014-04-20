@@ -1,10 +1,10 @@
-
+#
 # graphics configuration
 
 draw_blobs = True
 default_radius = 75
 default_orient = 0
-inverse=True
+inverse=False
 if inverse:
     default_bkgdcolor = (.3375, .3375, .3375, 1)    # med gray
     default_guidecolor = (0,0,0)  # black
@@ -33,17 +33,23 @@ xmax_vector = 32768
 ymax_vector = 32768
 xmin_screen = 0
 ymin_screen = 0
-xmax_screen = 1440
-ymax_screen = 795
+xmax_screen = 640
+ymax_screen = 480
+#xmax_screen = 1440
+#ymax_screen = 795
 
-default_margin=.05
+default_margin=.03
 
 #path_unit = 20   # 20cm = about 8in
 #path_unit = 40   # 20cm = about 8in
 path_unit = 30   # 20cm = about 8in
 
+# Internal config
+#
+
 logfile="crs-visual.log"
 freq_regular_reports = 100
+debug_level = 22
 
 max_lost_patience = 10
 

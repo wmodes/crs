@@ -28,7 +28,6 @@ from OSC import OSCServer
 # local modules
 import config
 import visualsys
-import debug
 
 # Constants
 OSCPORT = config.oscport
@@ -36,9 +35,6 @@ OSCHOST = config.oschost if config.oschost else "localhost"
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
 FREQ_REG_REPORT = config.freq_regular_reports
-
-# init debugging
-dbug = debug.Debug()
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
@@ -112,7 +108,7 @@ class OSCHandler(object):
         # tags will contain 'fff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
-        if dbug.LEV & dbug.MSGS: print ("Now do something with", user,args[2],args[0],1-args[1]) 
+        print ("Now do something with", user,args[2],args[0],1-args[1]) 
 
     def quit_callback(self, path, tags, args, source):
         # don't do this at home (or it'll quit blender)
@@ -121,7 +117,7 @@ class OSCHandler(object):
     # Event handlers
 
     def default_handler(self, path, tags, args, source):
-        if dbug.LEV & dbug.MORE: print "OSC:default_handler:No handler registered for ", path
+        #print "OSC:default_handler:No handler registered for ", path
         return None
 
     def event_tracking_ping(self, path, tags, args, source):
@@ -140,7 +136,8 @@ class OSCHandler(object):
 
         """
         #sample = args[0]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_start"
+        #print "OSC:event_start:",sample
+        print "OSC:event_start"
 
     def event_tracking_set(self, path, tags, args, source):
         """Tracking subsystem is setting params.
@@ -151,7 +148,7 @@ class OSCHandler(object):
             npeople - number of people currently present
 
         """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_set:",path,args,source
+        print "OSC:event_set:",path,args,source
         if path == OSCPATH['minx']:
             self.m_xmin = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
@@ -170,8 +167,7 @@ class OSCHandler(object):
             self.m_field.setScaling(pmax_field=(self.m_field.m_xmax_field,self.m_ymax))
         elif path == OSCPATH['npeople']:
             self.m_field.checkPeopleCount(args[0])
-            return
-        if dbug.LEV & dbug.MSGS: print "OSC:event_set:setScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
+        print "setScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
         # we used to resize the screen, not we just rescale the action within
         # the screen
         #self.m_field.setScreen()
@@ -198,7 +194,7 @@ class OSCHandler(object):
         sample = args[0]
         time = args[1]
         id = args[2]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_entry:cell:",id
+        print "OSC:event_entry:cell:",id
         self.m_field.createCell(id)
 
     def event_tracking_exit(self, path, tags, args, source):
@@ -214,7 +210,7 @@ class OSCHandler(object):
         sample = args[0]
         time = args[1]
         id = args[2]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_exit:cell:",id
+        print "OSC:event_exit:cell:",id
         #print "BEFORE: cells:",self.m_field.m_cell_dict
         #print "BEFORE: conx:",self.m_field.m_connector_dict
         self.m_field.delCell(id)
@@ -247,7 +243,8 @@ class OSCHandler(object):
         # TODO: If npeople doesn't match our record of how many people, we drop
         # them all and let the above functionality handle them
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_update:no id",id,"in registered id list"
+            print "Error: no id",id,"in registered id list"
+            return False
         x = int(100*args[3])       # comes in meters, convert to cm
         y = int(100*args[4])
         vx = int(100*args[5])
@@ -260,7 +257,7 @@ class OSCHandler(object):
         #print "OSC:event_update:",path,args,source
         if sample%FREQ_REG_REPORT == 0:
             #print "OSC:event_update:",path,args,source
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_update:id:",id,"pos:",(x,y),"axis:",major
+            print "    OSC:event_update:id:",id,"pos:",(x,y),"axis:",major
         # TODO: if gid is not equal to 0 than we have a grouping, we need to
         # stop mapping the cell(s) that are not getting updated in new frames
         # alternately, we can just turn all cells invisible each frame and then
@@ -288,12 +285,12 @@ class OSCHandler(object):
         sample = args[0]
         if sample%FREQ_REG_REPORT == 0:
             #print "OSC:event_update:",path,args,source
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_frame::",sample
+            print "    OSC:event_frame::",sample
         return None
 
     def event_tracking_stop(self, path, tags, args, source):
         """Tracking has stopped."""
-        if dbug.LEV & dbug.MSGS: print "OSC:event_stop:",path,args,source
+        print "OSC:event_stop:",path,args,source
         return None
 
 if __name__ == "__main__":
@@ -304,6 +301,53 @@ if __name__ == "__main__":
     field.initScreen()
 
     # pyglet stuff
+    """
+
+    def on_draw():
+        start = time.clock()
+        #field.calcDistances()
+        #field.resetPathGrid()
+        #field.pathScoreCells()
+        #field.pathfindConnectors()
+        field.m_screen.clear()
+        field.renderAll()
+        field.drawAll()
+        #print "draw loop in",(time.clock() - start)*1000,"ms"
+
+    def on_key_press(symbol, modifiers):
+        MOVEME = 25
+        print "key press.",
+        if symbol == visualsys.pyglet.window.key.SPACE:
+            print "SPACE"
+            field.m_screen.clear()
+            field.renderAll()
+            return
+        elif symbol == visualsys.pyglet.window.key.LEFT:
+            print "LEFT"
+            rx = -MOVEME
+            ry = 0
+        elif symbol == visualsys.pyglet.window.key.RIGHT:
+            print "RIGHT"
+            rx = MOVEME
+            ry = 0
+        elif symbol == visualsys.pyglet.window.key.UP:
+            print "UP"
+            rx = 0
+            ry = MOVEME
+        elif symbol == visualsys.pyglet.window.key.DOWN:
+            print "DOWN"
+            rx = 0
+            ry = -MOVEME
+        else:
+            return
+        # move cell
+        #playcell.m_location = (playcell.m_location[0]+rx, playcell.m_location[1]+ry)
+
+    field.m_screen.on_draw = on_draw
+    field.m_screen.on_key_press = on_key_press
+    field.m_screen.set_visible()
+    """
+
     #visualsys.pyglet.app.run()
 
     osc = OSCHandler(field)

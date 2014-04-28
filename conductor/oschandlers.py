@@ -56,7 +56,7 @@ class OSCHandler(object):
         self.m_xmax = 0
         self.m_ymax = 0
 
-        self.EVENTFUNC = {
+        self.eventfunc = {
             'ping': self.event_tracking_ping,
             'start': self.event_tracking_start,
             'stop': self.event_tracking_stop,
@@ -75,8 +75,8 @@ class OSCHandler(object):
         import types
         self.m_server.handle_timeout = types.MethodType(handle_timeout, self.m_server)
 
-        for i in self.EVENTFUNC:
-            self.m_server.addMsgHandler(OSCPATH[i], self.EVENTFUNC[i])
+        for i in self.eventfunc:
+            self.m_server.addMsgHandler(OSCPATH[i], self.eventfunc[i])
 
     # user script that's called by the game engine every frame
     def each_frame(self):
@@ -159,7 +159,7 @@ class OSCHandler(object):
         sample = args[0]
         time = args[1]
         id = args[2]
-        self.m_field.createCell(id)
+        self.m_field.create_cell(id)
 
     def event_tracking_exit(self, path, tags, args, source):
         """Event when person exits field.
@@ -174,7 +174,7 @@ class OSCHandler(object):
         sample = args[0]
         time = args[1]
         id = args[2]
-        self.m_field.delCell(id)
+        self.m_field.del_cell(id)
 
     def event_tracking_update(self, path, tags, args, source):
         """Information about people's movement within field.
@@ -212,8 +212,8 @@ class OSCHandler(object):
         # stop mapping the cell(s) that are not getting updated in new frames
         # alternately, we can just turn all cells invisible each frame and then
         # make them visible as we get an update
-        #print "field.updateCell(",id,",",(x,y),",",major,")"
-        self.m_field.updateCell(id,x,y,vx,vy,major,minor,gid,gsize)
+        #print "field.update_cell(",id,",",(x,y),",",major,")"
+        self.m_field.update_cell(id,x,y,vx,vy,major,minor,gid,gsize)
         # TODO: What happens to connections when someone joins a group? Oh god.
         # In our OSC messages, when two cells become a group, a gid is assigned 
         # the groupsize is incremented, and only one of the cells gets updated
@@ -232,7 +232,7 @@ class OSCHandler(object):
         """
         self.m_field.m_samp = args[0]
         #print "OSC: frame:",args
-        self.m_field.fullStatus()
+        self.m_field.full_status()
 
     def event_tracking_stop(self, path, tags, args, source):
         """Tracking has stopped."""

@@ -89,19 +89,19 @@ class Field(object):
 
     # Cells
 
-    def createCell(self, id):
+    def create_cell(self, id):
         # create cell
         cell = Cell(id)
         # add to the cell list
         self.m_cell_dict[id] = cell
 
-    def updateCell(self,id,x=None,y=None,vx=None,vy=None,major=None,minor=None,
+    def update_cell(self,id,x=None,y=None,vx=None,vy=None,major=None,minor=None,
                    gid=None,gsize=None):
         cell = self.m_cell_dict[id]
         cell.update(x,y,vx,vy,major,minor,gid,gsize)
         cell.calcStuff()
 
-    def delCell(self, id):
+    def del_cell(self, id):
         cell = self.m_cell_dict[id]
         # delete all connectors from master list of connectors
         for conxid in cell.m_conx_dict:
@@ -109,13 +109,13 @@ class Field(object):
                 del self.m_conx_dict[conxid]
         # have cell disconnect all of its connections and refs
         if id in self.m_cell_dict:
-            cell.cellDisconnect()
+            cell.cell_disconnect()
             # delete from the cell master list of cells
             del self.m_cell_dict[id]
 
     # Connectors
 
-    def createConnector(self, id, cell0, cell1):
+    def create_connector(self, id, cell0, cell1):
         # create connector - note we pass self since we want a back reference
         # to field instance
         # NOTE: Connector class takes care of storing the cells as well as
@@ -124,12 +124,12 @@ class Field(object):
         # add to the connector list
         self.m_conx_dict[id] = connector
 
-    def updateConnector(self,id,somestuff):
+    def update_connector(self,id,somestuff):
         # TODO: Add some stuff
         connector = self.m_conx_dict[id]
         connector.update(somestuff)
 
-    def delConnector(self,id):
+    def del_connector(self,id):
         if id in self.m_conx_dict:
             # delete the connector in the cells attached to the connector
             self.m_connectior_dict[id].conxDisconnect()
@@ -142,7 +142,7 @@ class Field(object):
         return ((cell0.m_location[0]-cell1.m_location[0])**2 + 
                 (cell0.m_location[1]-cell1.m_location[1])**2)
 
-    def calcDistances(self):
+    def calc_distances(self):
         # TODO: Implement a more efficient distance algorithm
         # http://stackoverflow.com/questions/22720864/efficiently-calculating-a-eucl
         self.distance = {}
@@ -160,11 +160,11 @@ class Field(object):
                     self.distance[conxid_] = dist
                     #self.distance[str(c1.m_id)+'.'+str(c0.m_id)] = dist
                     if dist < MIN_CONX_DIST:
-                        self.createConnector(conxid,c0,c1)
+                        self.create_connector(conxid,c0,c1)
 
     # status
 
-    def cellStatus(self,id):
+    def cell_status(self,id):
         cell = self.m_cell_dict[id]
         print T1+"Cell",id
         print T2+"location: ("+str(cell.m_x)+","+str(cell.m_y)+")"
@@ -172,17 +172,17 @@ class Field(object):
         print T2+"avgspeed:",cell.m_speed_short,cell.m_speed_med,cell.m_speed_long
         print T2+"avgveloc:",cell.m_vel_short,cell.m_vel_med,cell.m_vel_long
 
-    def conxStatus(self,id):
+    def conx_status(self,id):
         conx = self.m_cell_dict[id]
         print T1+"Connector "+str(id)+" between cells "+str(conx.cell0)+" and "+str(conx.cell1)
 
-    def fullStatus(self):
+    def full_status(self):
         print "Full Status:"
         print T1+"Frame:",self.m_samp
         for id in self.m_cell_dict:
-            self.cellStatus(id)
+            self.cell_status(id)
         for id in self.m_conx_dict:
-            self.conxStatus(id)
+            self.conx_status(id)
 
 
 # Updates and events
@@ -211,7 +211,7 @@ class Update(object):
         self.m_maxcount = max
         self.m_count = 0
 
-        self.UPDATEFUNC = {
+        self.updatefunc = {
             'artifact': self.update_artifact,
             'fromcenter': self.update_fromcenter,
             'fromothers': self.update_fromothers,
@@ -219,7 +219,6 @@ class Update(object):
             'speed': self.update_speed,
             'kinetic': self.update_kinetic,
             'lopside': self.update_lopside,
-            'kinetic': self.update_kinetic,
             'interactive': self.update_interactive,
             'timelong': self.update_timelong,
             'biggroup1': self.update_biggroup1,
@@ -239,10 +238,10 @@ class Update(object):
             'rollcall': self.update_rollcall,
         }
 
-    def updateUpdate(self, value):
+    def update_update(self, value):
         self.m_value = value
 
-    def killUpdate(self):
+    def kill_update(self):
         self.m_count = self.m_maxcount
 
     def sendUpdate(self):
@@ -252,7 +251,7 @@ class Update(object):
         if self.m_freq == FREQ['timed'] and \
              (self.m_count != 0 and self.m_count != self.m_maxcount-1):
             return
-        self.UPDATEFUNC[self.m_type]()
+        self.updatefunc[self.m_type]()
 
     def update_artifact(self):
         """suspected artifact
@@ -528,10 +527,10 @@ class UpdateMgr(object):
     def countUpdates(self):
         for i in self.m_active_updates:
             # increase the count
-            m_count += 1
+            i.m_count += 1
             # if not perpetual update and counter has reached max num
             # TODO: Double check for off-by-one errror here
-            if i.m_maxcount > 0 and i.m_count >= i.m_maxcount:
+            if 0 < i.m_maxcount <= i.m_count:
                 # remove update
                 self.m_active_updates.remove(i)
 
@@ -548,7 +547,7 @@ class GraphElement(object):
 
     addEffect: add an effect to the list of effects that will act on this
         object
-    applyEffects: apply all the effects in the list to the arcs that make
+    apply_effects: apply all the effects in the list to the arcs that make
         up this object
 
     """
@@ -715,7 +714,7 @@ class Cell(GraphElement):
             #connector.conxDisconnect()
             # we may not need this because the connector calls the same thing
             # for it's two cells, including this one
-            #self.delConnector(connector)
+            #self.del_connector(connector)
 
 class Connector(GraphElement):
 
@@ -737,8 +736,8 @@ class Connector(GraphElement):
         self.m_cell0 = cell0
         self.m_cell1 = cell1
         # tell the cells themselves that they now own a connector
-        cell0.addConnector(self)
-        cell1.addConnector(self)
+        cell0.add_connector(self)
+        cell1.add_connector(self)
         GraphElement.__init__(self, effects)
 
     def conxDisconnect(self):
@@ -762,8 +761,8 @@ class Connector(GraphElement):
 
         # OPTION: We let the objects do the work
         # delete the connector from its two cells
-        #self.m_cell0.delConnector(self)
-        #self.m_cell1.delConnector(self)
+        #self.m_cell0.del_connector(self)
+        #self.m_cell1.del_connector(self)
         # delete cells ref'd from this connector
         #self.m_cell0 = None
         #self.m_cell1 = None

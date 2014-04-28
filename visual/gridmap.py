@@ -3,7 +3,6 @@
 # core modules
 from math import copysign
 #from collections import defaultdict
-from math import sqrt
 import numpy
 
 # constants
@@ -13,7 +12,7 @@ PATH_COST_LINE = 3
 PATH_COST_PROX = [6,5,4]
 
 DRAW_GRID = '.'
-DRAW_COST_PROX = "#$@%&0*"
+#DRAW_COST_PROX = "#$@%&0*"
 DRAW_COST_PROX = 'Oo,'
 DRAW_PATH = '+'
 DRAW_PATH_COLIDE = '*'
@@ -29,6 +28,9 @@ class GridMap(object):
 
     def __init__(self, xmax, ymax):
         """ Create a new GridMap with the given amount of x and y squares.  """
+        self.max_r = 0
+        self.opencircle = []
+        self.solidcircle = []
         self.xmax = xmax
         self.ymax = ymax
 
@@ -44,8 +46,7 @@ class GridMap(object):
 
     def gen_circles (self, max_r):
         """ Pre-generate circles to some maximum radius. """
-        self.solidcircle = []
-        self.opencircle = []
+        self.max_r = max_r
         for k_r in range(max_r + 1):
             k_r_sq = k_r ** 2
             newlist = []
@@ -62,7 +63,6 @@ class GridMap(object):
                 #print "opencircle(",k_r,"):",newlist," minus ",self.solidcircle[k_r -2]
                 newlist = [x for x in newlist if x not in self.solidcircle[k_r - 1]]
             self.opencircle.append(newlist)
-        self.max_r = max_r
 
 
     def set_blocked(self, p, r, f):
@@ -76,7 +76,7 @@ class GridMap(object):
         n = len(self.solidcircle) - 1
         # if r is higher than the number we've pregen'd, trim it
         r = min(r,n)
-        f = min(f,len(PATH_COST_PROX)-1)
+        0
         # if r + f is higher than the number we've pregen'd, trim it
         if r + f > n:
             f = max(0, n - r)
@@ -88,16 +88,16 @@ class GridMap(object):
                     (relx,rely) = self.solidcircle[r][j]
                     x = cx + relx
                     y = cy + rely
-                    if x >= 0 and x < self.xmax and\
-                        y >= 0 and y < self.ymax:
+                    if 0 <= x < self.xmax and \
+                       0 <= y < self.ymax:
                         self.map[x][y] = PATH_COST_PROX[i]
             else:
                 for j in range(len(self.opencircle[r+i])):
                     (relx,rely) = self.opencircle[r+i][j]
                     x = cx + relx
                     y = cy + rely
-                    if x >= 0 and x < self.xmax and\
-                        y >= 0 and y < self.ymax:
+                    if 0 <= x < self.xmax and \
+                       0 <= y < self.ymax:
                         self.map[x][y] = PATH_COST_PROX[i]
 
     def set_block_line(self, pathlist):

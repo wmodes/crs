@@ -1,0 +1,34 @@
+TODO
+* Add legs and body to vis
+* Work out method for gathering IPs of other other systems
+* Broadcast request for scaling info upon start
+* Consider switching form centimeters to meters
+* Ask for frame rate
+* /pf/adddest host port framerate
+* Add framerate
+* Fix scaling issue with square field ((-310, -313) , (333, 313)) in which it 
+only draws a small portion of the screen
+
+4.18.2014
+* If people count is diff from our count, we drop everyone (actually add to 
+suspect list)
+* If tracker refs someone we don’t have, we add them
+* Allow resizing screen, recall scaling
+* make connectors check if their cells are still around when they are 
+rendered (at the field level)
+* if not, don’t render and increment suspect list
+* Check to make sure this connector hasn’t exceeded our suspect max
+* remove cell responsibility for deleting connectors 
+
+4.20.2014
+* Create shared modules between visual and conductor systems
+
+4.26.2014
+* Only render or draw shapes if they have location attribute - DONE
+* Make cells and connectors start with shape (rather than object) - DONE
+* Replace class creation with update in field render routines - DONE
+* Add update routine in circle and line class - DONE
+* Allow all params to be optional in Circle and Line class __init__ - DONE
+* Fixed problems with margin where the long margin wasn't recalc'd when screen 
+was resized
+

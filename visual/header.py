@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module that handles debuging info.
+"""Header template file.
 
 Co-related Space is an interactive multimedia installation that engages the
 themes of presence, interaction, and place. Using motion tracking, laser light
@@ -11,21 +11,18 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-__appname__ = "debug.py"
+__appname__ = "header.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
-import config
+# core modules
 
-class Debug(object):
+# installed modules
 
-    def __init__(self):
-        self.LEV = config.debug_level
-        self.MORE  = 0b00000001 # 1
-        self.FIELD = 0b00000010 # 2
-        self.DATA  = 0b00000100 # 4
-        self.GRAPH = 0b00001000 # 8
-        self.MSGS  = 0b00010000 # 16
-        self.PYG   = 0b00100000 # 32
+# local modules
 
+# local classes
+
+# constants
+LOGFILE = config.logfile

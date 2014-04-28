@@ -11,24 +11,23 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
+
 __appname__ = "oschandlers.py"
-__author__  = "Wes Modes (modes.io)"
+__author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
-import sys
-import time
-from time import sleep
 import types
 
 # installed modules
 from OSC import OSCServer
+#import pyglet
 
 # local modules
 import config
-import visualsys
-import debug
+from myfield_class import MyField
+from shared.debug import Debug
 
 # Constants
 OSCPORT = config.oscport
@@ -38,7 +37,7 @@ OSCPATH = config.oscpath
 FREQ_REG_REPORT = config.freq_regular_reports
 
 # init debugging
-dbug = debug.Debug()
+dbug = Debug()
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
@@ -61,7 +60,7 @@ class OSCHandler(object):
         self.m_xmax = 0
         self.m_ymax = 0
 
-        self.EVENTFUNC = {
+        self.eventfunc = {
             'ping': self.event_tracking_ping,
             'start': self.event_tracking_start,
             'stop': self.event_tracking_stop,
@@ -79,8 +78,8 @@ class OSCHandler(object):
         # add a method to an instance of the class
         self.m_server.handle_timeout = types.MethodType(handle_timeout, self.m_server)
 
-        for i in self.EVENTFUNC:
-            self.m_server.addMsgHandler(OSCPATH[i], self.EVENTFUNC[i])
+        for i in self.eventfunc:
+            self.m_server.addMsgHandler(OSCPATH[i], self.eventfunc[i])
 
         # this registers a 'default' handler (for unmatched messages), 
         # an /'error' handler, an '/info' handler.
@@ -155,30 +154,30 @@ class OSCHandler(object):
         if path == OSCPATH['minx']:
             self.m_xmin = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
-            self.m_field.setScaling(pmin_field=(self.m_xmin,self.m_field.m_ymin_field))
+            self.m_field.set_scaling(pmin_field=(self.m_xmin,self.m_field.m_ymin_field))
         elif path == OSCPATH['miny']:
             self.m_ymin = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
-            self.m_field.setScaling(pmin_field=(self.m_field.m_xmin_field,self.m_ymin))
+            self.m_field.set_scaling(pmin_field=(self.m_field.m_xmin_field,self.m_ymin))
         elif path == OSCPATH['maxx']:
             self.m_xmax = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
-            self.m_field.setScaling(pmax_field=(self.m_xmax,self.m_field.m_ymax_field))
+            self.m_field.set_scaling(pmax_field=(self.m_xmax,self.m_field.m_ymax_field))
         elif path == OSCPATH['maxy']:
             self.m_ymax = int(100*args[0])
             # we might not have everything yet, but we udate with what we have
-            self.m_field.setScaling(pmax_field=(self.m_field.m_xmax_field,self.m_ymax))
+            self.m_field.set_scaling(pmax_field=(self.m_field.m_xmax_field,self.m_ymax))
         elif path == OSCPATH['npeople']:
-            self.m_field.checkPeopleCount(args[0])
+            self.m_field.check_people_count(args[0])
             return
-        if dbug.LEV & dbug.MSGS: print "OSC:event_set:setScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
+        if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
         # we used to resize the screen, not we just rescale the action within
         # the screen
         #self.m_field.setScreen()
-        """if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
-            print "setScaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-            self.m_field.setScaling((self.m_xmin,self.m_ymin),(self.m_xmax,self.m_ymax))
-            self.m_field.updateScreen()"""
+        #if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
+            #print "set_scaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
+            #self.m_field.set_scaling((self.m_xmin,self.m_ymin),(self.m_xmax,self.m_ymax))
+            #self.m_field.updateScreen()
             
 
     def event_tracking_entry(self, path, tags, args, source):
@@ -199,7 +198,7 @@ class OSCHandler(object):
         time = args[1]
         id = args[2]
         if dbug.LEV & dbug.MSGS: print "OSC:event_entry:cell:",id
-        self.m_field.createCell(id)
+        self.m_field.create_cell(id)
 
     def event_tracking_exit(self, path, tags, args, source):
         """Event when person exits field.
@@ -217,7 +216,7 @@ class OSCHandler(object):
         if dbug.LEV & dbug.MSGS: print "OSC:event_exit:cell:",id
         #print "BEFORE: cells:",self.m_field.m_cell_dict
         #print "BEFORE: conx:",self.m_field.m_connector_dict
-        self.m_field.delCell(id)
+        self.m_field.del_cell(id)
         #print "AFTER: cells:",self.m_field.m_cell_dict
         #print "AFTER: conx:",self.m_field.m_connector_dict
 
@@ -265,8 +264,8 @@ class OSCHandler(object):
         # stop mapping the cell(s) that are not getting updated in new frames
         # alternately, we can just turn all cells invisible each frame and then
         # make them visible as we get an update
-        #print "field.updateCell(",id,",",(x,y),",",major,")"
-        self.m_field.updateCell(id,(x,y),major)
+        #print "field.update_cell(",id,",",(x,y),",",major,")"
+        self.m_field.update_cell(id,(x,y),major)
         # TODO: What happens to connections when someone joins a group? Oh god.
         # In our OSC messages, when two cells become a group, a gid is assigned 
         # the groupsize is incremented, and only one of the cells gets updated
@@ -299,25 +298,19 @@ class OSCHandler(object):
 if __name__ == "__main__":
         
     # initialize field
-    field = visualsys.Field()
-    # initialize pyglet 
-    field.initScreen()
-
-    # pyglet stuff
-    #visualsys.pyglet.app.run()
+    field = MyField()
+    #field.init_screen()
 
     osc = OSCHandler(field)
 
     keep_running = True
     while keep_running:
 
-        visualsys.pyglet.clock.tick()
-
-        for window in visualsys.pyglet.app.windows:
-            window.switch_to()
-            window.dispatch_events()
-            window.dispatch_event('on_draw')
-            window.flip()
+        #for window in pyglet.app.windows:
+            #window.switch_to()
+            #window.dispatch_events()
+            #window.dispatch_event('on_draw')
+            #window.flip()
 
         # do all the things
         #field.on_cycle()

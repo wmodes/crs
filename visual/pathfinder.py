@@ -175,15 +175,15 @@ if __name__ == "__main__":
     # to test the possibility of "overcomming" blocks
     blocks = [  (1, 1), (0, 2), (1, 2), (0, 3), (1, 3), (2, 3),
                 (2, 5), (2, 5), (2, 5), (2, 7),(2,4),(2,6)]
-    for b in blocks:
-        tm.set_blocked(b)
+    #for b in blocks:
+        #tm.set_blocked(b)
     
     pf = PathFinder(tm.successors, tm.move_cost, tm.estimate)
     
     import time
     t = time.clock()
     path = list(pf.compute_path(start, goal))
-    tm.printme(start,goal,path)
+    #tm.printme(start,goal,path)
 
     print "Elapsed: %s" % (time.clock() - t)
     

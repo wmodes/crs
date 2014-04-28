@@ -1,22 +1,22 @@
 #
 # graphics configuration
 
-draw_blobs = True
+draw_bodies = True
 default_radius = 75
 default_orient = 0
-inverse=False
+inverse=True
 if inverse:
-    default_bkgdcolor = (.3375, .3375, .3375, 1)    # med gray
-    default_guidecolor = (0,0,0)  # black
+    default_bkgdcolor = (0, 0, 0, 1)    # black
+    default_guidecolor = (1,1,1)  # white
     default_linecolor = (1,1,1)     # white
-    default_blobcolor = (.1,.1,.1)  # dark dark gray
+    default_bodycolor = (.2,.2,.2)  # dk gray
 else:
     default_bkgdcolor = (1, 1, 1, 1)    # white
     default_guidecolor = (.1,.1,.1)  # dark dark gray
     default_linecolor = (0,0,0)     # black
-    default_blobcolor = (.1,.1,.1)  # gray
+    default_bodycolor = (.1,.1,.1)  # gray
 
-radius_padding = 1.5      # increased radius of circle around blobs
+radius_padding = 1.5      # increased radius of circle around bodies
 curve_segments = 12     # number of line segs in a curve
 fuzzy_area_for_cells = 1
 

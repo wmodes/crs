@@ -21,10 +21,10 @@ __license__ = "GNU GPL 3.0 or later"
 # installed modules
 
 # local modules
-import config
+from shared import config
 
 # local classes
-from shared.debug import Debug
+from shared import debug
 from shared.dataelement_class import Cell,Connector
 from graphelement_class import Circle, Line
 
@@ -39,7 +39,7 @@ DEF_BKGDCOLOR = config.default_bkgdcolor
 DRAW_BODIES = config.draw_bodies
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 
 
 class MyCell(Cell):

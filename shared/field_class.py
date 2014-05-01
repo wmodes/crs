@@ -21,28 +21,43 @@ __license__ = "GNU GPL 3.0 or later"
 # installed modules
 
 # local modules
-import config
+from shared import config
+from shared import debug
 
 # local classes
-from debug import Debug
 from dataelement_class import Cell,Connector
 
 # constants
 LOGFILE = config.logfile
+GROUP_DIST = config.group_distance
+UNGROUP_DIST = config.ungroup_distance
+OSC_FPS = config.osc_framerate
 XMIN_FIELD = config.xmin_field
 YMIN_FIELD = config.ymin_field
 XMAX_FIELD = config.xmax_field
 YMAX_FIELD = config.ymax_field
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 
 # TODO: Delete anything here that is specific to visualsys
 class Field(object):
-    """An object representing the field.  """
+    """An object representing the field.  
+
+    Here are the things we store:
+        m_still_running: a flag for exiting the main loop
+        m_our_cell_count: the running we count of how many cells we have
+        m_reported_cell_count: what the tracking system reports
+        m_cell_dict: list of cells we have
+        m_connector_dict: list of connectors we have
+        m_suspect_cells: list of cells we suspect are dead
+        m_suspect_conx: list of connectors we suspect are dead
+
+    
+    """
 
     cellClass = Cell
-    connectorlClass = Connector
+    connectorClass = Connector
 
     def __init__(self):
         self.m_still_running = True
@@ -59,6 +74,21 @@ class Field(object):
         self.m_suspect_cells = {}
         #self.allpaths = []
         self.set_scaling((XMIN_FIELD,YMIN_FIELD),(XMAX_FIELD,YMAX_FIELD))
+        self.m_xmin_field = XMIN_FIELD
+        self.m_ymin_field = YMIN_FIELD
+        self.m_xmax_field = XMAX_FIELD
+        self.m_ymax_field = YMAX_FIELD
+        self.m_groupdist = GROUP_DIST
+        self.m_ungroupdist = UNGROUP_DIST
+        self.m_oscfps = OSC_FPS
+
+    def update(self, groupdist=None, ungroupdist=None, oscfps=None):
+        if groupdist is not None:
+            self.m_groupdist = groupdist
+        if ungroupdist is not None:
+            self.m_ungroupdist = ungroupdist
+        if oscfps is not None:
+            self.m_oscfps = oscfps
 
     # Screen Stuff
     #def init_screen(self):
@@ -83,11 +113,8 @@ class Field(object):
         if pmax_field is not None:
             self.m_xmax_field = pmax_field[0]
             self.m_ymax_field = pmax_field[1]
-        xmin_field = self.m_xmin_field
-        ymin_field = self.m_ymin_field
-        xmax_field = self.m_xmax_field
-        ymax_field = self.m_ymax_field
-        if dbug.LEV & dbug.MORE: print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
+        if dbug.LEV & dbug.MORE: print "Field dims:", (self.m_xmin_field,
+                self.m_ymin_field), (self.m_xmax_field, self.m_ymax_field)
 
     # Everything
     #def renderAll(self):
@@ -99,6 +126,57 @@ class Field(object):
 
     #def drawGuides(self):
     # moved to subclass
+
+    def check_for_missing_cell(self, id):
+        """Check for missing or suspect cell, handle it.
+
+        Possibilities:
+            * Cell does not exist:
+                create it, remove from suspect list, update it, increment count
+            * Cell exists, but is on the suspect list
+                remove from suspect list, increment count
+            * Cell exists in master list and is not suspect:
+                update its info; count unchanged
+        """
+        # if cell does not exist:
+        if not id in self.m_cell_dict:
+            # create it and increment count
+            self.create_cell(id)
+            # remove from suspect list
+            if id in self.m_suspect_cells:
+                del self.m_suspect_cells[id]
+            if dbug.LEV & dbug.FIELD: print "Field:update_cell:Cell",id,\
+                        "was lost and has been recreated"
+        # if cell exists, but is on suspect list
+        elif id in self.m_suspect_cells:
+            # remove from suspect list
+            del self.m_suspect_cells[id]
+            # increment count
+            self.m_our_cell_count += 1
+            if dbug.LEV & dbug.FIELD: print "Field:update_cell:Cell",id,\
+                        "was suspected lost but is now above suspicion"
+
+    # Legs and Body
+
+    def update_body(self, id, x=None, y=None, ex=None, ey=None, 
+                 spd=None, espd=None, facing=None, efacing=None, 
+                 diam=None, sigmadiam=None, sep=None, sigmasep=None,
+                 leftness=None, vis=None):
+        # first we make sure the cell exists and is not suspect
+        self.check_for_missing_cell(id)
+        # update body info
+        self.m_cell_dict[id].update_body(x, y, ex, ey, spd, espd, facing, efacing, 
+                           diam, sigmadiam, sep, sigmasep, leftness, vis)
+
+    def update_leg(self, id, leg, nlegs=None, x=None, y=None, 
+                 ex=None, ey=None, spd=None, espd=None, 
+                 heading=None, eheading=None, vis=None):
+        """ Update leg information.  """ 
+        # first we make sure the cell exists and is not suspect
+        self.check_for_missing_cell(id)
+        # update leg info
+        self.m_cell_dict[id].update_leg(leg, nlegs, x, y, ex, ey, spd, espd, 
+                                   heading, eheading, vis)
 
     # Cells
 
@@ -121,33 +199,8 @@ class Field(object):
                 del self.m_suspect_cells[id]
 
     def update_cell(self, id, p=None, r=None, effects=None, color=None):
-        """ Update a cells information.
-
-        Possibilities:
-            * Cell does not exist:
-                create it, remove from suspect list, update it, increment count
-            * Cell exists, but is on the suspect list
-                remove from suspect list, increment count
-            * Cell exists in master list and is not suspect:
-                update its info; count unchanged
-        """ 
-        if effects is None:
-            effects = []
-        # if cell does not exist:
-        if not id in self.m_cell_dict:
-            # create it and increment count
-            self.create_cell(id)
-            # remove from suspect list
-            if id in self.m_suspect_cells:
-                del self.m_suspect_cells[id]
-            if dbug.LEV & dbug.FIELD: print "Field:update_cell:Cell",id,"was lost and has been recreated"
-        # if cell exists, but is on suspect list
-        elif id in self.m_suspect_cells:
-            # remove from suspect list
-            del self.m_suspect_cells[id]
-            # increment count
-            self.m_our_cell_count += 1
-            if dbug.LEV & dbug.FIELD: print "Field:update_cell:Cell",id,"was suspected lost but is now above suspicion"
+        """ Update a cells information."""
+        self.check_for_missing_cell(id)
         # update cell's info
         self.m_cell_dict[id].update(p, r, effects, color)
 
@@ -272,7 +325,7 @@ class Field(object):
                     self.distance[conxid] = dist
                     self.distance[conxid_] = dist
                     #self.distance[str(c1.m_id)+'.'+str(c0.m_id)] = dist
-                    if dist < MIN_CONX_DIST:
+                    if dist < GROUP_DIST:
                         self.create_connector(conxid,c0,c1)
 
     # Paths

@@ -25,9 +25,10 @@ from OSC import OSCServer
 #import pyglet
 
 # local modules
-import config
-from myfield_class import MyField
-from shared.debug import Debug
+from shared import config
+from shared import debug
+
+# local Classes
 
 # Constants
 OSCPORT = config.oscport
@@ -37,7 +38,7 @@ OSCPATH = config.oscpath
 FREQ_REG_REPORT = config.freq_regular_reports
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
@@ -62,17 +63,23 @@ class OSCHandler(object):
 
         self.eventfunc = {
             'ping': self.event_tracking_ping,
+            'ack': self.event_tracking_ack,
             'start': self.event_tracking_start,
-            'stop': self.event_tracking_stop,
             'entry': self.event_tracking_entry,
             'exit': self.event_tracking_exit,
-            'update': self.event_tracking_update,
             'frame': self.event_tracking_frame,
+            'stop': self.event_tracking_stop,
             'minx': self.event_tracking_set,
             'miny': self.event_tracking_set,
             'maxx': self.event_tracking_set,
             'maxy': self.event_tracking_set,
             'npeople': self.event_tracking_set,
+            'groupdist': self.event_tracking_set,
+            'ungroupdist': self.event_tracking_set,
+            'fps': self.event_tracking_set,
+            'update': self.event_tracking_update,
+            'leg': self.event_tracking_leg,
+            'body': self.event_tracking_body,
         }
 
         # add a method to an instance of the class
@@ -124,6 +131,11 @@ class OSCHandler(object):
         return None
 
     def event_tracking_ping(self, path, tags, args, source):
+        if dbug.LEV & dbug.MSGS: print "OSC:event_ping:code",args[0]
+        return None
+
+    def event_tracking_ack(self, path, tags, args, source):
+        if dbug.LEV & dbug.MSGS: print "OSC:event_ack:code",args[0]
         return None
 
     def event_tracking_start(self, path, tags, args, source):
@@ -138,7 +150,7 @@ class OSCHandler(object):
             channel - channel number assigned
 
         """
-        #sample = args[0]
+        #samp = args[0]
         if dbug.LEV & dbug.MSGS: print "OSC:event_start"
 
     def event_tracking_set(self, path, tags, args, source):
@@ -153,27 +165,40 @@ class OSCHandler(object):
         if dbug.LEV & dbug.MSGS: print "OSC:event_set:",path,args,source
         if path == OSCPATH['minx']:
             self.m_xmin = int(100*args[0])
+            if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
+                    (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmin_field=(self.m_xmin,self.m_field.m_ymin_field))
         elif path == OSCPATH['miny']:
             self.m_ymin = int(100*args[0])
+            if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
+                    (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmin_field=(self.m_field.m_xmin_field,self.m_ymin))
         elif path == OSCPATH['maxx']:
             self.m_xmax = int(100*args[0])
+            if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
+                    (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmax_field=(self.m_xmax,self.m_field.m_ymax_field))
         elif path == OSCPATH['maxy']:
             self.m_ymax = int(100*args[0])
+            if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
+                    (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmax_field=(self.m_field.m_xmax_field,self.m_ymax))
         elif path == OSCPATH['npeople']:
             self.m_field.check_people_count(args[0])
             return
-        if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-        # we used to resize the screen, not we just rescale the action within
-        # the screen
-        #self.m_field.setScreen()
+        elif path == OSCPATH['groupdist']:
+            self.m_field.update(groupdist=args[0])
+            return
+        elif path == OSCPATH['ungroupdist']:
+            self.m_field.update(ungroupdist=args[0])
+            return
+        elif path == OSCPATH['fps']:
+            self.m_field.update(oscfps=args[0])
+            return
         #if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
             #print "set_scaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             #self.m_field.set_scaling((self.m_xmin,self.m_ymin),(self.m_xmax,self.m_ymax))
@@ -194,7 +219,7 @@ class OSCHandler(object):
         """
         #print "OSC:event_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
-        sample = args[0]
+        samp = args[0]
         time = args[1]
         id = args[2]
         if dbug.LEV & dbug.MSGS: print "OSC:event_entry:cell:",id
@@ -210,7 +235,7 @@ class OSCHandler(object):
 
         """
         #print "OSC:event_exit:",path,args,source
-        sample = args[0]
+        samp = args[0]
         time = args[1]
         id = args[2]
         if dbug.LEV & dbug.MSGS: print "OSC:event_exit:cell:",id
@@ -219,6 +244,92 @@ class OSCHandler(object):
         self.m_field.del_cell(id)
         #print "AFTER: cells:",self.m_field.m_cell_dict
         #print "AFTER: conx:",self.m_field.m_connector_dict
+
+    def event_tracking_body(self, path, tags, args, source):
+        """Information about people's movement within field.
+
+        Update position of target.
+        args:
+            samp - sample number 
+            target - UID of target
+            x,y - position of person within field in m
+            ex,ey - standard error of measurement (SEM) of position, in meters 
+            spd, heading - estimate of speed of person in m/s, heading in degrees
+            espd, eheading - SEM of spd, heading
+            facing - direction person is facing in degees
+            efacing - SEM of facing direction
+            diam - estimated mean diameter of legs
+            sigmadiam - estimated sigma (sqrt(variance)) of diameter
+            sep - estimated mean separation of legs
+            sigmasep - estimated sigma (sqrt(variance)) of sep
+            leftness - measure of how likely leg 0 is the left leg
+            visibility - number of frames since a fix was found for either leg
+        """
+        for index, item in enumerate(args):
+            if item == 'nan':
+                args[index] = 0
+        samp = args[0]
+        id = args[1]
+        x = int(100*args[2])       # comes in meters, convert to cm
+        y = int(100*args[3])
+        ex = int(100*args[4])
+        ey = int(100*args[5])
+        spd = int(100*args[6])
+        heading = args[7]
+        espd = int(100*args[8])
+        eheading = args[9]
+        facing = args[10]
+        efacing = args[11]
+        diam = int(100*args[12])
+        sigmadiam = int(100*args[13])
+        sep = int(100*args[14])
+        sigmasep = int(100*args[15])
+        leftness = args[16]
+        vis = args[17]
+        if id not in self.m_field.m_cell_dict:
+            if dbug.LEV & dbug.MSGS: print "OSC:event_body:no id",id,"in registered id list"
+        if samp%FREQ_REG_REPORT == 0:
+            if dbug.LEV & dbug.MSGS: print "    OSC:event_body:id:",id,"pos:",(x,y)
+        self.m_field.update_body(id, x, y, ex, ey, spd, espd, facing, efacing, 
+                           diam, sigmadiam, sep, sigmasep, leftness, vis)
+
+    def event_tracking_leg(self, path, tags, args, source):
+        """Information about individual leg movement within field.
+
+        Update position of leg.
+        args:
+            samp - sample number 
+            id - UID of target
+            leg - leg number (0..nlegs-1)
+            nlegs - number of legs target is modeled with 
+            x,y - position within field in m
+            ex,ey - standard error of measurement (SEM) of position, in meters 
+            spd, heading - estimate of speed of leg in m/s, heading in degrees
+            espd, eheading - SEM of spd, heading
+            visibility - number of frames since a positive fix
+        """
+        for index, item in enumerate(args):
+            if item == 'nan':
+                args[index] = 0
+        samp = args[0]
+        id = args[1]
+        leg = args[2]
+        nlegs = args[3]
+        x = int(100*args[4])       # comes in meters, convert to cm
+        y = int(100*args[5])
+        ex = int(100*args[6])
+        ey = int(100*args[7])
+        spd = int(100*args[8])
+        heading = args[9]
+        espd = int(100*args[10])
+        eheading = args[11]
+        vis = args[12]
+        if id not in self.m_field.m_cell_dict:
+            if dbug.LEV & dbug.MSGS: print "OSC:event_leg:no id",id,"in registered id list"
+        if samp%FREQ_REG_REPORT == 0:
+            if dbug.LEV & dbug.MSGS: print "    OSC:event_leg:id:",id,"leg:",leg,"pos:",(x,y)
+        self.m_field.update_leg(id, leg, nlegs, x, y, ex, ey, spd, espd, 
+                                   heading, eheading, vis)
 
     def event_tracking_update(self, path, tags, args, source):
         """Information about people's movement within field.
@@ -234,17 +345,13 @@ class OSCHandler(object):
             groupid - id number of group
             groupsize - number of people in group
             channel - channel number assigned
-
         """
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = 0
-        sample = args[0]
+        samp = args[0]
         time = args[1]
         id = args[2]
-        # TODO: Create cell if we don't have a record of it
-        # TODO: If npeople doesn't match our record of how many people, we drop
-        # them all and let the above functionality handle them
         if id not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: print "OSC:event_update:no id",id,"in registered id list"
         x = int(100*args[3])       # comes in meters, convert to cm
@@ -257,23 +364,11 @@ class OSCHandler(object):
         gsize = args[10]
         channel = args[11]
         #print "OSC:event_update:",path,args,source
-        if sample%FREQ_REG_REPORT == 0:
+        if samp%FREQ_REG_REPORT == 0:
             #print "OSC:event_update:",path,args,source
             if dbug.LEV & dbug.MSGS: print "    OSC:event_update:id:",id,"pos:",(x,y),"axis:",major
-        # TODO: if gid is not equal to 0 than we have a grouping, we need to
-        # stop mapping the cell(s) that are not getting updated in new frames
-        # alternately, we can just turn all cells invisible each frame and then
-        # make them visible as we get an update
         #print "field.update_cell(",id,",",(x,y),",",major,")"
         self.m_field.update_cell(id,(x,y),major)
-        # TODO: What happens to connections when someone joins a group? Oh god.
-        # In our OSC messages, when two cells become a group, a gid is assigned 
-        # the groupsize is incremented, and only one of the cells gets updated
-        # Like so:
-        #   /pf/update 410 28.8 2 1.1 -1.4 -1.2 -0.2 nan nan 1 2 2
-        #   /pf/update 410 28.8 4 0.9 -1.0 -0.2 -2.4 nan nan 1 2 4
-        #   /pf/update 411 28.8 4 0.9 -1.0 nan nan nan nan 1 2 4
-        #   /pf/update 412 29.0 4 0.9 -1.0 nan nan nan nan 1 2 4
         #print "OSC:event_update: Done"
 
     def event_tracking_frame(self, path, tags, args, source):
@@ -284,10 +379,10 @@ class OSCHandler(object):
 
         """
         #print "OSC:event_frame:",path,args,source
-        sample = args[0]
-        if sample%FREQ_REG_REPORT == 0:
+        samp = args[0]
+        if samp%FREQ_REG_REPORT == 0:
             #print "OSC:event_update:",path,args,source
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_frame::",sample
+            if dbug.LEV & dbug.MSGS: print "    OSC:event_frame::",samp
         return None
 
     def event_tracking_stop(self, path, tags, args, source):
@@ -297,6 +392,8 @@ class OSCHandler(object):
 
 if __name__ == "__main__":
         
+    from myfield_class import MyField
+
     # initialize field
     field = MyField()
     #field.init_screen()

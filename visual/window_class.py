@@ -23,10 +23,10 @@ import pyglet
 from pyglet.window import key
 
 # local modules
-import config
+from shared import config
 
 # local classes
-from shared.debug import Debug
+from shared import debug
 
 # constants
 LOGFILE = config.logfile
@@ -35,7 +35,7 @@ DEF_ORIENT = config.default_orient
 DEF_BKGDCOLOR = config.default_bkgdcolor
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 
 class Window(pyglet.window.Window):
 

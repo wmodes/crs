@@ -23,11 +23,11 @@ from itertools import chain
 import pyglet
 
 # local modules
-import config
+from shared import config
+from shared import debug
 import curves
 
 # local classes
-from shared.debug import Debug
 
 # constants
 LOGFILE = config.logfile
@@ -35,7 +35,7 @@ LOGFILE = config.logfile
 CURVE_SEGS = config.curve_segments  # number of line segs in a curve
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 
 
 class Circle(object):

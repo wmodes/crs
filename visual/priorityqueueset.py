@@ -1,4 +1,33 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""PriorityQueueSet Class module
+
+Co-related Space is an interactive multimedia installation that engages the
+themes of presence, interaction, and place. Using motion tracking, laser light
+and a generative soundscape, it encourages interactions between participants,
+visually and sonically transforming a regularly trafficked space. Co-related
+Space highlights participants' active engagement and experimentation with sound
+and light, including complex direct and indirect behavior and relationships.
+
+"""
+
+__appname__ = "priorityqueueset.py"
+__author__  = "Wes Modes (modes.io)"
+__version__ = "0.1pre0"
+__license__ = "GNU GPL 3.0 or later"
+
+# core modules
 import heapq
+
+# installed modules
+
+# local modules
+from shared import config
+
+# local classes
+
+# constants
+LOGFILE = config.logfile
 
 
 class PriorityQueueSet(object):

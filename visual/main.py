@@ -29,11 +29,11 @@ import pyglet
 #from pyglet.window import key
 
 # local modules
-import config
-import oschandlers
+from shared import config
+from shared import oschandlers
 
 # local classes
-from shared.debug import Debug
+from shared import debug
 from myfield_class import MyField
 
 # constants
@@ -62,13 +62,13 @@ MIN_CONX_DIST = config.minimum_connection_distance
 MAX_LOST_PATIENCE = config.max_lost_patience
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 
 
 # create logger
 logger = logging.getLogger(__appname__)
 logging.basicConfig(filename=LOGFILE,level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 warnings.filterwarnings('ignore')
 

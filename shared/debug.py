@@ -17,7 +17,7 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # local modules
-import config
+from shared import config
 
 class Debug(object):
 

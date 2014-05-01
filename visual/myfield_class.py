@@ -23,10 +23,10 @@ from itertools import chain
 import pyglet
 
 # local modules
-import config
+from shared import config
+from shared import debug
 
 # local classes
-from shared.debug import Debug
 from window_class import Window
 from gridmap import GridMap
 from pathfinder import PathFinder
@@ -69,14 +69,14 @@ MIN_CONX_DIST = config.minimum_connection_distance
 MAX_LOST_PATIENCE = config.max_lost_patience
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 
 
 class MyField(Field):
     """An object representing the field.  """
 
     cellClass = MyCell
-    connectorlClass = MyConnector
+    connectorClass = MyConnector
 
     def __init__(self):
 

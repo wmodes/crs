@@ -22,7 +22,7 @@ __license__ = "GNU GPL 3.0 or later"
 import numpy
 
 # local modules
-from shared.debug import Debug
+from shared import debug
 
 # local classes
 
@@ -31,7 +31,7 @@ from shared.debug import Debug
 
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 
 
 ## n := len( P ) - 1

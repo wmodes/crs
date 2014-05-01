@@ -32,3 +32,10 @@ rendered (at the field level)
 * Fixed problems with margin where the long margin wasn't recalc'd when screen 
 was resized
 
+4.20.2014
+* Added Leg class in dataelements
+* Added Body class in dataelements
+* Hooked Leg and Body into Cell
+* Added new OSC values in config per pulsefield protocol 2.1.1
+* Added osc handler for new set values
+* Added osc handler for Leg and Body data, stores data in dataelements

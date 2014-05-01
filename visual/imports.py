@@ -5,10 +5,10 @@
 # installed modules
 
 # local modules
-import config
+from shared import config
 
 # local classes
-from shared.debug import Debug
+from shared import debug
 
 # constants
 LOGFILE = config.logfile
@@ -36,5 +36,5 @@ MIN_CONX_DIST = config.minimum_connection_distance
 MAX_LOST_PATIENCE = config.max_lost_patience
 
 # init debugging
-dbug = Debug()
+dbug = debug.Debug()
 

@@ -11,7 +11,7 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-__appname__ = "myfield_class.py"
+__appname__ = "myfieldelements.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -30,8 +30,8 @@ from shared import debug
 from window_class import Window
 from gridmap import GridMap
 from pathfinder import PathFinder
-from shared.field_class import Field
-from mydataelement_class import MyCell,MyConnector
+from shared.fieldelements import Field
+from mydataelements import MyCell,MyConnector
 
 # constants
 LOGFILE = config.logfile

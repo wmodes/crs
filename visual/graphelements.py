@@ -11,7 +11,7 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-__appname__ = "graphelement_class.py"
+__appname__ = "graphelements.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"

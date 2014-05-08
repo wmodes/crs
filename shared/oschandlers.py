@@ -392,7 +392,7 @@ class OSCHandler(object):
 
 if __name__ == "__main__":
         
-    from myfield_class import MyField
+    from myfieldelements import MyField
 
     # initialize field
     field = MyField()

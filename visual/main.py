@@ -34,7 +34,7 @@ from shared import oschandlers
 
 # local classes
 from shared import debug
-from myfield_class import MyField
+from myfieldelements import MyField
 
 # constants
 LOGFILE = config.logfile
@@ -80,29 +80,29 @@ warnings.filterwarnings('ignore')
 
 # basic data elements
 
-# extracted to module field_class.py
+# extracted to module fieldelements.py
 #class MyField(object):
 
-# extracted to module myfield_class.py
+# extracted to module myfieldelements.py
 #class MyField(Field):
 
 # basic data elements
 
-# moved to module dataelement_class.py
+# moved to module dataelements.py
 #class DataElement(object):
 
-# moved to module mydataelement_class.py
+# moved to module mydataelements.py
 #class MyCell(Cell):
 
 # graphic primatives
 
-# moved to module mygraphelement_class.py
+# moved to module graphelements.py
 #class GraphicObject(object):
 
-# moved to module mygraphelement_class.py
+# moved to module graphelements.py
 #class Circle(GraphicObject):
 
-# moved to module mygraphelement_class.py
+# moved to module graphelements.py
 #class Line(GraphicObject):
 
 # effect elements

@@ -11,7 +11,7 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-__appname__ = "mydataelement_class.py"
+__appname__ = "mydataelements.py"
 __author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -25,8 +25,8 @@ from shared import config
 
 # local classes
 from shared import debug
-from shared.dataelement_class import Cell,Connector
-from graphelement_class import Circle, Line
+from shared.dataelements import Cell,Connector
+from graphelements import Circle, Line
 
 # constants
 LOGFILE = config.logfile

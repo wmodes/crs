@@ -25,7 +25,7 @@ from shared import config
 from shared import debug
 
 # local classes
-from dataelement_class import Cell,Connector
+from dataelements import Cell,Connector
 
 # constants
 LOGFILE = config.logfile

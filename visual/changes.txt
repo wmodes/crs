@@ -6,8 +6,7 @@ TODO
 * Ask for frame rate
 * /pf/adddest host port framerate
 * Add framerate
-* Fix scaling issue with square field ((-310, -313) , (333, 313)) in which it 
-only draws a small portion of the screen
+* Don't make nans go to zero
 
 4.18.2014
 * If people count is diff from our count, we drop everyone (actually add to 

@@ -7,23 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5b07d10-5965-4f05-b2e5-bd2b09b1854b" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/visual/config.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/visual/oschandlers.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/changes.txt" afterPath="$PROJECT_DIR$/visual/changes.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/curves.py" afterPath="$PROJECT_DIR$/visual/curves.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/dataelement_class.py" afterPath="$PROJECT_DIR$/shared/dataelement_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/debug.py" afterPath="$PROJECT_DIR$/shared/debug.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/field_class.py" afterPath="$PROJECT_DIR$/shared/field_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/graphelement_class.py" afterPath="$PROJECT_DIR$/visual/graphelement_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/imports.py" afterPath="$PROJECT_DIR$/visual/imports.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/main.py" afterPath="$PROJECT_DIR$/visual/main.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/mydataelement_class.py" afterPath="$PROJECT_DIR$/visual/mydataelement_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/myfield_class.py" afterPath="$PROJECT_DIR$/visual/myfield_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/pathfinder.py" afterPath="$PROJECT_DIR$/visual/pathfinder.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/priorityqueueset.py" afterPath="$PROJECT_DIR$/visual/priorityqueueset.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/window_class.py" afterPath="$PROJECT_DIR$/visual/window_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="crs.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -45,7 +29,17 @@
     <favorites_list name="crs" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="myfield_class.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/visual/myfield_class.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="433" column="23" selection-start="17868" selection-end="17868" vertical-scroll-proportion="1.9668247" vertical-offset="5665" max-vertical-offset="7980">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -189,6 +183,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistory" value="fielf" />
+    <property name="FullScreen" value="false" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -379,7 +374,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3294271" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32857144" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24945612" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2538071" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2538071" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3987013" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -563,13 +558,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/myfield_class.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="433" column="23" selection-start="17868" selection-end="17868" vertical-scroll-proportion="1.9668247" vertical-offset="5665" max-vertical-offset="7980">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/visual/shared/dataelement_class.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="146" column="25" selection-start="4833" selection-end="4833" vertical-scroll-proportion="0.54022986" vertical-offset="1955" max-vertical-offset="5670">
@@ -587,6 +575,13 @@
     <entry file="file://$PROJECT_DIR$/visual/shared/config.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="116" column="23" selection-start="2863" selection-end="2863" vertical-scroll-proportion="0.55172414" vertical-offset="1500" max-vertical-offset="1935">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/myfield_class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="433" column="23" selection-start="17868" selection-end="17868" vertical-scroll-proportion="1.9668247" vertical-offset="5665" max-vertical-offset="7980">
           <folding />
         </state>
       </provider>

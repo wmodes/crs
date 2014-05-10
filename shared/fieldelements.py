@@ -82,13 +82,16 @@ class Field(object):
         self.m_ungroupdist = UNGROUP_DIST
         self.m_oscfps = OSC_FPS
 
-    def update(self, groupdist=None, ungroupdist=None, oscfps=None):
+    def update(self, groupdist=None, ungroupdist=None, oscfps=None,
+               osc=None):
         if groupdist is not None:
             self.m_groupdist = groupdist
         if ungroupdist is not None:
             self.m_ungroupdist = ungroupdist
         if oscfps is not None:
             self.m_oscfps = oscfps
+        if osc is not None:
+            self.m_osc = osc
 
     # Screen Stuff
     #def init_screen(self):
@@ -327,24 +330,5 @@ class Field(object):
                     #self.distance[str(c1.m_id)+'.'+str(c0.m_id)] = dist
                     if dist < GROUP_DIST:
                         self.create_connector(conxid,c0,c1)
-
-    # Paths
-    # all moved to subclass
-    #def make_path_grid(self):
-    #def reset_path_grid(self):
-    #def path_score_cells(self):
-    #def path_find_connectors(self):
-    #def find_path(self, connector):
-    #def print_grid(self):
-
-    # Scaling conversions
-    # all moved to subclass
-    #def _convert(self,obj,scale,min1,min2):
-    #def scale2out(self,n):
-    #def scale2path(self,n):
-    #def path2scale(self,n):
-    #def _rescale_pts(self,obj,scale,orig_pmin,new_pmin):
-    #def rescale_pt2out(self,p):
-    #def rescale_num2out(self,n):
 
 

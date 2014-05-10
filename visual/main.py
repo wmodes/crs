@@ -128,15 +128,14 @@ class EffectDouble(Effect):
         return prim
 
 def main():
+
     # initialize field
     field = MyField()
     # initialize pyglet 
     field.init_screen()
 
-    # pyglet stuff
-    #pyglet.app.run()
-
     osc = oschandlers.OSCHandler(field)
+    field.update(osc=osc)
 
     keep_running = True
     while keep_running:

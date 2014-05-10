@@ -17,10 +17,8 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
-from itertools import chain
 
 # installed modules
-import pyglet
 
 # local modules
 from shared import config
@@ -34,6 +32,17 @@ from shared.fieldelements import Field
 from mydataelements import MyCell,MyConnector
 
 # constants
+# removed to allow multiple simultaneous modes
+#MODE_SCREEN = 1
+#MODE_VECTOR = 2
+#MODE_DEFAULT = MODE_SCREEN
+# replaced this:
+#    if self.m_output_mode == MODE_SCREEN:
+# with this
+#    if GRAPHMODES & GRAPHOPTS['screen']:
+GRAPHMODES = config.graphic_modes
+GRAPHOPTS = {'screen': 1, 'osc': 2, 'etherdream':3}
+
 LOGFILE = config.logfile
 
 DEF_RADIUS = config.default_radius
@@ -58,9 +67,6 @@ YMIN_SCREEN = config.ymin_screen
 XMAX_SCREEN = config.xmax_screen
 YMAX_SCREEN = config.ymax_screen
 DEF_MARGIN = config.default_margin
-MODE_SCREEN = 1
-MODE_VECTOR = 2
-MODE_DEFAULT = MODE_SCREEN
 PATH_UNIT = config.path_unit
 BLOCK_FUZZ = config.fuzzy_area_for_cells
 
@@ -93,7 +99,6 @@ class MyField(Field):
         self.m_xmax_screen = XMAX_SCREEN
         self.m_ymax_screen = YMAX_SCREEN
         self.m_path_unit = PATH_UNIT
-        self.m_output_mode = MODE_DEFAULT
         self.m_path_scale = 1
         self.m_screen_scale = 1
         self.m_vector_scale = 1
@@ -113,7 +118,6 @@ class MyField(Field):
     def init_screen(self):
         # initialize window
         #(xmax_screen,ymax_screen) = self.screenMax()
-        #self.m_screen = pyglet.window.Window(width=xmax_screen,height=ymax_screen)
         width = self.m_xmax_screen - self.m_xmin_screen
         height = self.m_ymax_screen - self.m_ymin_screen
         if dbug.LEV & dbug.FIELD: print "field:init_screen"
@@ -121,8 +125,9 @@ class MyField(Field):
         # set window background color = r, g, b, alpha
         # each value goes from 0.0 to 1.0
         # ... perform some additional initialisation
-        pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
-        self.m_screen.clear()
+        # moved to window class
+        #pyglet.gl.glClearColor(*DEF_BKGDCOLOR)
+        #self.m_screen.clear()
         # register draw routing with pyglet
         # TESTED: These functions are being called correctly, and params are
         # being passed correctly
@@ -132,7 +137,7 @@ class MyField(Field):
     # Scaling
 
     def set_scaling(self,pmin_field=None,pmax_field=None,pmin_vector=None,pmax_vector=None,
-                      pmin_screen=None,pmax_screen=None,path_unit=None,output_mode=None):
+                      pmin_screen=None,pmax_screen=None,path_unit=None):
         """Set up scaling in the field.
 
         A word about graphics scaling:
@@ -168,8 +173,6 @@ class MyField(Field):
         if path_unit is not None:
             self.m_path_unit = path_unit
             self.m_path_scale = float(1)/path_unit
-        if output_mode is not None:
-            self.m_output_mode = output_mode
         xmin_field = self.m_xmin_field
         ymin_field = self.m_ymin_field
         xmax_field = self.m_xmax_field
@@ -195,11 +198,11 @@ class MyField(Field):
 
         # aspect ratios used only for comparison
         field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
-        if self.m_output_mode == MODE_SCREEN:
-            display_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
-        else:
-            display_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
-        if field_aspect > display_aspect:
+        #if GRAPHMODES & GRAPHOPTS['osc']:
+            #vector_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
+        if GRAPHMODES & GRAPHOPTS['screen']:
+            screen_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
+        if field_aspect > screen_aspect:
             if dbug.LEV & dbug.FIELD: print "Field:SetScaling:Longer in the x dimension"
             field_xlen=xmax_field-xmin_field
             if field_xlen:
@@ -211,7 +214,8 @@ class MyField(Field):
                 self.m_screen_scale = \
                     float(xmax_screen-xmin_screen-(self.m_xmargin*2))/field_xlen
                 self.m_ymargin = \
-                    int(((ymax_screen-ymin_screen)-((ymax_field-ymin_field)*self.m_screen_scale)) / 2)
+                    int(((ymax_screen-ymin_screen)-
+                        ((ymax_field-ymin_field)*self.m_screen_scale)) / 2)
         else:
             if dbug.LEV & dbug.FIELD: print "Field:SetScaling:Longer in the y dimension"
             field_ylen=ymax_field-ymin_field
@@ -222,12 +226,17 @@ class MyField(Field):
                 self.m_screen_scale = \
                     float(ymax_screen-ymin_screen-(self.m_ymargin*2))/field_ylen
                 self.m_xmargin = \
-                    int(((xmax_screen-xmin_screen)-((xmax_field-xmin_field)*self.m_screen_scale)) / 2)
-        if dbug.LEV & dbug.MORE: print "Field dims:",(xmin_field,ymin_field),(xmax_field,ymax_field)
-        if dbug.LEV & dbug.MORE: print "Screen dims:",(xmin_screen,ymin_screen),(xmax_screen,ymax_screen)
+                    int(((xmax_screen-xmin_screen)-
+                        ((xmax_field-xmin_field)*self.m_screen_scale)) / 2)
+        if dbug.LEV & dbug.MORE: print "Field dims:",(xmin_field,ymin_field),\
+                                                     (xmax_field,ymax_field)
+        if dbug.LEV & dbug.MORE: print "Screen dims:",(xmin_screen,ymin_screen),\
+                                                      (xmax_screen,ymax_screen)
         #print "Screen scale:",self.m_screen_scale
         #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
-        if dbug.LEV & dbug.MORE: print "Used screen space:",self.rescale_pt2out((xmin_field,ymin_field)),self.rescale_pt2out((xmax_field,ymax_field))
+        if dbug.LEV & dbug.MORE: print "Used screen space:",\
+                    self.rescale_pt2screen((xmin_field,ymin_field)),\
+                    self.rescale_pt2screen((xmax_field,ymax_field))
 
     # Everything
 
@@ -238,41 +247,13 @@ class MyField(Field):
 
     def draw_all(self):
         """Draw all the cells and connectors."""
-        self.draw_guides()
+        self.m_screen.draw_guides()
         self.draw_all_cells()
         self.draw_all_connectors()
 
     # Guides
-
-    def draw_guides(self):
-        # draw boundaries of field (if in screen mode)
-        if self.m_output_mode == MODE_SCREEN:
-            pyglet.gl.glColor3f(DEF_GUIDECOLOR[0],DEF_GUIDECOLOR[1],DEF_GUIDECOLOR[2])
-            points = [(self.m_xmin_field,self.m_ymin_field),
-                      (self.m_xmin_field,self.m_ymax_field),
-                      (self.m_xmax_field,self.m_ymax_field),
-                      (self.m_xmax_field,self.m_ymin_field)]
-            if dbug.LEV & dbug.GRAPH: print "boundary points (field):",points
-            index = [0,1,1,2,2,3,3,0]
-            screen_pts = self.rescale_pt2out(points)
-            if dbug.LEV & dbug.GRAPH: print "boundary points (screen):",screen_pts
-            # boundary points (screen): [(72, 73), (72, 721), (1368, 721), (1368, 73)]
-            if dbug.LEV & dbug.GRAPH: print "proc screen_pts:",tuple(chain(*screen_pts))
-            # proc screen_pts: (72, 73, 72, 721, 1368, 721, 1368, 73)
-            if dbug.LEV & dbug.GRAPH: print "PYGLET:pyglet.graphics.draw_indexed(",len(screen_pts),", pyglet.gl.GL_LINES,"
-            if dbug.LEV & dbug.GRAPH: print "           ",index
-            if dbug.LEV & dbug.GRAPH: print "           ('v2i',",tuple(chain(*screen_pts)),"),"
-            if dbug.LEV & dbug.GRAPH: print "       )"
-            pyglet.graphics.draw_indexed(len(screen_pts), pyglet.gl.GL_LINES,
-                index,
-                ('v2i',tuple(chain(*screen_pts))),
-            )
-            #point = (self.m_xmin_field,self.m_ymin_field)
-            #radius = self.rescale_num2out(DEF_RADIUS)
-            #shape = Circle(self,point,radius,DEF_LINECOLOR,solid=False)
-            #shape.render()
-            #shape.draw()
-            if dbug.LEV & dbug.MORE: print "Field:drawGuides"
+    #def draw_guides(self):
+    # moved to window class
 
     # Cells
     #def create_cell(self, id):
@@ -460,10 +441,12 @@ class MyField(Field):
                 mylist.append(self._convert(i,scale,min1,min2))
             return tuple(mylist)
 
-    def scale2out(self,n):
-        """Convert internal unit (cm) to units usable for the vector or screen. """
-        if self.m_output_mode == MODE_SCREEN:
-            return self._convert(n,self.m_screen_scale,self.m_xmin_field,self.m_xmin_screen)
+    def scale2screen(self,n):
+        """Convert internal unit (cm) to units usable for screen. """
+        return self._convert(n,self.m_screen_scale,self.m_xmin_field,self.m_xmin_screen)
+
+    def scale2vector(self,n):
+        """Convert internal unit (cm) to units usable for vector. """
         return self._convert(n,self.m_vector_scale,self.m_xmin_field,self.m_xmin_vector)
 
     def scale2path(self,n):
@@ -505,22 +488,25 @@ class MyField(Field):
             print "ERROR: Can only rescale a point, not",obj
             return obj
 
-    def rescale_pt2out(self,p):
+    def rescale_pt2screen(self,p):
         """Convert coord in internal units (cm) to units usable for the vector or screen. """
         orig_pmin = (self.m_xmin_field,self.m_ymin_field)
-        if self.m_output_mode == MODE_SCREEN:
-            scale = self.m_screen_scale
-            new_pmin = (self.m_xmin_screen+self.m_xmargin,self.m_ymin_screen+self.m_ymargin)
-        else:
-            scale = self.m_vector_scale
-            new_pmin = (self.m_xmin_vector,self.m_ymin_vector)
+        scale = self.m_screen_scale
+        new_pmin = (self.m_xmin_screen+self.m_xmargin,self.m_ymin_screen+self.m_ymargin)
         return self._rescale_pts(p,scale,orig_pmin,new_pmin)
 
-    def rescale_num2out(self,n):
-        """Convert num in internal units (cm) to units usable for the vector or screen. """
-        if self.m_output_mode == MODE_SCREEN:
-            scale = self.m_screen_scale
-        else:
-            scale = self.m_vector_scale
-        return n*scale
+    def rescale_pt2vector(self,p):
+        """Convert coord in internal units (cm) to units usable for the vector or screen. """
+        orig_pmin = (self.m_xmin_field,self.m_ymin_field)
+        scale = self.m_vector_scale
+        new_pmin = (self.m_xmin_vector,self.m_ymin_vector)
+        return self._rescale_pts(p,scale,orig_pmin,new_pmin)
+
+    def rescale_num2screen(self,n):
+        """Convert num in internal units (cm) to units usable for screen. """
+        return n * self.m_screen_scale
+
+    def rescale_num2vector(self,n):
+        """Convert num in internal units (cm) to units usable for vector. """
+        return n * self.m_vector_scale
 

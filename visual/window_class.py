@@ -21,6 +21,7 @@ __license__ = "GNU GPL 3.0 or later"
 # installed modules
 import pyglet
 from pyglet.window import key
+from itertools import chain
 
 # local modules
 from shared import config
@@ -31,8 +32,12 @@ from shared import debug
 # constants
 LOGFILE = config.logfile
 
+GRAPHMODES = config.graphic_modes
+GRAPHOPTS = {'screen': 1, 'osc': 2, 'etherdream':3}
+
 DEF_ORIENT = config.default_orient
 DEF_BKGDCOLOR = config.default_bkgdcolor
+DEF_GUIDECOLOR = config.default_guidecolor
 
 # init debugging
 dbug = debug.Debug()
@@ -112,3 +117,27 @@ class Window(pyglet.window.Window):
             return
         # move cell
 
+    def draw_guides(self):
+        # draw boundaries of field (if in screen mode)
+        if GRAPHMODES & GRAPHOPTS['screen']:
+            pyglet.gl.glColor3f(DEF_GUIDECOLOR[0],DEF_GUIDECOLOR[1],DEF_GUIDECOLOR[2])
+            points = [(self.m_field.m_xmin_field,self.m_field.m_ymin_field),
+                      (self.m_field.m_xmin_field,self.m_field.m_ymax_field),
+                      (self.m_field.m_xmax_field,self.m_field.m_ymax_field),
+                      (self.m_field.m_xmax_field,self.m_field.m_ymin_field)]
+            if dbug.LEV & dbug.GRAPH: print "boundary points (field):",points
+            index = [0,1,1,2,2,3,3,0]
+            screen_pts = self.m_field.rescale_pt2screen(points)
+            if dbug.LEV & dbug.GRAPH: print "boundary points (screen):",screen_pts
+            # boundary points (screen): [(72, 73), (72, 721), (1368, 721), (1368, 73)]
+            if dbug.LEV & dbug.GRAPH: print "proc screen_pts:",tuple(chain(*screen_pts))
+            # proc screen_pts: (72, 73, 72, 721, 1368, 721, 1368, 73)
+            if dbug.LEV & dbug.GRAPH: print "PYGLET:pyglet.graphics.draw_indexed(",len(screen_pts),", pyglet.gl.GL_LINES,"
+            if dbug.LEV & dbug.GRAPH: print "           ",index
+            if dbug.LEV & dbug.GRAPH: print "           ('v2i',",tuple(chain(*screen_pts)),"),"
+            if dbug.LEV & dbug.GRAPH: print "       )"
+            pyglet.graphics.draw_indexed(len(screen_pts), pyglet.gl.GL_LINES,
+                index,
+                ('v2i',tuple(chain(*screen_pts))),
+            )
+            if dbug.LEV & dbug.MORE: print "Field:drawGuides"

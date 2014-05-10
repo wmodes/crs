@@ -21,7 +21,7 @@ __license__ = "GNU GPL 3.0 or later"
 import types
 
 # installed modules
-from OSC import OSCServer
+from OSC import OSCServer, OSCClient
 #import pyglet
 
 # local modules
@@ -31,8 +31,31 @@ from shared import debug
 # local Classes
 
 # Constants
-OSCPORT = config.oscport
-OSCHOST = config.oschost if config.oschost else "localhost"
+OSCSERVERHOST = config.osc_server_host \
+    if config.osc_server_host else config.osc_default_host
+OSCSERVERPORT = config.osc_server_port \
+    if config.osc_server_port else config.osc_default_port
+
+OSCTRACKHOST = config.osc_tracking_host \
+    if config.osc_tracking_host else config.osc_default_host
+OSCTRACKPORT = config.oscport \
+    if config.osc_tracking_port else config.osc_default_port
+
+OSCSOUNDHOST = config.osc_sound_host \
+    if config.osc_sound_host else config.osc_default_host
+OSCSOUNDPORT = config.osc_sound_port \
+    if config.osc_sound_port else config.osc_default_port
+
+OSCCONDUCTHOST = config.osc_conductor_host \
+    if config.osc_conductor_host else config.osc_default_host
+OSCCONDUCTPORT = config.osc_conductor_port \
+    if config.osc_conductor_port else config.osc_default_port
+
+OSCGRAPHHOST = config.osc_graphic_host \
+    if config.osc_graphic_host else config.osc_default_host
+OSCGRAPHPORT = config.osc_graphic_port \
+    if config.osc_graphic_port else config.osc_default_port
+
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
 FREQ_REG_REPORT = config.freq_regular_reports
@@ -52,9 +75,47 @@ class OSCHandler(object):
 
     def __init__(self, field):
         self.m_field = field
-        self.m_server = OSCServer( (OSCHOST, OSCPORT) )
-        self.m_server.timeout = OSCTIMEOUT
+        self.m_oscserver = OSCServer( (OSCSERVERHOST, OSCSERVERPORT) )
+        if dbug.LEV & dbug.MSGS: print "OSC:init server:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+        self.m_oscserver.timeout = OSCTIMEOUT
         self.m_run = True
+
+        self.m_osc_tracker = OSCClient()
+        self.m_osc_tracker.connect( (OSCTRACKHOST, OSCTRACKPORT) )
+        if dbug.LEV & dbug.MSGS: print "OSC:init tracker:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+
+        if OSCCONDUCTHOST == OSCTRACKHOST and OSCCONDUCTPORT == OSCTRACKPORT:
+            self.m_osc_conductor = self.m_osc_tracker
+            if dbug.LEV & dbug.MSGS: print "OSC:init conductor:same as tracker"
+        else:
+            self.m_osc_conductor = OSCClient()
+            self.m_osc_conductor.connect( (OSCCONDUCTHOST, OSCCONDUCTPORT) )
+            if dbug.LEV & dbug.MSGS: print "OSC:init conductor:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+
+        if OSCSOUNDHOST == OSCTRACKHOST and OSCSOUNDPORT == OSCTRACKPORT:
+            self.m_osc_sound = self.m_osc_tracker
+            if dbug.LEV & dbug.MSGS: print "OSC:init sound:same as tracker"
+        elif OSCSOUNDHOST == OSCCONDUCTHOST and OSCSOUNDPORT == OSCCONDUCTPORT:
+            self.m_osc_sound = self.m_osc_conductor
+            if dbug.LEV & dbug.MSGS: print "OSC:init sound:same as conductor"
+        else:
+            self.m_osc_sound = OSCClient()
+            self.m_osc_sound.connect( (OSCSOUNDHOST, OSCSOUNDPORT) )
+            if dbug.LEV & dbug.MSGS: print "OSC:init sound:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+
+        if OSCGRAPHHOST == OSCTRACKHOST and OSCGRAPHPORT == OSCTRACKPORT:
+            self.m_osc_graphic = self.m_osc_tracker
+            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as tracker"
+        elif OSCGRAPHHOST == OSCCONDUCTHOST and OSCGRAPHPORT == OSCCONDUCTPORT:
+            self.m_osc_graphic = self.m_osc_conductor
+            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as conductor"
+        elif OSCGRAPHHOST == OSCSOUNDHOST and OSCGRAPHPORT == OSCSOUNDPORT:
+            self.m_osc_graphic = self.m_osc_sound
+            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as sound"
+        else:
+            self.m_osc_graphic = OSCClient()
+            self.m_osc_graphic.connect( (OSCGRAPHHOST, OSCGRAPHPORT) )
+            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
 
         self.m_xmin = 0
         self.m_ymin = 0
@@ -83,20 +144,21 @@ class OSCHandler(object):
         }
 
         # add a method to an instance of the class
-        self.m_server.handle_timeout = types.MethodType(handle_timeout, self.m_server)
+        self.m_oscserver.handle_timeout = types.MethodType(handle_timeout, 
+                                                           self.m_oscserver)
 
         for i in self.eventfunc:
-            self.m_server.addMsgHandler(OSCPATH[i], self.eventfunc[i])
+            self.m_oscserver.addMsgHandler(OSCPATH[i], self.eventfunc[i])
 
         # this registers a 'default' handler (for unmatched messages), 
         # an /'error' handler, an '/info' handler.
         # And, if the client supports it, a '/subscribe' &
         # '/unsubscribe' handler
-        self.m_server.addDefaultHandlers()
-        self.m_server.addMsgHandler("default", self.default_handler)
+        self.m_oscserver.addDefaultHandlers()
+        self.m_oscserver.addMsgHandler("default", self.default_handler)
         # TODO: Handle errors from OSCServer
-        #self.m_server.addErrorHandlers()
-        #self.m_server.addMsgHandler("error", self.default_handler)
+        #self.m_oscserver.addErrorHandlers()
+        #self.m_oscserver.addMsgHandler("error", self.default_handler)
         self.honey_im_home()
 
     def honey_im_home(self):
@@ -106,10 +168,10 @@ class OSCHandler(object):
 
     def each_frame(self):
         # clear timed_out flag
-        self.m_server.timed_out = False
+        self.m_oscserver.timed_out = False
         # handle all pending requests then return
-        while not self.m_server.timed_out:
-            self.m_server.handle_request()
+        while not self.m_oscserver.timed_out:
+            self.m_oscserver.handle_request()
 
     def user_callback(self, path, tags, args, source):
         # which user will be determined by path:
@@ -415,4 +477,4 @@ if __name__ == "__main__":
         osc.each_frame()
         keep_running = osc.m_run and field.m_still_running
 
-    osc.m_server.close()
+    osc.m_oscserver.close()

@@ -21,6 +21,7 @@ from itertools import chain
 
 # installed modules
 import pyglet
+from OSC import OSCMessage
 
 # local modules
 from shared import config
@@ -34,12 +35,32 @@ LOGFILE = config.logfile
 
 CURVE_SEGS = config.curve_segments  # number of line segs in a curve
 
+GRAPHMODES = config.graphic_modes
+GRAPHOPTS = {'screen': 1, 'osc': 2, 'etherdream':3}
+
+OSCPATH = config.oscpath
+
 # init debugging
 dbug = debug.Debug()
 
 
+
 class Circle(object):
-    """Define circle object."""
+    """Define circle object.
+
+        Stores the following values:
+            m_field: Stores the field for back referencing
+            m_center: center point of circle
+            m_radius: radius of circle
+            m_color: color of circle
+            m_solid: is this a solid (boolean)
+            m_arcpoints: the points that make up the arcs
+            m_arcindex: the index to connect the above arcpoints
+            m_points: a list of points that make up the circle
+            m_index: the index to connect the above points
+
+        """
+
     def __init__(self):
         """Circle constructor."""
         self.m_field = None
@@ -56,21 +77,13 @@ class Circle(object):
         self.m_index = []
 
     def update(self, field, p, r, color, solid=False):
-        """Circle constructor.
-
-        Args:
-            p - center point
-            r - radius of circle
-            c - color
-        """
+        """Circle constructor."""
 
         self.m_field = field
         self.m_center = p
         self.m_radius = r
         self.m_color = color
         self.m_solid = solid
-        self.m_points = []
-        self.m_index = []
         k = 0.5522847498307935  # 4/3 (sqrt(2)-1)
         kr = int(r*k)
         (x,y)=p
@@ -79,6 +92,8 @@ class Circle(object):
                            (x-r,y-kr), (x-kr,y-r), (x,y-r),
                             (x+kr,y-r), (x+r,y-kr)]
         self.m_arcindex = [(0, 1, 2, 3), (3, 4, 5, 6), (6, 7, 8, 9), (9, 10, 11, 0)]
+        self.m_points = []
+        self.m_index = []
 
     def render(self):
         if self.m_field and self.m_arcpoints and self.m_arcindex and self.m_color:
@@ -107,24 +122,65 @@ class Circle(object):
             for i in range(len(self.m_index)):
                 points = self.m_points[i]
                 if dbug.LEV & dbug.GRAPH: print "Cirlce:draw:Points =",points
-                scaled_pts = self.m_field.rescale_pt2out(points)
-                if dbug.LEV & dbug.GRAPH: print "Cirlce:draw:Scaled_pts =",scaled_pts
-                index = self.m_index[i]
-                pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
-                if not self.m_solid:
-                    pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_LINES,
-                        index,
-                        ('v2i',tuple(chain(*scaled_pts))),
-                    )
-                else:
-                    pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_POLYGON,
-                        index,
-                        ('v2i',tuple(chain(*scaled_pts))),
-                    )
+                if GRAPHMODES & GRAPHOPTS['screen']:
+                    scaled_pts = self.m_field.rescale_pt2screen(points)
+                    if dbug.LEV & dbug.GRAPH: print "Circle:draw:screen:scaled_pts =",scaled_pts
+                    index = self.m_index[i]
+                    pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
+                    if not self.m_solid:
+                        pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_LINES,
+                            index,
+                            ('v2i',tuple(chain(*scaled_pts))),
+                        )
+                    else:
+                        pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_POLYGON,
+                            index,
+                            ('v2i',tuple(chain(*scaled_pts))),
+                        )
+                if GRAPHMODES & GRAPHOPTS['osc']:
+                    # the graphic server wants output of this form:
+                    #   /laser/bezier/cubic ffffffff
+                    # we send an OSC message like this:
+                    #   self.m_field.m_osc_graphic.send( OSCMessage("/user/1", [1.0, 2.0, 3.0 ] ) )
+                    #scaled_pts = self.m_field.rescale_pt2vector(points)
+                    #if dbug.LEV & dbug.GRAPH: print "Circle:draw:vector:scaled_pts =",scaled_pts
+                    index = self.m_index[i]
+                    print "Circle:OSC:", OSCPATH['graph_color'], \
+                           [self.m_color[0],self.m_color[1],self.m_color[2]]
+                    self.m_field.m_osc.m_osc_graphic.send(OSCMessage(
+                                OSCPATH['graph_color'], 
+                                [self.m_color[0],self.m_color[1],self.m_color[2]]))
+                    for i in range(len(self.m_arcindex)):
+                        # e.g., self.m_arcindex[i] = (0,1,2)
+                        p0 = self.m_arcpoints[self.m_arcindex[i][0]]
+                        p1 = self.m_arcpoints[self.m_arcindex[i][1]]
+                        p2 = self.m_arcpoints[self.m_arcindex[i][2]]
+                        p3 = self.m_arcpoints[self.m_arcindex[i][3]]
+                        print "Circle:OSC:", OSCPATH['graph_cubic'], \
+                                    [p0[0], p0[1], p1[0], p1[1], \
+                                     p2[0], p2[1], p3[0], p3[1]]
+                        self.m_field.m_osc.m_osc_graphic.send(OSCMessage(
+                                    OSCPATH['graph_cubic'], 
+                                    [p0[0], p0[1], p1[0], p1[1], 
+                                     p2[0], p2[1], p3[0], p3[1]]))
 
 
 class Line(object):
-    """Define line object."""
+    """Define line object.
+
+        Stores the following values:
+            m_field: Stores the field for back referencing
+            m_p0,m_p1: endpoints of line
+            m_r0,m_l1: radius of connected cells
+            m_color: color of circle
+            m_path: path from one cell0 to cell1
+            m_arcpoints: the points that make up the arcs
+            m_arcindex: the index to connect the above arcpoints
+            m_points: a list of points that make up the circle
+            m_index: the index to connect the above points
+
+        """
+
     def __init__(self):
         """Line constructor."""
         self.m_field = None
@@ -248,11 +304,39 @@ class Line(object):
             for i in range(len(self.m_index)):
                 points = self.m_points[i]
                 if dbug.LEV & dbug.GRAPH: print "Graph:draw:points =",points
-                scaled_pts = self.m_field.rescale_pt2out(points)
-                if dbug.LEV & dbug.GRAPH: print "Graph:draw:scaled_points =",scaled_pts
-                index = self.m_index[i]
-                pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
-                pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_LINES,
-                    index,
-                    ('v2i',tuple(chain(*scaled_pts))),
-                )
+                if GRAPHMODES & GRAPHOPTS['screen']:
+                    scaled_pts = self.m_field.rescale_pt2screen(points)
+                    if dbug.LEV & dbug.GRAPH: print "Graph:draw:screen:scaled_points =",scaled_pts
+                    index = self.m_index[i]
+                    pyglet.gl.glColor3f(self.m_color[0],self.m_color[1],self.m_color[2])
+                    pyglet.graphics.draw_indexed(len(scaled_pts), pyglet.gl.GL_LINES,
+                        index,
+                        ('v2i',tuple(chain(*scaled_pts))),
+                    )
+                if GRAPHMODES & GRAPHOPTS['osc']:
+                    # the graphic server wants output of this form:
+                    #   /laser/bezier/cubic ffffffff
+                    # we send an OSC message like this:
+                    #   self.m_field.m_osc_graphic.send( OSCMessage("/user/1", [1.0, 2.0, 3.0 ] ) )
+                    #scaled_pts = self.m_field.rescale_pt2vector(points)
+                    #if dbug.LEV & dbug.GRAPH: print "Circle:draw:vector:scaled_pts =",scaled_pts
+                    index = self.m_index[i]
+                    print "Line:OSC:", OSCPATH['graph_color'], \
+                           [self.m_color[0],self.m_color[1],self.m_color[2]]
+                    self.m_field.m_osc.m_osc_graphic.send(OSCMessage(
+                                OSCPATH['graph_color'], 
+                                [self.m_color[0],self.m_color[1],self.m_color[2]]))
+                    for i in range(len(self.m_arcindex)):
+                        # e.g., self.m_arcindex[i] = (0,1,2)
+                        p0 = self.m_arcpoints[self.m_arcindex[i][0]]
+                        p1 = self.m_arcpoints[self.m_arcindex[i][1]]
+                        p2 = self.m_arcpoints[self.m_arcindex[i][2]]
+                        p3 = self.m_arcpoints[self.m_arcindex[i][3]]
+                        print "Line:OSC:", OSCPATH['graph_cubic'], \
+                                    [p0[0], p0[1], p1[0], p1[1], \
+                                     p2[0], p2[1], p3[0], p3[1]]
+                        self.m_field.m_osc.m_osc_graphic.send(OSCMessage(
+                                    OSCPATH['graph_cubic'], 
+                                    [p0[0], p0[1], p1[0], p1[1], 
+                                     p2[0], p2[1], p3[0], p3[1]]))
+

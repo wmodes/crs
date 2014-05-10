@@ -7,6 +7,7 @@ TODO
 * /pf/adddest host port framerate
 * Add framerate
 * Don't make nans go to zero
+* Make it so myfield and graphelements can do BOTH vector and screen
 
 4.18.2014
 * If people count is diff from our count, we drop everyone (actually add to 
@@ -38,3 +39,17 @@ was resized
 * Added new OSC values in config per pulsefield protocol 2.1.1
 * Added osc handler for new set values
 * Added osc handler for Leg and Body data, stores data in dataelements
+
+5/7/2014
+* Laid the groundwork for vector AND screen
+* Moved pyglet routines out of field class (into window class)
+* Renamed some class files 
+
+5/9/2014
+* Made screen_modes vector and screen NOT mutually exclusive
+* Made scale routines work for screen and vector independent
+    - Something like this: "if self.m_output_mode == MODE_SCREEN"
+    - changed to this: "if GRAPHMODES & GRAPHOPTS['screen']:"
+
+
+

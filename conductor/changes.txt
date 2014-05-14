@@ -53,13 +53,4 @@ was resized
 * Added OSCmessage output to low-level graphic system (graphelements.py)
 * Added OSC ip and port configs for all the other machines
 
-5/13/2014
-* Converted everything from cm to m, as provided by the tracker
-* Added a handler for ping and ack
-* Moved all OSC generation to oschandlers.py
-* Created a dict of clients, since this comes from the config file
-    the clients don't have to be connected yet to set up the client
-* Implemented a home_im_home function to ping everyone upon start
-* implemented the list of clients as a dict so I can easily access them
-
 

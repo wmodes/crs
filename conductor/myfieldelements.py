@@ -32,14 +32,6 @@ from shared.fieldelements import Field
 from mydataelements import MyCell,MyConnector
 
 # constants
-# removed to allow multiple simultaneous modes
-#MODE_SCREEN = 1
-#MODE_VECTOR = 2
-#MODE_DEFAULT = MODE_SCREEN
-# replaced this:
-#    if self.m_output_mode == MODE_SCREEN:
-# with this
-#    if GRAPHMODES & GRAPHOPTS['screen']:
 GRAPHMODES = config.graphic_modes
 GRAPHOPTS = {'screen': 1, 'osc': 2, 'etherdream':3}
 
@@ -198,8 +190,6 @@ class MyField(Field):
 
         # aspect ratios used only for comparison
         field_aspect = float(xmax_field-xmin_field)/(ymax_field-ymin_field)
-        #if GRAPHMODES & GRAPHOPTS['osc']:
-            #vector_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
         if GRAPHMODES & GRAPHOPTS['screen']:
             screen_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
         if field_aspect > screen_aspect:

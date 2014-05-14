@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Visual subsystem module contains main loop and majority of important classes.
+"""Conductor subsystem module contains main loop and majority of important classes.
 
 Co-related Space is an interactive multimedia installation that engages the
 themes of presence, interaction, and place. Using motion tracking, laser light
@@ -25,7 +25,6 @@ import logging
 
 
 # installed modules
-import pyglet
 from OSC import OSCMessage
 
 # local modules
@@ -38,9 +37,6 @@ from myfieldelements import MyField
 
 # constants
 LOGFILE = config.logfile
-
-GRAPHMODES = config.graphic_modes
-GRAPHOPTS = {'screen': 1, 'osc': 2, 'etherdream':3}
 
 OSCPATH = config.oscpath
 
@@ -136,8 +132,6 @@ def main():
 
     # initialize field
     field = MyField()
-    # initialize pyglet 
-    field.init_screen()
 
     osc = oschandlers.OSCHandler(field)
     field.update(osc=osc)
@@ -148,21 +142,7 @@ def main():
         # call user script
         osc.each_frame()
 
-        pyglet.clock.tick()
-
-        for window in pyglet.app.windows:
-            window.switch_to()
-            window.dispatch_events()
-            if field.m_still_running:
-                #TODO: Should the draw routine be somewhere else
-                window.dispatch_event('on_draw')
-                window.flip()
-
-        #TODO: Move this somewhere sensible
-        if GRAPHMODES & GRAPHOPTS['osc']:
-            if dbug.LEV & dbug.GRAPH: 
-                print "Main:OSC to laser:", OSCPATH['graph_update']
-            field.m_osc.send_to('laser', OSCPATH['graph_update'],[])
+        #TODO call main "do it" loop -- currently on_draw
 
         keep_running = osc.m_run & field.m_still_running
 

@@ -42,11 +42,11 @@ dbug = debug.Debug()
 
 def quadx(t, p0, p1, p2):
     #print "points:",p0[0],p1[0],p2[0]," t:",t
-    return  int((1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0])
+    return  (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0]
 
 def quady(t, p0, p1, p2):
     #print "points:",p0[1],p1[1],p2[1]," t:",t
-    return int((1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1])
+    return (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1]
 
 def quad_spline(p0, p1, p2, nsteps):
     """Returns a list of line segments and an index to make the full curve.
@@ -83,7 +83,7 @@ def cubic_spline(p0, p1, p2, p3, nsteps):
         # the definition of the spline means the parameter t goes
         # from 0.0 to 1.0
         (x,y) = bez(val)
-        linesegments.append((int(x),int(y)))
+        linesegments.append((x,y))
     #lineSegments.append(p2)
     cubicindex = [0] + [int(x * 0.5) for x in range(2, (nsteps-1)*2)] + [nsteps-1]
     #print "lineSegments = ",lineSegments

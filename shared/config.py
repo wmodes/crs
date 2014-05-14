@@ -14,8 +14,10 @@ ungroup_distance = 150
 
 # graphics configuration
 #
+#graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
 graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
-draw_bodies = True
+#draw_bodies = True
+draw_bodies = False
 
 inverse=True
 if inverse:
@@ -69,7 +71,17 @@ osc_framerate = 25
 
 logfile="crs-visual.log"
 freq_regular_reports = 100
-debug_level = 22
+
+# Debugging codes get and'ed together
+# MORE  = 1
+# FIELD = 2
+# DATA  = 4
+# GRAPH = 8
+# MSGS  = 16
+# PYG   = 32
+#debug_level = 22    # data (2), field (4), osc(16)
+debug_level = 6    # data (2), field (4)
+#debug_level = 14    # data (2), field (4), graph (8)
 
 max_lost_patience = 10
 
@@ -77,47 +89,63 @@ max_lost_patience = 10
 
 osc_default_host = "localhost"
 osc_default_port = 7011
-osc_server_host = ""
-osc_server_port = 7010
-osc_tracking_host = ""
-osc_tracking_port = ""
-osc_sound_host = ""
-osc_sound_port = ""
-osc_conductor_host = ""
-osc_conductor_port = ""
-osc_graphic_host = ""
-osc_graphic_port = ""
+#osc_visual_host = "192.168.0.100"
+osc_visual_host = "localhost"
+osc_visual_port = 7010
+#osc_tracking_host = "192.168.0.162"
+osc_tracking_host = "localhost"
+osc_tracking_port = 7770
+#osc_sound_host = "192.168.0.101"
+osc_sound_host = "localhost"
+osc_sound_port = 7010
+osc_conductor_host = "localhost"
+osc_conductor_port = 7770
+#osc_laser_host = "192.168.0.162"
+osc_laser_host = "localhost"
+osc_laser_port = 7780
 osctimeout = 0
 
 oscpath = {
-    # Incoming OSC: field state
+    # Common
     'ping': "/ping",
     'ack': "/ack",
-    'start': "/pf/started",
-    'entry': "/pf/entry",
-    'exit': "/pf/exit",
-    'frame': "/pf/frame",
-    'stop': "/pf/stopped",
+
+    # Tracker subsystem
+    #
+    # Output to tracker
+    'track_dump': "/pf/dump",
+    'track_adddest': "/pf/adddest",
+    'track_rmdest': "/pf/rmdest",
+    # Incoming OSC: field state
+    'track_start': "/pf/started",
+    'track_stop': "/pf/stopped",
+    'track_entry': "/pf/entry",
+    'track_exit': "/pf/exit",
+    'track_frame': "/pf/frame",
     # Incoming OSC: set params
-    'set': "/pf/set/",
-    'minx': "/pf/set/minx",
-    'maxx': "/pf/set/maxx",
-    'miny': "/pf/set/miny",
-    'maxy': "/pf/set/maxy",
-    'npeople': "/pf/set/npeople",
-    'groupdist': "/pf/set/groupdist",
-    'ungroupdist': "/pf/set/ungroupdist",
-    'fps': "/pf/set/fps",
+    'track_set': "/pf/set/",
+    'track_minx': "/pf/set/minx",
+    'track_maxx': "/pf/set/maxx",
+    'track_miny': "/pf/set/miny",
+    'track_maxy': "/pf/set/maxy",
+    'track_npeople': "/pf/set/npeople",
+    'track_groupdist': "/pf/set/groupdist",
+    'track_ungroupdist': "/pf/set/ungroupdist",
+    'track_fps': "/pf/set/fps",
     # Incoming OSC: updates
-    'update': "/pf/update",
-    'leg': "/pf/leg",
-    'body': "/pf/body",
-    # Requests to tracker
-    'dump': "/pf/dump",
-    'adddest': "/pf/adddest",
-    'rmdest': "/pf/rmdest",
-    'body': "/pf/body",
-    # Outgoing to the graphic engine
+    'track_update': "/pf/update",
+    'track_leg': "/pf/leg",
+    'track_body': "/pf/body",
+
+    # Visual subsystem
+    #
+    # Outgoing from the visual subsys
+    'visual_start': "/visual/start",
+    'visual_stop': "/visual/stop",
+
+    # Laser subsystem
+    #
+    # Outgoing to the laser engine
     'graph_start': "/laser/start",
     'graph_stop': "/laser/stop",
     'graph_line': "/laser/line",
@@ -128,9 +156,20 @@ oscpath = {
     'graph_attr': "/laser/set/attribute",
     'graph_pps': "/laser/set/pps",
     'graph_update': "/laser/update",
-    # Outgoing OSC updates from the conductor
-    'attribute': "/conducter/attribute",
-    'rollcall': "/conducter/rollcall",
-    'event': "/conducter/event",
-    'conx': "/conducter/conx",
+
+    # Conductor subsystem
+    #
+    # Incoming to the conductor
+    'conduct_dump': "/conductor/dump",
+    # Outgoing from the conductor
+    'conduct_start': "/conductor/start",
+    'conduct_stop': "/conductor/stop",
+    'conduct_scene': "/conductor/scene",
+    'conduct_rollcall': "/conductor/rollcall",
+    'conduct_attr': "/conductor/attr",
+    'conduct_conx': "/conductor/conx",
+    'conduct_gattr': "/conductor/gattr",
+    'conduct_event': "/conductor/event",
+    'conduct_geo': "/conductor/geo",
+
 }

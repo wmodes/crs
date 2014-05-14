@@ -19,9 +19,10 @@ __license__ = "GNU GPL 3.0 or later"
 
 # core modules
 import types
+from socket import getnameinfo
 
 # installed modules
-from OSC import OSCServer, OSCClient
+from OSC import OSCServer, OSCClient, OSCMessage
 #import pyglet
 
 # local modules
@@ -31,14 +32,14 @@ from shared import debug
 # local Classes
 
 # Constants
-OSCSERVERHOST = config.osc_server_host \
-    if config.osc_server_host else config.osc_default_host
-OSCSERVERPORT = config.osc_server_port \
-    if config.osc_server_port else config.osc_default_port
+OSCSERVERHOST = config.osc_visual_host \
+    if config.osc_visual_host else config.osc_default_host
+OSCSERVERPORT = config.osc_visual_port \
+    if config.osc_visual_port else config.osc_default_port
 
 OSCTRACKHOST = config.osc_tracking_host \
     if config.osc_tracking_host else config.osc_default_host
-OSCTRACKPORT = config.oscport \
+OSCTRACKPORT = config.osc_tracking_port \
     if config.osc_tracking_port else config.osc_default_port
 
 OSCSOUNDHOST = config.osc_sound_host \
@@ -51,10 +52,10 @@ OSCCONDUCTHOST = config.osc_conductor_host \
 OSCCONDUCTPORT = config.osc_conductor_port \
     if config.osc_conductor_port else config.osc_default_port
 
-OSCGRAPHHOST = config.osc_graphic_host \
-    if config.osc_graphic_host else config.osc_default_host
-OSCGRAPHPORT = config.osc_graphic_port \
-    if config.osc_graphic_port else config.osc_default_port
+OSCLASERHOST = config.osc_laser_host \
+    if config.osc_laser_host else config.osc_default_host
+OSCLASERPORT = config.osc_laser_port \
+    if config.osc_laser_port else config.osc_default_port
 
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
@@ -76,46 +77,52 @@ class OSCHandler(object):
     def __init__(self, field):
         self.m_field = field
         self.m_oscserver = OSCServer( (OSCSERVERHOST, OSCSERVERPORT) )
-        if dbug.LEV & dbug.MSGS: print "OSC:init server:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+        if dbug.LEV & dbug.MSGS: print "OSC:init server:%s:%s"%(OSCSERVERHOST,OSCSERVERPORT)
         self.m_oscserver.timeout = OSCTIMEOUT
         self.m_run = True
 
-        self.m_osc_tracker = OSCClient()
-        self.m_osc_tracker.connect( (OSCTRACKHOST, OSCTRACKPORT) )
+        self.m_osc_clients = {}
+
+        self.m_osc_clients['tracker'] = OSCClient()
+        self.m_osc_clients['tracker'].connect( (OSCTRACKHOST, OSCTRACKPORT) )
         if dbug.LEV & dbug.MSGS: print "OSC:init tracker:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+        self.send_to('tracker',OSCPATH['ping'],[0])
 
         if OSCCONDUCTHOST == OSCTRACKHOST and OSCCONDUCTPORT == OSCTRACKPORT:
-            self.m_osc_conductor = self.m_osc_tracker
+            self.m_osc_clients['conductor'] = self.m_osc_clients['tracker']
             if dbug.LEV & dbug.MSGS: print "OSC:init conductor:same as tracker"
         else:
-            self.m_osc_conductor = OSCClient()
-            self.m_osc_conductor.connect( (OSCCONDUCTHOST, OSCCONDUCTPORT) )
-            if dbug.LEV & dbug.MSGS: print "OSC:init conductor:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+            self.m_osc_clients['conductor'] = OSCClient()
+            self.m_osc_clients['conductor'].connect( (OSCCONDUCTHOST, OSCCONDUCTPORT) )
+            if dbug.LEV & dbug.MSGS: print "OSC:init conductor:%s:%s"%(OSCCONDUCTHOST,OSCCONDUCTPORT)
+        self.send_to('conductor',OSCPATH['ping'],[0])
 
         if OSCSOUNDHOST == OSCTRACKHOST and OSCSOUNDPORT == OSCTRACKPORT:
-            self.m_osc_sound = self.m_osc_tracker
+            self.m_osc_clients['sound'] = self.m_osc_clients['tracker']
             if dbug.LEV & dbug.MSGS: print "OSC:init sound:same as tracker"
         elif OSCSOUNDHOST == OSCCONDUCTHOST and OSCSOUNDPORT == OSCCONDUCTPORT:
-            self.m_osc_sound = self.m_osc_conductor
+            self.m_osc_clients['sound'] = self.m_osc_clients['conductor']
             if dbug.LEV & dbug.MSGS: print "OSC:init sound:same as conductor"
         else:
-            self.m_osc_sound = OSCClient()
-            self.m_osc_sound.connect( (OSCSOUNDHOST, OSCSOUNDPORT) )
-            if dbug.LEV & dbug.MSGS: print "OSC:init sound:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+            self.m_osc_clients['sound'] = OSCClient()
+            self.m_osc_clients['sound'].connect( (OSCSOUNDHOST, OSCSOUNDPORT) )
+            if dbug.LEV & dbug.MSGS: print "OSC:init sound:%s:%s"%(OSCSOUNDHOST,OSCSOUNDPORT)
+        self.send_to('sound',OSCPATH['ping'],[0])
 
-        if OSCGRAPHHOST == OSCTRACKHOST and OSCGRAPHPORT == OSCTRACKPORT:
-            self.m_osc_graphic = self.m_osc_tracker
-            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as tracker"
-        elif OSCGRAPHHOST == OSCCONDUCTHOST and OSCGRAPHPORT == OSCCONDUCTPORT:
-            self.m_osc_graphic = self.m_osc_conductor
-            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as conductor"
-        elif OSCGRAPHHOST == OSCSOUNDHOST and OSCGRAPHPORT == OSCSOUNDPORT:
-            self.m_osc_graphic = self.m_osc_sound
-            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as sound"
+        if OSCLASERHOST == OSCTRACKHOST and OSCLASERPORT == OSCTRACKPORT:
+            self.m_osc_clients['laser'] = self.m_osc_clients['tracker']
+            if dbug.LEV & dbug.MSGS: print "OSC:init laser:same as tracker"
+        elif OSCLASERHOST == OSCCONDUCTHOST and OSCLASERPORT == OSCCONDUCTPORT:
+            self.m_osc_clients['laser'] = self.m_osc_clients['conductor']
+            if dbug.LEV & dbug.MSGS: print "OSC:init laser:same as conductor"
+        elif OSCLASERHOST == OSCSOUNDHOST and OSCLASERPORT == OSCSOUNDPORT:
+            self.m_osc_clients['laser'] = self.m_osc_clients['sound']
+            if dbug.LEV & dbug.MSGS: print "OSC:init laser:same as sound"
         else:
-            self.m_osc_graphic = OSCClient()
-            self.m_osc_graphic.connect( (OSCGRAPHHOST, OSCGRAPHPORT) )
-            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
+            self.m_osc_clients['laser'] = OSCClient()
+            self.m_osc_clients['laser'].connect( (OSCLASERHOST, OSCLASERPORT) )
+            if dbug.LEV & dbug.MSGS: print "OSC:init laser:%s:%s"%(OSCLASERHOST,OSCLASERPORT)
+        self.send_to('laser',OSCPATH['ping'],[0])
 
         self.m_xmin = 0
         self.m_ymin = 0
@@ -123,24 +130,27 @@ class OSCHandler(object):
         self.m_ymax = 0
 
         self.eventfunc = {
-            'ping': self.event_tracking_ping,
-            'ack': self.event_tracking_ack,
-            'start': self.event_tracking_start,
-            'entry': self.event_tracking_entry,
-            'exit': self.event_tracking_exit,
-            'frame': self.event_tracking_frame,
-            'stop': self.event_tracking_stop,
-            'minx': self.event_tracking_set,
-            'miny': self.event_tracking_set,
-            'maxx': self.event_tracking_set,
-            'maxy': self.event_tracking_set,
-            'npeople': self.event_tracking_set,
-            'groupdist': self.event_tracking_set,
-            'ungroupdist': self.event_tracking_set,
-            'fps': self.event_tracking_set,
-            'update': self.event_tracking_update,
-            'leg': self.event_tracking_leg,
-            'body': self.event_tracking_body,
+            # common
+            'ping': self.event_ping,
+            'ack': self.event_ack,
+
+            # from tracker
+            'track_start': self.event_tracking_start,
+            'track_stop': self.event_tracking_stop,
+            'track_entry': self.event_tracking_entry,
+            'track_exit': self.event_tracking_exit,
+            'track_frame': self.event_tracking_frame,
+            'track_minx': self.event_tracking_set,
+            'track_miny': self.event_tracking_set,
+            'track_maxx': self.event_tracking_set,
+            'track_maxy': self.event_tracking_set,
+            'track_npeople': self.event_tracking_set,
+            'track_groupdist': self.event_tracking_set,
+            'track_ungroupdist': self.event_tracking_set,
+            'track_fps': self.event_tracking_set,
+            'track_update': self.event_tracking_update,
+            'track_leg': self.event_tracking_leg,
+            'track_body': self.event_tracking_body,
         }
 
         # add a method to an instance of the class
@@ -160,11 +170,6 @@ class OSCHandler(object):
         #self.m_oscserver.addErrorHandlers()
         #self.m_oscserver.addMsgHandler("error", self.default_handler)
         self.honey_im_home()
-
-    def honey_im_home(self):
-        """Broadcast a hello message to the network."""
-        # TODO: Broadcast hello message
-        return True
 
     def each_frame(self):
         # clear timed_out flag
@@ -186,17 +191,50 @@ class OSCHandler(object):
         # don't do this at home (or it'll quit blender)
         self.m_run = False
 
-    # Event handlers
+    # OUTGOING Handlers
+
+    def send_to(self, clientkey, path, args):
+        """Send OSC Message to one client."""
+        try:
+            self.m_osc_clients[clientkey].send(OSCMessage(path,args))
+            if dbug.LEV & dbug.MSGS: 
+                print "OSC:Send to %s: %s %s" % (clientkey,path,args)
+        except:
+            if dbug.LEV & dbug.MSGS: 
+                print "OSC:Send:Unable to reach host",clientkey
+            return False
+        return True
+
+    def send_to_all_clients(self, path, args):
+        """Broadcast to all the clients."""
+        for clientkey, client in self.m_osc_clients.iteritems():
+            self.send_to(clientkey, path, args)
+
+    def honey_im_home(self):
+        """Broadcast a hello message to the network."""
+        self.send_to_all_clients(OSCPATH['visual_start'],[])
+
+    # INCOMING handlers
 
     def default_handler(self, path, tags, args, source):
         if dbug.LEV & dbug.MORE: print "OSC:default_handler:No handler registered for ", path
         return None
 
-    def event_tracking_ping(self, path, tags, args, source):
-        if dbug.LEV & dbug.MSGS: print "OSC:event_ping:code",args[0]
-        return None
+    def event_ping(self, path, tags, args, source):
+        ping_code = args[0]
+        source_ip = source[0]
+        if dbug.LEV & dbug.MSGS: 
+            print "OSC:ping from %s:code:%s" % (source_ip, ping_code)
+        for clientkey, client in self.m_osc_clients.iteritems():
+            target_ip = client.address()[0]
+            if target_ip == source_ip:
+                try:
+                    self.sendto(clientkey, OSCPATH('ack'), ping_code)
+                except:
+                    if dbug.LEV & dbug.MSGS: 
+                        print "OSC:event_ping:unable to ack to", clientkey
 
-    def event_tracking_ack(self, path, tags, args, source):
+    def event_ack(self, path, tags, args, source):
         if dbug.LEV & dbug.MSGS: print "OSC:event_ack:code",args[0]
         return None
 
@@ -225,40 +263,40 @@ class OSCHandler(object):
 
         """
         if dbug.LEV & dbug.MSGS: print "OSC:event_set:",path,args,source
-        if path == OSCPATH['minx']:
-            self.m_xmin = int(100*args[0])
+        if path == OSCPATH['track_minx']:
+            self.m_xmin = args[0]
             if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
                     (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmin_field=(self.m_xmin,self.m_field.m_ymin_field))
-        elif path == OSCPATH['miny']:
-            self.m_ymin = int(100*args[0])
+        elif path == OSCPATH['track_miny']:
+            self.m_ymin = args[0]
             if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
                     (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmin_field=(self.m_field.m_xmin_field,self.m_ymin))
-        elif path == OSCPATH['maxx']:
-            self.m_xmax = int(100*args[0])
+        elif path == OSCPATH['track_maxx']:
+            self.m_xmax = args[0]
             if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
                     (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmax_field=(self.m_xmax,self.m_field.m_ymax_field))
-        elif path == OSCPATH['maxy']:
-            self.m_ymax = int(100*args[0])
+        elif path == OSCPATH['track_maxy']:
+            self.m_ymax = args[0]
             if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
                     (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmax_field=(self.m_field.m_xmax_field,self.m_ymax))
-        elif path == OSCPATH['npeople']:
+        elif path == OSCPATH['track_npeople']:
             self.m_field.check_people_count(args[0])
             return
-        elif path == OSCPATH['groupdist']:
+        elif path == OSCPATH['track_groupdist']:
             self.m_field.update(groupdist=args[0])
             return
-        elif path == OSCPATH['ungroupdist']:
+        elif path == OSCPATH['track_ungroupdist']:
             self.m_field.update(ungroupdist=args[0])
             return
-        elif path == OSCPATH['fps']:
+        elif path == OSCPATH['track_fps']:
             self.m_field.update(oscfps=args[0])
             return
         #if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
@@ -332,20 +370,20 @@ class OSCHandler(object):
                 args[index] = 0
         samp = args[0]
         id = args[1]
-        x = int(100*args[2])       # comes in meters, convert to cm
-        y = int(100*args[3])
-        ex = int(100*args[4])
-        ey = int(100*args[5])
-        spd = int(100*args[6])
+        x = args[2]       # comes in meters
+        y = args[3]
+        ex = args[4]
+        ey = args[5]
+        spd = args[6]
         heading = args[7]
-        espd = int(100*args[8])
+        espd = args[8]
         eheading = args[9]
         facing = args[10]
         efacing = args[11]
-        diam = int(100*args[12])
-        sigmadiam = int(100*args[13])
-        sep = int(100*args[14])
-        sigmasep = int(100*args[15])
+        diam = args[12]
+        sigmadiam = args[13]
+        sep = args[14]
+        sigmasep = args[15]
         leftness = args[16]
         vis = args[17]
         if id not in self.m_field.m_cell_dict:
@@ -377,13 +415,13 @@ class OSCHandler(object):
         id = args[1]
         leg = args[2]
         nlegs = args[3]
-        x = int(100*args[4])       # comes in meters, convert to cm
-        y = int(100*args[5])
-        ex = int(100*args[6])
-        ey = int(100*args[7])
-        spd = int(100*args[8])
+        x = args[4]       # comes in meters
+        y = args[5]
+        ex = args[6]
+        ey = args[7]
+        spd = args[8]
         heading = args[9]
-        espd = int(100*args[10])
+        espd = args[10]
         eheading = args[11]
         vis = args[12]
         if id not in self.m_field.m_cell_dict:
@@ -416,12 +454,12 @@ class OSCHandler(object):
         id = args[2]
         if id not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: print "OSC:event_update:no id",id,"in registered id list"
-        x = int(100*args[3])       # comes in meters, convert to cm
-        y = int(100*args[4])
-        vx = int(100*args[5])
-        vy = int(100*args[6])
-        major = int(100*args[7]/2)
-        minor = int(100*args[8]/2)
+        x = args[3]       # comes in meters
+        y = args[4]
+        vx = args[5]
+        vy = args[6]
+        major = args[7]/2
+        minor = args[8]/2
         gid = args[9]
         gsize = args[10]
         channel = args[11]

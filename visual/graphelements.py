@@ -21,7 +21,6 @@ from itertools import chain
 
 # installed modules
 import pyglet
-from OSC import OSCMessage
 
 # local modules
 from shared import config
@@ -50,8 +49,8 @@ class Circle(object):
 
         Stores the following values:
             m_field: Stores the field for back referencing
-            m_center: center point of circle
-            m_radius: radius of circle
+            m_center: center point of circle ((float,float) in m)
+            m_radius: radius of circle (float in m)
             m_color: color of circle
             m_solid: is this a solid (boolean)
             m_arcpoints: the points that make up the arcs
@@ -85,7 +84,7 @@ class Circle(object):
         self.m_color = color
         self.m_solid = solid
         k = 0.5522847498307935  # 4/3 (sqrt(2)-1)
-        kr = int(r*k)
+        kr = r*k
         (x,y)=p
         self.m_arcpoints = [(x+r,y),(x+r,y+kr), (x+kr,y+r), (x,y+r),
                            (x-kr,y+r), (x-r,y+kr), (x-r,y),
@@ -119,10 +118,10 @@ class Circle(object):
 
     def draw(self):
         if self.m_field and self.m_arcpoints and self.m_arcindex and self.m_color:
-            for i in range(len(self.m_index)):
-                points = self.m_points[i]
-                if dbug.LEV & dbug.GRAPH: print "Cirlce:draw:Points =",points
-                if GRAPHMODES & GRAPHOPTS['screen']:
+            if GRAPHMODES & GRAPHOPTS['screen']:
+                for i in range(len(self.m_index)):
+                    points = self.m_points[i]
+                    if dbug.LEV & dbug.GRAPH: print "Circle:draw:Points =",points
                     scaled_pts = self.m_field.rescale_pt2screen(points)
                     if dbug.LEV & dbug.GRAPH: print "Circle:draw:screen:scaled_pts =",scaled_pts
                     index = self.m_index[i]
@@ -137,32 +136,34 @@ class Circle(object):
                             index,
                             ('v2i',tuple(chain(*scaled_pts))),
                         )
-                if GRAPHMODES & GRAPHOPTS['osc']:
-                    # the graphic server wants output of this form:
-                    #   /laser/bezier/cubic ffffffff
-                    # we send an OSC message like this:
-                    #   self.m_field.m_osc_graphic.send( OSCMessage("/user/1", [1.0, 2.0, 3.0 ] ) )
-                    #scaled_pts = self.m_field.rescale_pt2vector(points)
-                    #if dbug.LEV & dbug.GRAPH: print "Circle:draw:vector:scaled_pts =",scaled_pts
-                    index = self.m_index[i]
-                    print "Circle:OSC:", OSCPATH['graph_color'], \
-                           [self.m_color[0],self.m_color[1],self.m_color[2]]
-                    self.m_field.m_osc.m_osc_graphic.send(OSCMessage(
-                                OSCPATH['graph_color'], 
-                                [self.m_color[0],self.m_color[1],self.m_color[2]]))
-                    for i in range(len(self.m_arcindex)):
-                        # e.g., self.m_arcindex[i] = (0,1,2)
-                        p0 = self.m_arcpoints[self.m_arcindex[i][0]]
-                        p1 = self.m_arcpoints[self.m_arcindex[i][1]]
-                        p2 = self.m_arcpoints[self.m_arcindex[i][2]]
-                        p3 = self.m_arcpoints[self.m_arcindex[i][3]]
-                        print "Circle:OSC:", OSCPATH['graph_cubic'], \
-                                    [p0[0], p0[1], p1[0], p1[1], \
-                                     p2[0], p2[1], p3[0], p3[1]]
-                        self.m_field.m_osc.m_osc_graphic.send(OSCMessage(
+            if GRAPHMODES & GRAPHOPTS['osc']:
+                # the graphic server wants output of this form:
+                #   /laser/bezier/cubic ffffffff
+                # we send an OSC message like this:
+                #   self.m_field.m_osc_laser.send( OSCMessage("/user/1", [1.0, 2.0, 3.0 ] ) )
+                #scaled_pts = self.m_field.rescale_pt2vector(points)
+                #if dbug.LEV & dbug.GRAPH: print "Circle:draw:vector:scaled_pts =",scaled_pts
+                index = self.m_index[i]
+                if dbug.LEV & dbug.GRAPH: 
+                    print "Circle:OSC to laser:", OSCPATH['graph_color'], \
+                       [self.m_color[0],self.m_color[1],self.m_color[2]]
+                self.m_field.m_osc.send_to('laser',
+                            OSCPATH['graph_color'], 
+                            [self.m_color[0],self.m_color[1],self.m_color[2]])
+                for i in range(len(self.m_arcindex)):
+                    # e.g., self.m_arcindex[i] = (0,1,2)
+                    p0 = self.m_arcpoints[self.m_arcindex[i][0]]
+                    p1 = self.m_arcpoints[self.m_arcindex[i][1]]
+                    p2 = self.m_arcpoints[self.m_arcindex[i][2]]
+                    p3 = self.m_arcpoints[self.m_arcindex[i][3]]
+                    if dbug.LEV & dbug.GRAPH: 
+                        print "Circle:OSC to laser:", OSCPATH['graph_cubic'], \
+                                [p0[0], p0[1], p1[0], p1[1], \
+                                 p2[0], p2[1], p3[0], p3[1]]
+                    self.m_field.m_osc.send_to('laser',
                                     OSCPATH['graph_cubic'], 
                                     [p0[0], p0[1], p1[0], p1[1], 
-                                     p2[0], p2[1], p3[0], p3[1]]))
+                                     p2[0], p2[1], p3[0], p3[1]])
 
 
 class Line(object):
@@ -249,7 +250,7 @@ class Line(object):
         self.m_arcindex = [(x-3,x-2,x-1,x) for x in range(3,len(npath),3)]
 
     def midpoint(self, p1, p2):
-        return (int((p1[0]+p2[0])/2), int((p1[1]+p2[1])/2))
+        return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
 
     def make_arc(self,p1,p2):
         midpt = self.midpoint(p1,p2)
@@ -299,12 +300,12 @@ class Line(object):
 
     def draw(self):
         if self.m_field and self.m_arcpoints and self.m_arcindex and self.m_color:
-            if dbug.LEV & dbug.GRAPH: print "Graph:draw:self.m_points =",self.m_points
-            if dbug.LEV & dbug.GRAPH: print "Graph:draw:index:",self.m_index
-            for i in range(len(self.m_index)):
-                points = self.m_points[i]
-                if dbug.LEV & dbug.GRAPH: print "Graph:draw:points =",points
-                if GRAPHMODES & GRAPHOPTS['screen']:
+            if GRAPHMODES & GRAPHOPTS['screen']:
+                if dbug.LEV & dbug.GRAPH: print "Graph:draw:self.m_points =",self.m_points
+                if dbug.LEV & dbug.GRAPH: print "Graph:draw:index:",self.m_index
+                for i in range(len(self.m_index)):
+                    points = self.m_points[i]
+                    if dbug.LEV & dbug.GRAPH: print "Graph:draw:points =",points
                     scaled_pts = self.m_field.rescale_pt2screen(points)
                     if dbug.LEV & dbug.GRAPH: print "Graph:draw:screen:scaled_points =",scaled_pts
                     index = self.m_index[i]
@@ -313,30 +314,31 @@ class Line(object):
                         index,
                         ('v2i',tuple(chain(*scaled_pts))),
                     )
-                if GRAPHMODES & GRAPHOPTS['osc']:
-                    # the graphic server wants output of this form:
-                    #   /laser/bezier/cubic ffffffff
-                    # we send an OSC message like this:
-                    #   self.m_field.m_osc_graphic.send( OSCMessage("/user/1", [1.0, 2.0, 3.0 ] ) )
-                    #scaled_pts = self.m_field.rescale_pt2vector(points)
-                    #if dbug.LEV & dbug.GRAPH: print "Circle:draw:vector:scaled_pts =",scaled_pts
-                    index = self.m_index[i]
-                    print "Line:OSC:", OSCPATH['graph_color'], \
-                           [self.m_color[0],self.m_color[1],self.m_color[2]]
-                    self.m_field.m_osc.m_osc_graphic.send(OSCMessage(
+            if GRAPHMODES & GRAPHOPTS['osc']:
+                # the graphic server wants output of this form:
+                #   /laser/bezier/cubic ffffffff
+                # we send an OSC message like this:
+                #   self.m_field.m_osc_laser.send( OSCMessage("/user/1", [1.0, 2.0, 3.0 ] ) )
+                #scaled_pts = self.m_field.rescale_pt2vector(points)
+                #if dbug.LEV & dbug.GRAPH: print "Circle:draw:vector:scaled_pts =",scaled_pts
+                index = self.m_index[i]
+                if dbug.LEV & dbug.GRAPH: 
+                    print "Line:OSC to laser:", OSCPATH['graph_color'], \
+                       [self.m_color[0],self.m_color[1],self.m_color[2]]
+                self.m_field.m_osc.send_to('laser',
                                 OSCPATH['graph_color'], 
-                                [self.m_color[0],self.m_color[1],self.m_color[2]]))
-                    for i in range(len(self.m_arcindex)):
-                        # e.g., self.m_arcindex[i] = (0,1,2)
-                        p0 = self.m_arcpoints[self.m_arcindex[i][0]]
-                        p1 = self.m_arcpoints[self.m_arcindex[i][1]]
-                        p2 = self.m_arcpoints[self.m_arcindex[i][2]]
-                        p3 = self.m_arcpoints[self.m_arcindex[i][3]]
-                        print "Line:OSC:", OSCPATH['graph_cubic'], \
-                                    [p0[0], p0[1], p1[0], p1[1], \
-                                     p2[0], p2[1], p3[0], p3[1]]
-                        self.m_field.m_osc.m_osc_graphic.send(OSCMessage(
+                                [self.m_color[0],self.m_color[1],self.m_color[2]])
+                for i in range(len(self.m_arcindex)):
+                    # e.g., self.m_arcindex[i] = (0,1,2)
+                    p0 = self.m_arcpoints[self.m_arcindex[i][0]]
+                    p1 = self.m_arcpoints[self.m_arcindex[i][1]]
+                    p2 = self.m_arcpoints[self.m_arcindex[i][2]]
+                    p3 = self.m_arcpoints[self.m_arcindex[i][3]]
+                    if dbug.LEV & dbug.GRAPH: 
+                        print "Line:OSC to laser:", OSCPATH['graph_cubic'], \
+                                [p0[0], p0[1], p1[0], p1[1], \
+                                 p2[0], p2[1], p3[0], p3[1]]
+                    self.m_field.m_osc.send_to('laser',
                                     OSCPATH['graph_cubic'], 
                                     [p0[0], p0[1], p1[0], p1[1], 
-                                     p2[0], p2[1], p3[0], p3[1]]))
-
+                                     p2[0], p2[1], p3[0], p3[1]])

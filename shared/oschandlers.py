@@ -31,30 +31,6 @@ from shared import debug
 # local Classes
 
 # Constants
-OSCSERVERHOST = config.osc_conductor_host \
-    if config.osc_conductor_host else config.osc_default_host
-OSCSERVERPORT = config.osc_conductor_port \
-    if config.osc_conductor_port else config.osc_default_port
-
-OSCTRACKHOST = config.osc_tracking_host \
-    if config.osc_tracking_host else config.osc_default_host
-OSCTRACKPORT = config.osc_tracking_port \
-    if config.osc_tracking_port else config.osc_default_port
-
-OSCSOUNDHOST = config.osc_sound_host \
-    if config.osc_sound_host else config.osc_default_host
-OSCSOUNDPORT = config.osc_sound_port \
-    if config.osc_sound_port else config.osc_default_port
-
-OSCVISUALHOST = config.osc_visual_host \
-    if config.osc_visual_host else config.osc_default_host
-OSCVISUALPORT = config.osc_visual_port \
-    if config.osc_visual_port else config.osc_default_port
-
-OSCLASERHOST = config.osc_laser_host \
-    if config.osc_laser_host else config.osc_default_host
-OSCLASERPORT = config.osc_laser_port \
-    if config.osc_laser_port else config.osc_default_port
 
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
@@ -73,51 +49,31 @@ class OSCHandler(object):
 
     """Set up OSC server and other handlers."""
 
-    def __init__(self, field):
+    def __init__(self, field, osc_server, osc_clients):
         self.m_field = field
-        self.m_oscserver = OSCServer( (OSCSERVERHOST, OSCSERVERPORT) )
-        if dbug.LEV & dbug.MSGS: print "OSC:init server:%s:%s"%(OSCSERVERHOST,OSCSERVERPORT)
-        self.m_oscserver.timeout = OSCTIMEOUT
         self.m_run = True
 
+        (name, host, port) = osc_server[0]
+        self.m_oscserver = OSCServer( (host, port) )
+        if dbug.LEV & dbug.MSGS: print "OSC:init server: %s:%s"%(host, port)
+        self.m_oscserver.timeout = OSCTIMEOUT
+
         self.m_osc_clients = {}
-
-        self.m_osc_clients['tracker'] = OSCClient()
-        self.m_osc_clients['tracker'].connect( (OSCTRACKHOST, OSCTRACKPORT) )
-        if dbug.LEV & dbug.MSGS: print "OSC:init tracker:%s:%s"%(OSCTRACKHOST,OSCTRACKPORT)
-
-        if OSCVISUALHOST == OSCTRACKHOST and OSCVISUALPORT == OSCTRACKPORT:
-            self.m_osc_clients['visual'] = self.m_osc_clients['tracker']
-            if dbug.LEV & dbug.MSGS: print "OSC:init visual:same as tracker"
-        else:
-            self.m_osc_clients['visual'] = OSCClient()
-            self.m_osc_clients['visual'].connect( (OSCVISUALHOST, OSCVISUALPORT) )
-            if dbug.LEV & dbug.MSGS: print "OSC:init visual:%s:%s"%(OSCVISUALHOST,OSCVISUALPORT)
-
-        if OSCSOUNDHOST == OSCTRACKHOST and OSCSOUNDPORT == OSCTRACKPORT:
-            self.m_osc_clients['sound'] = self.m_osc_clients['tracker']
-            if dbug.LEV & dbug.MSGS: print "OSC:init sound:same as tracker"
-        elif OSCSOUNDHOST == OSCVISUALHOST and OSCSOUNDPORT == OSCVISUALPORT:
-            self.m_osc_clients['sound'] = self.m_osc_clients['visual']
-            if dbug.LEV & dbug.MSGS: print "OSC:init sound:same as visual"
-        else:
-            self.m_osc_clients['sound'] = OSCClient()
-            self.m_osc_clients['sound'].connect( (OSCSOUNDHOST, OSCSOUNDPORT) )
-            if dbug.LEV & dbug.MSGS: print "OSC:init sound:%s:%s"%(OSCSOUNDHOST,OSCSOUNDPORT)
-
-        if OSCLASERHOST == OSCTRACKHOST and OSCLASERPORT == OSCTRACKPORT:
-            self.m_osc_clients['laser'] = self.m_osc_clients['tracker']
-            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as tracker"
-        elif OSCLASERHOST == OSCVISUALHOST and OSCLASERPORT == OSCVISUALPORT:
-            self.m_osc_clients['laser'] = self.m_osc_clients['visual']
-            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as visual"
-        elif OSCLASERHOST == OSCSOUNDHOST and OSCLASERPORT == OSCSOUNDPORT:
-            self.m_osc_clients['laser'] = self.m_osc_clients['sound']
-            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:same as sound"
-        else:
-            self.m_osc_clients['laser'] = OSCClient()
-            self.m_osc_clients['laser'].connect( (OSCLASERHOST, OSCLASERPORT) )
-            if dbug.LEV & dbug.MSGS: print "OSC:init graphic:%s:%s"%(OSCLASERHOST,OSCLASERPORT)
+        for i in range(len(osc_clients)):
+            (name, host, port) = osc_clients[i]
+            for j in range(i):
+                (oldname, oldhost, oldport) = osc_clients[j]
+                if host == oldhost and port == oldport:
+                    self.m_osc_clients[name] = self.m_osc_clients[oldname]
+                    if dbug.LEV & dbug.MSGS: 
+                        print "OSC:init %s:same as %s"%(name,oldname)
+                    break
+            if not name in self.m_osc_clients:
+                self.m_osc_clients[name] = OSCClient()
+                self.m_osc_clients[name].connect( (host, port) )
+                if dbug.LEV & dbug.MSGS: 
+                    print "OSC:init %s: %s:%s"%(name,host,port)
+            self.send_to(name,OSCPATH['ping'],[0])
 
         self.m_xmin = 0
         self.m_ymin = 0
@@ -203,6 +159,11 @@ class OSCHandler(object):
             return False
         return True
 
+    def send_downstream(self, path, args):
+        """Send OSC Message to one client."""
+        self.send_to('visual', path, args)
+        self.send_to('sound', path, args)
+
     def send_to_all_clients(self, path, args):
         """Broadcast to all the clients."""
         for clientkey, client in self.m_osc_clients.iteritems():
@@ -217,6 +178,21 @@ class OSCHandler(object):
     def default_handler(self, path, tags, args, source):
         if dbug.LEV & dbug.MORE: print "OSC:default_handler:No handler registered for ", path
         return None
+
+    def event_conduct_dump(self, path, tags, args, source):
+        source_ip = source[0]
+        if dbug.LEV & dbug.MSGS:
+            print "OSC:dump req:from", source_ip
+        for clientkey, client in self.m_osc_clients.iteritems():
+            target_ip = client.address()[0]
+            if target_ip == source_ip:
+                try:
+                    #TODO: Decide what we dump and dump it
+                    #self.sendto(clientkey, OSCPATH('ping'), ping_code)
+                    print "OSC:dump_req:from", clientkey
+                except:
+                    if dbug.LEV & dbug.MSGS:
+                        print "OSC:dump_req:unable to reach", clientkey
 
     def event_ping(self, path, tags, args, source):
         ping_code = args[0]
@@ -338,10 +314,10 @@ class OSCHandler(object):
         id = args[2]
         if dbug.LEV & dbug.MSGS: print "OSC:event_exit:cell:",id
         #print "BEFORE: cells:",self.m_field.m_cell_dict
-        #print "BEFORE: conx:",self.m_field.m_connector_dict
+        #print "BEFORE: conx:",self.m_field.m_conx_dict
         self.m_field.del_cell(id)
         #print "AFTER: cells:",self.m_field.m_cell_dict
-        #print "AFTER: conx:",self.m_field.m_connector_dict
+        #print "AFTER: conx:",self.m_field.m_conx_dict
 
     def event_tracking_body(self, path, tags, args, source):
         """Information about people's movement within field.

@@ -22,7 +22,6 @@ __license__ = "GNU GPL 3.0 or later"
 
 # local modules
 from shared import config
-from shared import debug
 
 # local classes
 from priorityqueueset import PriorityQueueSet

@@ -76,7 +76,6 @@ class GridMap(object):
         n = len(self.solidcircle) - 1
         # if r is higher than the number we've pregen'd, trim it
         r = min(r,n)
-        0
         # if r + f is higher than the number we've pregen'd, trim it
         if r + f > n:
             f = max(0, n - r)

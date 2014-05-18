@@ -48,8 +48,10 @@ class Field(object):
         m_still_running: a flag for exiting the main loop
         m_our_cell_count: the running we count of how many cells we have
         m_reported_cell_count: what the tracking system reports
-        m_cell_dict: list of cells we have
-        m_connector_dict: list of connectors we have
+        m_cell_dict: dictionary of all cells we have
+        m_conx_dict: dictionary of all connectors we have
+        m_group_dict: dictionary of all groups we have
+        m_event_dict: dictionary of all events we have
         m_suspect_cells: list of cells we suspect are dead
         m_suspect_conx: list of connectors we suspect are dead
 
@@ -65,9 +67,10 @@ class Field(object):
         self.m_reported_cell_count = 0
         # we could use a list here which would make certain things easier, but
         # we need to do deletions and references pretty regularly.
-        # TODO: Consider making these dict into lists
         self.m_cell_dict = {}
-        self.m_connector_dict = {}
+        self.m_conx_dict = {}
+        self.m_group_dict = {}
+        self.m_event_dict = {}
         # a hash of counts of missing connectors, indexed by id
         self.m_suspect_conxs = {}
         # a hash of counts of missing cells, indexed by id
@@ -78,14 +81,14 @@ class Field(object):
         self.m_ymin_field = YMIN_FIELD
         self.m_xmax_field = XMAX_FIELD
         self.m_ymax_field = YMAX_FIELD
-        self.m_groupdist = GROUP_DIST
+        self.m_giddist = GROUP_DIST
         self.m_ungroupdist = UNGROUP_DIST
         self.m_oscfps = OSC_FPS
 
     def update(self, groupdist=None, ungroupdist=None, oscfps=None,
                osc=None):
         if groupdist is not None:
-            self.m_groupdist = groupdist
+            self.m_giddist = groupdist
         if ungroupdist is not None:
             self.m_ungroupdist = ungroupdist
         if oscfps is not None:
@@ -119,16 +122,43 @@ class Field(object):
         if dbug.LEV & dbug.MORE: print "Field dims:", (self.m_xmin_field,
                 self.m_ymin_field), (self.m_xmax_field, self.m_ymax_field)
 
-    # Everything
-    #def renderAll(self):
-    # moved to subclass
-    #def drawAll(self):
-    # moved to subclass
+    # Events
+    #    /conductor/event [eid,"type",uid0,uid1,value,time]
 
-    # Guides
+    def update_event(self, eid, uid0=None, uid1=None, value=None, time=None):
+        """Create event if it doesn't exist, update its info."""
+        if eid not in self.m_event_dict:
+            self.m_event_dict[eid] = Event(self, eid, uid0, uid1, value, time)
+        else:
+            self.m_event_dict[eid].update(uid0, uid1, value, time)
 
-    #def drawGuides(self):
-    # moved to subclass
+    def del_event(self,eid):
+        if eid in self.m_event_dict:
+            del self.m_event_dict[eid]
+
+    # Groups
+    #    /pf/group samp gid gsize duration centroidX centroidY diameter
+
+    def create_group(self, gid, gsize=None, duration=None, center=None,
+                     diam=None):
+        """Create group if it doesn't exist, update its info."""
+        if gid not in self.m_group_dict:
+            self.m_group_dict[gid] = Group(self, gid, gsize, duration, center, diam)
+
+    def update_group(self, gid, gsize=None, duration=None, center=None,
+                     diam=None):
+        """Create group if it doesn't exist, update its info."""
+        if gid not in self.m_group_dict:
+            self.m_group_dict[gid] = Group(self, gid, gsize, duration, center, diam)
+        else:
+            self.m_group_dict[gid].update(gsize, duration, center, diam)
+
+    def del_group(self,gid):
+        if gid in self.m_group_dict:
+            self.m_group_dict[gid].dropAllCells()
+            del self.m_group_dict[gid]
+
+    # Legs and Body
 
     def check_for_missing_cell(self, id):
         """Check for missing or suspect cell, handle it.
@@ -148,7 +178,7 @@ class Field(object):
             # remove from suspect list
             if id in self.m_suspect_cells:
                 del self.m_suspect_cells[id]
-            if dbug.LEV & dbug.FIELD: print "Field:update_cell:Cell",id,\
+            if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
                         "was lost and has been recreated"
         # if cell exists, but is on suspect list
         elif id in self.m_suspect_cells:
@@ -156,10 +186,8 @@ class Field(object):
             del self.m_suspect_cells[id]
             # increment count
             self.m_our_cell_count += 1
-            if dbug.LEV & dbug.FIELD: print "Field:update_cell:Cell",id,\
+            if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
                         "was suspected lost but is now above suspicion"
-
-    # Legs and Body
 
     def update_body(self, id, x=None, y=None, ex=None, ey=None, 
                  spd=None, espd=None, facing=None, efacing=None, 
@@ -201,11 +229,27 @@ class Field(object):
                 if dbug.LEV & dbug.FIELD: print "Field:create_cell:Cell",id,"was suspected lost but is now above suspicion"
                 del self.m_suspect_cells[id]
 
-    def update_cell(self, id, p=None, r=None, effects=None, color=None):
+    def update_cell(self, id, p=None, r=None, gid=None):
         """ Update a cells information."""
         self.check_for_missing_cell(id)
-        # update cell's info
-        self.m_cell_dict[id].update(p, r, effects, color)
+        # if group param is provided
+        if gid is not None:
+            if gid not in self.m_group_dict:
+                create_group(gid)
+            # find the old group id
+            former_gid = self.m_cell_dict[id].m_gid
+            # if the group has changed, remove the cell from former group list
+            if gid != former_gid:
+                # find the actual group we're referring to
+                former_group =  self.m_group_dict[former_gid]
+                # now delete the cell ref in the group's cell list
+                if id in former_group.m_cell_dict:
+                    del former_group.m_cell_dict[id]
+                # if the length of this list is zero, we can nix the group
+                if not len(former_group.m_cell_dict):
+                    self.del_group(former_gid)
+                #TODO: When do we send the osc notice?
+        self.m_cell_dict[id].update(p, r, gid)
 
     def is_cell_good_to_go(self, id):
         """Test if cell is good to be rendered.
@@ -229,9 +273,9 @@ class Field(object):
         """
         #cell = self.m_cell_dict[id]
         # delete all cell's connectors from master list of connectors
-        #for conxid in cell.m_connector_dict:
-        #    if conxid in self.m_connector_dict:
-        #        del self.m_connector_dict[conxid]
+        #for conxid in cell.m_conx_dict:
+        #    if conxid in self.m_conx_dict:
+        #        del self.m_conx_dict[conxid]
         # have cell disconnect all of its connections and refs
         # Note: connector checks if cell still exists before rendering
         if id in self.m_cell_dict:
@@ -251,10 +295,10 @@ class Field(object):
         if dbug.LEV & dbug.FIELD: print "Field:check_people_count:count:",our_count,"- Reported:",self.m_reported_cell_count
         if reported_count != our_count:
             if dbug.LEV & dbug.FIELD: print "Field:check_people_count:Count mismatch"
-            self.hide_all_cells()
+            self.suspect_all_cells()
             self.m_out_cell_count = 0
 
-    def hide_cell(self, id):
+    def suspect_cell(self, id):
         """Hide a cell.
         We don't delete cells unless we have to.
         Instead we add them to a suspect list (actually a count of how
@@ -262,12 +306,12 @@ class Field(object):
         """
         self.m_suspect_cells[id] = 1
         self.m_our_cell_count -= 1
-        if dbug.LEV & dbug.FIELD: print "Field:hide_cell:count:",self.m_our_cell_count
+        if dbug.LEV & dbug.FIELD: print "Field:suspect_cell:count:",self.m_our_cell_count
 
-    def hide_all_cells(self):
-        if dbug.LEV & dbug.FIELD: print "Field:hide_all_cells"
+    def suspect_all_cells(self):
+        if dbug.LEV & dbug.FIELD: print "Field:suspect_all_cells"
         for id in self.m_cell_dict:
-            self.hide_cell(id)
+            self.suspect_cell(id)
         self.m_our_cell_count = 0
 
 
@@ -289,15 +333,15 @@ class Field(object):
         # telling each of the two cells that they now have a connector
         connector = self.connectorClass(self, id, cell0, cell1)
         # add to the connector list
-        self.m_connector_dict[id] = connector
+        self.m_conx_dict[id] = connector
 
     def del_connector(self,conxid):
-        if conxid in self.m_connector_dict:
+        if conxid in self.m_conx_dict:
             # make sure the cells that this connector is attached to, delete
             # refs to it
-            self.m_connector_dict[id].conx_disconnect_thyself()
+            self.m_conx_dict[id].conx_disconnect_thyself()
             # delete from the connector list
-            del self.m_connector_dict[conxid]
+            del self.m_conx_dict[conxid]
 
     #def renderConnector(self,connector):
     # moved to subclass

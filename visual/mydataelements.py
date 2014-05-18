@@ -55,7 +55,7 @@ class MyCell(Cell):
 
     """
 
-    def __init__(self, field, id, p=None, r=None, effects=None, color=None):
+    def __init__(self, field, id, p=None, r=None, color=None):
         if color is None:
             self.m_color = DEF_LINECOLOR
         else:
@@ -63,13 +63,13 @@ class MyCell(Cell):
         self.m_body_color = DEF_BODYCOLOR
         self.m_shape = Circle()
         self.m_bodyshape = Circle()
-        super(MyCell, self).__init__(field,id,p,r,effects)
+        super(MyCell, self).__init__(field,id,p,r)
 
-    def update(self, p=None, r=None, effects=None, color=None):
+    def update(self, p=None, r=None, color=None):
         """Store basic info and create a DataElement object"""
         if color is not None:
             self.m_color = color
-        super(MyCell, self).update(p,r,effects)
+        super(MyCell, self).update(p,r)
 
     #def set_location(self, p):
     # moved to superclass
@@ -113,7 +113,7 @@ class MyConnector(Connector):
 
     """
 
-    def __init__(self, field, id, cell0, cell1, effects=None, color=None):
+    def __init__(self, field, id, cell0, cell1, color=None):
         """Store basic info and create a DataElement object"""
         # process passed params
         if color is None:
@@ -124,7 +124,7 @@ class MyConnector(Connector):
         self.m_shape = Line()
         self.m_path = []
         self.m_score = 0
-        super(MyConnector,self).__init__(field,id,cell0,cell1,effects)
+        super(MyConnector,self).__init__(field,id,cell0,cell1)
 
     # move to superclass?
     def addPath(self,path):

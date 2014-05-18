@@ -79,8 +79,8 @@ freq_regular_reports = 100
 # GRAPH = 8
 # MSGS  = 16
 # PYG   = 32
-#debug_level = 22    # data (2), field (4), osc(16)
-debug_level = 6    # data (2), field (4)
+debug_level = 22    # data (2), field (4), osc(16)
+#debug_level = 6    # data (2), field (4)
 #debug_level = 14    # data (2), field (4), graph (8)
 
 max_lost_patience = 10
@@ -99,7 +99,7 @@ osc_tracking_port = 7770
 osc_sound_host = "localhost"
 osc_sound_port = 7010
 osc_conductor_host = "localhost"
-osc_conductor_port = 7770
+osc_conductor_port = 7012
 #osc_laser_host = "192.168.0.162"
 osc_laser_host = "localhost"
 osc_laser_port = 7780
@@ -168,6 +168,7 @@ oscpath = {
     'conduct_rollcall': "/conductor/rollcall",
     'conduct_attr': "/conductor/attr",
     'conduct_conx': "/conductor/conx",
+    'conduct_conxbreak': "/conductor/conxbreak",
     'conduct_gattr': "/conductor/gattr",
     'conduct_event': "/conductor/event",
     'conduct_geo': "/conductor/geo",

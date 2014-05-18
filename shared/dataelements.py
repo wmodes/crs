@@ -20,7 +20,6 @@ __license__ = "GNU GPL 3.0 or later"
 
 # installed modules
 
-
 # local modules
 from shared import config
 
@@ -36,6 +35,125 @@ RAD_PAD = config.radius_padding     # increased radius of circle around bodies
 
 # init debugging
 dbug = debug.Debug()
+
+
+class Attr(object):
+    """Represents an attribute that is attached to a cell or connector.
+    
+    Stores the following values:
+        m_type: The time of attr (str)
+        m_id: UID, CID, GID, and EID of the parent object
+        m_value: A value associated with the attr
+        m_timestamp: UTC unix time the event was created
+    
+    """
+
+    def __init__(self, type, id, value=None):
+        self.m_type = type
+        self.m_id = id
+        self.m_value = value
+        self.m_timestamp = time()
+
+    def update(self, value=None):
+        if value is not None:
+            self.m_value = value
+
+
+class Event(object):
+    """Represents a grouping of cells.
+
+    /conductor/event [eid,"type",uid0,uid1,value,time]
+    Stores the following values:
+        m_id: unique event ID
+        m_type: one of the following:
+        m_uid0: the UID of the first target
+        m_uid1: the UID of the second target
+        m_value: intensity of the effect (unit value)
+        m_timestamp: UTC unix time the event was created (s)
+
+    """
+
+    def __init__(self, field, id, type=None, uid0=None, uid1=None, value=None):
+        self.m_field=field
+        self.m_id = id
+        self.m_type = type
+        self.m_uid0 = uid0
+        self.m_uid1 = uid1
+        self.m_value = value
+        self.m_timestamp = time()
+
+    def update(self, type=None, uid0=None, uid1=None, value=None):
+        if type is not None:
+            self.m_type = type
+        if uid0 is not None:
+            self.m_uid0 = uid0
+        if uid1 is not None:
+            self.m_uid1 = uid1
+        if value is not None:
+            self.m_value = value
+
+
+class Group(object):
+    """Represents a grouping of cells.
+
+    /pf/group samp gid gsize duration centroidX centroidY diameter
+    Stores the following values:
+        m_field: store a back ref to the field that called us
+        m_id: GID of group
+        m_gsize: number of people in group (int)
+        m_duration: time since first formed in seconds
+        m_x,m_y: position within field in m
+        m_diam: current diameter (float in m)
+        m_cell_dict: dictionary of cells in this group (indexed by uid)
+        m_attr_dict: dict of attrs applied to this cell (indexed by type)
+
+    """
+
+    def __init__(self, field, id, gsize=None, duration=None, center=None,
+                 diam=None):
+        self.m_field=field
+        self.m_id = id
+        self.m_gsize = gsize
+        self.m_duration = duration
+        self.m_center = center
+        self.m_diam = diam
+        self.m_cell_dict = {}
+        self.m_attr_dict = {}
+
+    def update(self, gsize=None, duration=None, center=None, diam=None):
+        if gsize is not None:
+            self.m_gsize = gsize
+        if duration is not None:
+            self.m_duration = duration
+        if center is not None:
+            self.m_x = center[0]
+            self.m_y = center[1]
+        if diam is not None:
+            self.m_diam = diam
+
+    def add_attr(self, type, value):
+        self.m_attr_dict[type] = Attr(type, self.m_id, value)
+
+    def del_attr(self, type):
+        if type in self.m_attr_dict:
+            del self.m_attr_dict[type]
+
+    def add_cell(self, uid):
+        """Add cell to group."""
+        if uid in self.m_field.m_cell_dict:
+            self.m_cell_dict[uid] = self.m_field.m_cell_dict[uid]
+
+    def drop_cell(self, uid):
+        """Remove a cell from this group's list of cells."""
+        if uid in self.m_cell_dict:
+            del self.m_cell_dict[uid]
+
+    def drop_all_cells(self):
+        for uid in self.m_cell_dict:
+            if uid in self.m_cell_dict:
+                del self.m_cell_dict[uid]
+
+
 
 class Leg(object):
     """Represents a leg within a cell.
@@ -94,6 +212,7 @@ class Leg(object):
             self.m_eheading = eheading
         if vis is not None:
             self.m_vis = vis
+
 
 class Body(object):
 
@@ -182,20 +301,21 @@ class Cell(object):
         m_body_radius: radius of the person within the cell (cm)
         m_radius: radius of the cell surrounding the person (cm)
         m_visible: is this cell displayed currently? (boolean)
-        m_connector_dict: connectors attached to this cell
-        m_effects_list: list of effects applied to this cell
+        m_conx_dict: connectors attached to this cell (index by cid)
+        m_attr_dict: dict of attrs applied to this cell (indexed by type)
         m_leglist: list of Leg objects
         m_body: Body object
+        m_gid: GID of group this cell belongs to
 
-    update: set center, readius, and effects
+    update: set center, readius, and attrs
     set_location: set the location value for this cell as an XY tuple
-    set_effects: add effects to the effects list
+    set_attrs: add attrs to the attrs list
     add_connector: add new connector to the list connected to this cell
     del_connector: delete a connector from the list connected to this cell
 
     """
 
-    def __init__(self, field, id, p=None, r=None, effects=None):
+    def __init__(self, field, id, p=None, r=None, gid=None):
         self.m_field=field
         self.m_id = id
         if p is None:
@@ -206,21 +326,18 @@ class Cell(object):
             self.m_body_radius = DEF_RADIUS
         else:
             self.m_body_radius = r
-        if effects is None:
-            self.m_effects_list = []
-        else:
-            self.m_effects_list += effects
+        self.m_attr_dict = {}
         self.m_radius = self.m_body_radius*RAD_PAD
         self.m_visible = True
-        self.m_connector_dict = {}
-        self.m_effects_list = []
+        self.m_conx_dict = {}
         # create an array of leg instances
         self.m_body = Body(field, id)
         self.m_leglist = []
         for i in range(MAX_LEGS):
             self.m_leglist.append(Leg(field, id, i))
+        self.m_gid = gid
 
-    def update(self, p=None, r=None, effects=None):
+    def update(self, p=None, r=None, gid=None):
         """Store basic info and create a DataElement object"""
         if p is not None:
             self.m_location = p
@@ -229,8 +346,8 @@ class Cell(object):
         if r is not None:
             self.m_body_radius = r
             self.m_radius = r*RAD_PAD
-        if effects is not None:
-            self.m_effects_list = effects
+        if gid is not None:
+            self.m_gid = gid
 
     def update_body(self, x=None, y=None, ex=None, ey=None, 
                  spd=None, espd=None, facing=None, efacing=None, 
@@ -248,18 +365,19 @@ class Cell(object):
     def set_location(self, p):
         self.m_location=p
 
-    def add_effects(self, effects):
-        self.m_effects_list += effects
-        
-    def apply_effects(self):
-        pass
+    def add_attr(self, type, value):
+        self.m_attr_dict[type] = Attr(type, self.m_id, value)
+
+    def del_attr(self, type):
+        if type in self.m_attr_dict:
+            del self.m_attr_dict[type]
 
     def add_connector(self, connector):
-        self.m_connector_dict[connector.m_id] = connector
+        self.m_conx_dict[connector.m_id] = connector
 
     def del_connector(self, connector):
-        if connector.m_id in self.m_connector_dict:
-            del self.m_connector_dict[connector.m_id]
+        if connector.m_id in self.m_conx_dict:
+            del self.m_conx_dict[connector.m_id]
 
     #def render(self):
     # moved to subclass
@@ -276,22 +394,22 @@ class Cell(object):
         if dbug.LEV & dbug.DATA: print "Cell:cell_disconnect:Disconnecting ",self.m_id
         # we make a copy because we can't iterate over the dict if we are
         # deleting stuff from it!
-        new_connector_dict = self.m_connector_dict.copy()
+        new_conx_dict = self.m_conx_dict.copy()
         # for each connector attached to this cell...
-        for connector in new_connector_dict.values():
+        for connector in new_conx_dict.values():
             # OPTION: for simplicity's sake, we do the work rather than passing to
             # the object to do the work
             # delete the connector from its two cells
-            if connector.m_id in connector.m_cell0.m_connector_dict:
-                del connector.m_cell0.m_connector_dict[connector.m_id]
-            if connector.m_id in connector.m_cell1.m_connector_dict:
-                del connector.m_cell1.m_connector_dict[connector.m_id]
+            if connector.m_id in connector.m_cell0.m_conx_dict:
+                del connector.m_cell0.m_conx_dict[connector.m_id]
+            if connector.m_id in connector.m_cell1.m_conx_dict:
+                del connector.m_cell1.m_conx_dict[connector.m_id]
             # delete cells ref'd from this connector
             connector.m_cell0 = None
             connector.m_cell1 = None
             # now delete from this cell's list
-            if connector.m_id in self.m_connector_dict:
-                del self.m_connector_dict[connector.m_id]
+            if connector.m_id in self.m_conx_dict:
+                del self.m_conx_dict[connector.m_id]
 
             # OPTION: Let the objects do the work
             #connector.conx_disconnect_thyself()
@@ -307,28 +425,25 @@ class Connector(object):
         m_field: store a back ref to the field that called us
         m_id: the id of this connector (unique, but not enforced)
         m_cell0, m_cell1: the two cells connected by this connector
-        m_effects_list: a list of effects that apply to this connector
+        m_attr_dict: dict of attrs applied to this conx (indexed by type)
         m_path: the computed coordinate path from cell0 to cell1
         m_score: a score to help with sorting? I can't remember (check gridmap)
         m_visible: is this cell displayed currently? (boolean)
 
-    add_effects: add effects to the effects list
+    add_atts: add attrs to the attrs list
     add_path: add a computed path to this connector
     conx_disconnect_thyself: Disconnect cells this connector refs
 
     """
 
-    def __init__(self, field, id, cell0, cell1, effects=None):
+    def __init__(self, field, id, cell0, cell1):
         """Store basic info and create a DataElement object"""
         # process passed params
         self.m_field=field
         self.m_id = id
         self.m_cell0 = cell0
         self.m_cell1 = cell1
-        if effects is None:
-            self.m_effects_list = []
-        else:
-            self.m_effects_list += effects
+        self.m_attr_dict = {}
         # init other values
         self.m_path = []
         self.m_score = 0
@@ -337,11 +452,12 @@ class Connector(object):
         cell0.add_connector(self)
         cell1.add_connector(self)
 
-    def add_effects(self, effects):
-        self.m_effects_list += effects
+    def add_attr(self, type, value):
+        self.m_attr_dict[type] = Attr(type, self.m_id, value)
 
-    def apply_effects(self):
-        pass
+    def del_attr(self, type):
+        if type in self.m_attr_dict:
+            del self.m_attr_dict[type]
 
     # move to subclass?
     def add_path(self,path):
@@ -362,10 +478,10 @@ class Connector(object):
         # for simplicity's sake, we do the work rather than passing to
         # the object to do the work
         # delete the connector from its two cells
-        if self.m_id in self.m_cell0.m_connector_dict:
-            del self.m_cell0.m_connector_dict[self.m_id]
-        if self.m_id in self.m_cell1.m_connector_dict:
-            del self.m_cell1.m_connector_dict[self.m_id]
+        if self.m_id in self.m_cell0.m_conx_dict:
+            del self.m_cell0.m_conx_dict[self.m_id]
+        if self.m_id in self.m_cell1.m_conx_dict:
+            del self.m_cell1.m_conx_dict[self.m_id]
         # delete the refs to those two cells
         self.m_cell0 = None
         self.m_cell1 = None

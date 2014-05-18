@@ -25,7 +25,7 @@ from shared import config
 from shared import debug
 
 # local classes
-from window_class import Window
+from windowelements import Window
 from gridmap import GridMap
 from pathfinder import PathFinder
 from shared.fieldelements import Field
@@ -186,6 +186,9 @@ class MyField(Field):
         xmax_screen = self.m_xmax_screen
         ymax_screen = self.m_ymax_screen
 
+        if dbug.LEV & dbug.MORE: print "Field dims:",(xmin_field,ymin_field),\
+                                                     (xmax_field,ymax_field)
+
         # in order to find out how to display this,
         #   1) we find the aspect ratio (x/y) of the screen or vector (depending on the
         #      mode). 
@@ -202,41 +205,39 @@ class MyField(Field):
             #vector_aspect = float(xmax_vector-xmin_vector)/(ymax_vector-ymin_vector)
         if GRAPHMODES & GRAPHOPTS['screen']:
             screen_aspect = float(xmax_screen-xmin_screen)/(ymax_screen-ymin_screen)
-        if field_aspect > screen_aspect:
-            if dbug.LEV & dbug.MORE: print "Field:SetScaling:Longer in the x dimension"
-            field_xlen=xmax_field-xmin_field
-            if field_xlen:
-                self.m_xmargin = int(xmax_screen*DEF_MARGIN)
-                # scale = vector_width / field_width
-                self.m_vector_scale = \
-                    float(xmax_vector-xmin_vector)/field_xlen
-                # scale = (screen_width - margin) / field_width
-                self.m_screen_scale = \
-                    float(xmax_screen-xmin_screen-(self.m_xmargin*2))/field_xlen
-                self.m_ymargin = \
-                    int(((ymax_screen-ymin_screen)-
-                        ((ymax_field-ymin_field)*self.m_screen_scale)) / 2)
-        else:
-            if dbug.LEV & dbug.FIELD: print "Field:SetScaling:Longer in the y dimension"
-            field_ylen=ymax_field-ymin_field
-            if field_ylen:
-                self.m_ymargin = int(ymax_screen*DEF_MARGIN)
-                self.m_vector_scale = \
-                    float(ymax_vector-ymin_vector)/field_ylen
-                self.m_screen_scale = \
-                    float(ymax_screen-ymin_screen-(self.m_ymargin*2))/field_ylen
-                self.m_xmargin = \
-                    int(((xmax_screen-xmin_screen)-
-                        ((xmax_field-xmin_field)*self.m_screen_scale)) / 2)
-        if dbug.LEV & dbug.MORE: print "Field dims:",(xmin_field,ymin_field),\
-                                                     (xmax_field,ymax_field)
-        if dbug.LEV & dbug.MORE: print "Screen dims:",(xmin_screen,ymin_screen),\
-                                                      (xmax_screen,ymax_screen)
-        #print "Screen scale:",self.m_screen_scale
-        #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
-        if dbug.LEV & dbug.MORE: print "Used screen space:",\
-                    self.rescale_pt2screen((xmin_field,ymin_field)),\
-                    self.rescale_pt2screen((xmax_field,ymax_field))
+            if field_aspect > screen_aspect:
+                if dbug.LEV & dbug.MORE: print "Field:SetScaling:Longer in the x dimension"
+                field_xlen=xmax_field-xmin_field
+                if field_xlen:
+                    self.m_xmargin = int(xmax_screen*DEF_MARGIN)
+                    # scale = vector_width / field_width
+                    self.m_vector_scale = \
+                        float(xmax_vector-xmin_vector)/field_xlen
+                    # scale = (screen_width - margin) / field_width
+                    self.m_screen_scale = \
+                        float(xmax_screen-xmin_screen-(self.m_xmargin*2))/field_xlen
+                    self.m_ymargin = \
+                        int(((ymax_screen-ymin_screen)-
+                            ((ymax_field-ymin_field)*self.m_screen_scale)) / 2)
+            else:
+                if dbug.LEV & dbug.FIELD: print "Field:SetScaling:Longer in the y dimension"
+                field_ylen=ymax_field-ymin_field
+                if field_ylen:
+                    self.m_ymargin = int(ymax_screen*DEF_MARGIN)
+                    self.m_vector_scale = \
+                        float(ymax_vector-ymin_vector)/field_ylen
+                    self.m_screen_scale = \
+                        float(ymax_screen-ymin_screen-(self.m_ymargin*2))/field_ylen
+                    self.m_xmargin = \
+                        int(((xmax_screen-xmin_screen)-
+                            ((xmax_field-xmin_field)*self.m_screen_scale)) / 2)
+            if dbug.LEV & dbug.MORE: print "Screen dims:",(xmin_screen,ymin_screen),\
+                                                          (xmax_screen,ymax_screen)
+            #print "Screen scale:",self.m_screen_scale
+            #print "Screen margins:",(self.m_xmargin,self.m_ymargin)
+            if dbug.LEV & dbug.MORE: print "Used screen space:",\
+                        self.rescale_pt2screen((xmin_field,ymin_field)),\
+                        self.rescale_pt2screen((xmax_field,ymax_field))
 
     # Everything
 
@@ -250,26 +251,6 @@ class MyField(Field):
         self.m_screen.draw_guides()
         self.draw_all_cells()
         self.draw_all_connectors()
-
-    # Guides
-    #def draw_guides(self):
-    # moved to window class
-
-    # Cells
-    #def create_cell(self, id):
-    # moved to superclass
-    #def update_cell(self, id, p=None, r=None, effects=None, color=None):
-    # moved to superclass
-    #def is_cell_good_to_go(self, id):
-    # moved to superclass
-    #def del_cell(self, id):
-    # moved to superclass
-    #def check_people_count(self,reported_count):
-    # moved to superclass
-    #def hide_cell(self, id):
-    # moved to superclass
-    #def hide_all_cells(self):
-    # moved to superclass
 
     def render_cell(self,cell):
         """Render a cell.
@@ -335,7 +316,7 @@ class MyField(Field):
     def render_all_connectors(self):
         # we don't call the Connector's render-er directly because we have some
         # logic here at this level
-        for connector in self.m_connector_dict.values():
+        for connector in self.m_conx_dict.values():
             self.render_connector(connector)
 
     def draw_connector(self,connector):
@@ -344,7 +325,7 @@ class MyField(Field):
     def draw_all_connectors(self):
         # we don't call the Connector's draw-er directly because we may want
         # to introduce logic at this level
-        for connector in self.m_connector_dict.values():
+        for connector in self.m_conx_dict.values():
             self.draw_connector(connector)
 
     # Distances - TODO: temporary -- this info will come from the conduction subsys
@@ -384,19 +365,19 @@ class MyField(Field):
         We sort the connectors by distance and do easy paths for the closest 
         ones first.
         """
-        #connector_dict_rekeyed = self.m_connector_dict
-        #for i in connector_dict_rekeyed.iterkeys():
-        connector_dict_rekeyed = {}
-        for connector in self.m_connector_dict.values():
+        #conx_dict_rekeyed = self.m_conx_dict
+        #for i in conx_dict_rekeyed.iterkeys():
+        conx_dict_rekeyed = {}
+        for connector in self.m_conx_dict.values():
             p0 = connector.m_cell0.m_location
             p1 = connector.m_cell1.m_location
             # normally we'd take the sqrt to get the distance, but here this is 
             # just used as a sort comparison, so we'll not take the hit for sqrt
             score = ((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2) 
             # here we save time by sorting as we go through it
-            connector_dict_rekeyed[score] = connector
-        for i in sorted(connector_dict_rekeyed.iterkeys()):
-            connector = connector_dict_rekeyed[i]
+            conx_dict_rekeyed[score] = connector
+        for i in sorted(conx_dict_rekeyed.iterkeys()):
+            connector = conx_dict_rekeyed[i]
             print "findpath--id:",connector.m_id,"dist:",i**0.5
             connector.add_path(self.find_path(connector))
 

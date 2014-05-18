@@ -86,7 +86,7 @@ class Circle(object):
         k = 0.5522847498307935  # 4/3 (sqrt(2)-1)
         kr = r*k
         (x,y)=p
-        self.m_arcpoints = [(x+r,y),(x+r,y+kr), (x+kr,y+r), (x,y+r),
+        self.m_arcpoints = [(x+r,y), (x+r,y+kr), (x+kr,y+r), (x,y+r),
                            (x-kr,y+r), (x-r,y+kr), (x-r,y),
                            (x-r,y-kr), (x-kr,y-r), (x,y-r),
                             (x+kr,y-r), (x+r,y-kr)]
@@ -143,7 +143,6 @@ class Circle(object):
                 #   self.m_field.m_osc_laser.send( OSCMessage("/user/1", [1.0, 2.0, 3.0 ] ) )
                 #scaled_pts = self.m_field.rescale_pt2vector(points)
                 #if dbug.LEV & dbug.GRAPH: print "Circle:draw:vector:scaled_pts =",scaled_pts
-                index = self.m_index[i]
                 if dbug.LEV & dbug.GRAPH: 
                     print "Circle:OSC to laser:", OSCPATH['graph_color'], \
                        [self.m_color[0],self.m_color[1],self.m_color[2]]
@@ -158,7 +157,7 @@ class Circle(object):
                     p3 = self.m_arcpoints[self.m_arcindex[i][3]]
                     if dbug.LEV & dbug.GRAPH: 
                         print "Circle:OSC to laser:", OSCPATH['graph_cubic'], \
-                                [p0[0], p0[1], p1[0], p1[1], \
+                                [p0[0], p0[1], p1[0], p1[1],
                                  p2[0], p2[1], p3[0], p3[1]]
                     self.m_field.m_osc.send_to('laser',
                                     OSCPATH['graph_cubic'], 
@@ -321,7 +320,6 @@ class Line(object):
                 #   self.m_field.m_osc_laser.send( OSCMessage("/user/1", [1.0, 2.0, 3.0 ] ) )
                 #scaled_pts = self.m_field.rescale_pt2vector(points)
                 #if dbug.LEV & dbug.GRAPH: print "Circle:draw:vector:scaled_pts =",scaled_pts
-                index = self.m_index[i]
                 if dbug.LEV & dbug.GRAPH: 
                     print "Line:OSC to laser:", OSCPATH['graph_color'], \
                        [self.m_color[0],self.m_color[1],self.m_color[2]]
@@ -336,7 +334,7 @@ class Line(object):
                     p3 = self.m_arcpoints[self.m_arcindex[i][3]]
                     if dbug.LEV & dbug.GRAPH: 
                         print "Line:OSC to laser:", OSCPATH['graph_cubic'], \
-                                [p0[0], p0[1], p1[0], p1[1], \
+                                [p0[0], p0[1], p1[0], p1[1],
                                  p2[0], p2[1], p3[0], p3[1]]
                     self.m_field.m_osc.send_to('laser',
                                     OSCPATH['graph_cubic'], 

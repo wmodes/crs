@@ -26,17 +26,11 @@ from shared import config
 # local classes
 from shared import debug
 from shared.dataelements import Cell,Connector
-from graphelements import Circle, Line
 
 # constants
 LOGFILE = config.logfile
 
 DEF_RADIUS = config.default_radius
-DEF_LINECOLOR = config.default_linecolor
-DEF_BODYCOLOR = config.default_bodycolor
-DEF_GUIDECOLOR = config.default_guidecolor
-DEF_BKGDCOLOR = config.default_bkgdcolor
-DRAW_BODIES = config.draw_bodies
 
 # init debugging
 dbug = debug.Debug()
@@ -50,55 +44,14 @@ class MyCell(Cell):
     Stores the following values:
         m_color: color of cell
 
-    set_location: set the location value for this cell as an XY tuple
-    makeBasicShape: create the set of arcs that will define the shape
-
     """
 
-    def __init__(self, field, id, p=None, r=None, effects=None, color=None):
-        if color is None:
-            self.m_color = DEF_LINECOLOR
-        else:
-            self.m_color = color
-        self.m_body_color = DEF_BODYCOLOR
-        self.m_shape = Circle()
-        self.m_bodyshape = Circle()
-        super(MyCell, self).__init__(field,id,p,r,effects)
+    def __init__(self, field, id, p=None, r=None, gid=None):
+        super(MyCell, self).__init__(field, id, p, r, gid)
 
-    def update(self, p=None, r=None, effects=None, color=None):
+    def update(self, p=None, r=None, gid=None):
         """Store basic info and create a DataElement object"""
-        if color is not None:
-            self.m_color = color
-        super(MyCell, self).update(p,r,effects)
-
-    #def set_location(self, p):
-    # moved to superclass
-
-    #def add_connector(self, connector):
-    # moved to superclass
-
-    #def del_connector(self, connector):
-    # moved to superclass
-
-    def render(self):
-        if self.m_location:
-            self.m_shape.update(self.m_field, self.m_location, self.m_radius,
-                                  self.m_color, solid=False)
-            self.m_shape.render()
-            if DRAW_BODIES:
-                self.m_bodyshape.update(self.m_field, self.m_location, 
-                                          self.m_body_radius, self.m_body_color,
-                                          solid=True)
-                self.m_bodyshape.render()
-
-    def draw(self):
-        if self.m_location:
-            self.m_shape.draw()
-            if DRAW_BODIES:
-                self.m_bodyshape.draw()
-
-    #def cell_disconnect(self):
-    # moved to superclass
+        super(MyCell, self).update(p, r, gid)
 
 
 class MyConnector(Connector):
@@ -109,41 +62,12 @@ class MyConnector(Connector):
     Stores the following values:
         m_cell0, m_cell1: the two cells connected by this connector
 
-    makeBasicShape: create the set of arcs that will define the shape
-
     """
 
-    def __init__(self, field, id, cell0, cell1, effects=None, color=None):
+    def __init__(self, field, id, cell0, cell1):
         """Store basic info and create a DataElement object"""
         # process passed params
-        if color is None:
-            self.m_color = DEF_LINECOLOR
-        else:
-            self.m_color = color
         # store other params
-        self.m_shape = Line()
-        self.m_path = []
         self.m_score = 0
-        super(MyConnector,self).__init__(field,id,cell0,cell1,effects)
-
-    # move to superclass?
-    def addPath(self,path):
-        """Record the path of this connector."""
-        self.m_path = path
-
-    def render(self):
-        if self.m_cell0.m_location and self.m_cell1.m_location:
-            self.m_shape.update(self.m_field, 
-                                self.m_cell0.m_location, self.m_cell0.m_location, 
-                                self.m_cell0.m_radius, self.m_cell1.m_radius,
-                                self.m_color,self.m_path)
-            #print ("Render Connector(%s):%s to %s" % (self.m_id,cell0.m_location,cell1.m_location))
-            self.m_shape.render()
-
-    def draw(self):
-        if self.m_cell0.m_location and self.m_cell1.m_location:
-            self.m_shape.draw()
-
-    #def conx_disconnect_thyself(self):
-    # moved to superclass
+        super(MyConnector,self).__init__(field, id, cell0, cell1)
 

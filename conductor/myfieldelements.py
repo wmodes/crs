@@ -32,10 +32,6 @@ from mydataelements import MyCell,MyConnector
 
 LOGFILE = config.logfile
 
-DEF_RADIUS = config.default_radius
-
-RAD_PAD = config.radius_padding     # increased radius of circle around bodies
-
 XMIN_FIELD = config.xmin_field
 YMIN_FIELD = config.ymin_field
 XMAX_FIELD = config.xmax_field

@@ -60,33 +60,47 @@ was resized
 * Confirmed it still works
 
 5/17/2014
-Added self.m_field.m_group_dict to shared/fieldelements.py
-Added add_group to Field class in shared/fieldelements.py
-Added update_group to Field class in shared/fieldelements.py
-Added del_group to Field class in shared/fieldelements.py
-Added group class to shared/dataelements.py
-Added self.m_addr_dict = {} to Group class
-Added add_attrs func to Group class
-Added add_group to Group class
-Added update_group to Group class
-Added del_group to Field class in shared/fieldelements.py
-Added list of cells in Group class
-Added self.m_field.m_event_dict to shared/fieldelements.py
-Added event class to shared/dataelements.py
-Added add_event to Field class in shared/fieldelements.py
-Added update_event to Field class in shared/fieldelements.py
-Added del_event to Field class in shared/fieldelements.py
-Added m_group to Cell class in shared/dataelements.py
-Added group info to update in Cell class
-Added group info to update in Field class 
-Added def create_attr to Cell class
-Added def create_attr to Conx class
-Added def create_attr to Group class
-Added add_group def to Field class
-Added group info to update in update_cell in Field class
-Made sure update_cell in Field class removes group membership
-If group membership drops to zero, delete group (Field class)
-Added ability to remove a cell from group to Cell class
-Added reference to a group in cell class
+* Added self.m_field.m_group_dict to shared/fieldelements.py
+* Added add_group to Field class in shared/fieldelements.py
+* Added update_group to Field class in shared/fieldelements.py
+* Added del_group to Field class in shared/fieldelements.py
+* Added group class to shared/dataelements.py
+* Added self.m_addr_dict = {} to Group class
+* Added add_attrs func to Group class
+* Added add_group to Group class
+* Added update_group to Group class
+* Added del_group to Field class in shared/fieldelements.py
+* Added list of cells in Group class
+* Added self.m_field.m_event_dict to shared/fieldelements.py
+* Added event class to shared/dataelements.py
+* Added add_event to Field class in shared/fieldelements.py
+* Added update_event to Field class in shared/fieldelements.py
+* Added del_event to Field class in shared/fieldelements.py
+* Added m_group to Cell class in shared/dataelements.py
+* Added group info to update in Cell class
+* Added group info to update in Field class 
+* Added def create_attr to Cell class
+* Added def create_attr to Conx class
+* Added def create_attr to Group class
+* Added add_group def to Field class
+* Added group info to update in update_cell in Field class
+* Made sure update_cell in Field class removes group membership
+* If group membership drops to zero, delete group (Field class)
+* Added ability to remove a cell from group to Cell class
+* Added reference to a group in cell class
+* Subclassed oschandlers, moving more general parts into shared
+
+5/20/2014
+* Added group update functions to oschandlers.py
+* Added params to field.update_cell
+* Added params to cell.update
+* Changed all tuple pair representations of m_location to m_x and m_y
+* Converted everything from radius to diameter
+* Made RAD_PAD (not DIAM_PAD) additive not multiplicative (and only in the graphics engine)
+* Added geo data handler
+* Added geo fieldelement routines to add data to Cell class
+* Half implemented suspect system for groups
+* Made all sorts of group checks and mhousekeeping work
+* Made group render routines work so you can see the groups drawn
 
 

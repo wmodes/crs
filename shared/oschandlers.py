@@ -57,6 +57,7 @@ class OSCHandler(object):
         self.m_oscserver = OSCServer( (host, port) )
         if dbug.LEV & dbug.MSGS: print "OSC:init server: %s:%s"%(host, port)
         self.m_oscserver.timeout = OSCTIMEOUT
+        self.m_oscserver.print_tracebacks = True
 
         self.m_osc_clients = {}
         for i in range(len(osc_clients)):
@@ -105,6 +106,8 @@ class OSCHandler(object):
             'track_update': self.event_tracking_update,
             'track_leg': self.event_tracking_leg,
             'track_body': self.event_tracking_body,
+            'track_group': self.event_tracking_group,
+            'track_geo': self.event_tracking_geo,
         }
 
         # add a method to an instance of the class
@@ -171,7 +174,7 @@ class OSCHandler(object):
 
     def honey_im_home(self):
         """Broadcast a hello message to the network."""
-        self.send_to_all_clients(OSCPATH['visual_start'],[])
+        pass
 
     # INCOMING handlers
 
@@ -341,7 +344,7 @@ class OSCHandler(object):
         """
         for index, item in enumerate(args):
             if item == 'nan':
-                args[index] = 0
+                args[index] = None
         samp = args[0]
         id = args[1]
         x = args[2]       # comes in meters
@@ -361,9 +364,12 @@ class OSCHandler(object):
         leftness = args[16]
         vis = args[17]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_body:no id",id,"in registered id list"
+            if dbug.LEV & dbug.MSGS: print "OSC:event_body:no uid",id,"in registered cell list"
         if samp%FREQ_REG_REPORT == 0:
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_body:id:",id,"pos:",(x,y)
+            if dbug.LEV & dbug.MSGS: 
+                print "    OSC:event_body:id:",id,"pos:", (x, y), "data:", \
+                        ex, ey, spd, espd, facing, efacing, diam, sigmadiam, \
+                        sep, sigmasep, leftness, vis
         self.m_field.update_body(id, x, y, ex, ey, spd, espd, facing, efacing, 
                            diam, sigmadiam, sep, sigmasep, leftness, vis)
 
@@ -384,7 +390,7 @@ class OSCHandler(object):
         """
         for index, item in enumerate(args):
             if item == 'nan':
-                args[index] = 0
+                args[index] = None
         samp = args[0]
         id = args[1]
         leg = args[2]
@@ -399,9 +405,11 @@ class OSCHandler(object):
         eheading = args[11]
         vis = args[12]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_leg:no id",id,"in registered id list"
+            if dbug.LEV & dbug.MSGS: print "OSC:event_leg:no uid",id,"in registered cell list"
         if samp%FREQ_REG_REPORT == 0:
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_leg:id:",id,"leg:",leg,"pos:",(x,y)
+            if dbug.LEV & dbug.MSGS: 
+                print "    OSC:event_leg:id:", id, "leg:", leg, "pos:", (x,y), \
+                "data:", ex, ey, spd, espd, heading, eheading, vis
         self.m_field.update_leg(id, leg, nlegs, x, y, ex, ey, spd, espd, 
                                    heading, eheading, vis)
 
@@ -410,40 +418,101 @@ class OSCHandler(object):
 
         Update position of target.
         args:
-            samp - sample number
-            t - time of sample (elapsed time in seconds since beginning of run)
-            target - UID of target
-            x,y - position within field in units - increasing in value towards right and down
-            vx,vy - estimate of velocity in m/s
-            major,minor - major/minor axis size in m
-            groupid - id number of group
-            groupsize - number of people in group
-            channel - channel number assigned
+            /pf/update samp t target x y vx vy major minor groupid groupsize channel
+                samp - sample number
+                t - time of sample (elapsed time in seconds)
+                target - UID of target, always increments
+                x,y - position within field in meters
+                vx,vy - estimate of velocity in m/s
+                major,minor - major/minor axis size in m
+                groupid - id number of group (0 if not in any group)
+                groupsize - number of people in group (including this person)
+                channel - channel number assigned
         """
         for index, item in enumerate(args):
             if item == 'nan':
-                args[index] = 0
+                args[index] = None
         samp = args[0]
         time = args[1]
         id = args[2]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_update:no id",id,"in registered id list"
+            if dbug.LEV & dbug.MSGS: print "OSC:event_update:no uid",id,"in registered cell list"
         x = args[3]       # comes in meters
         y = args[4]
         vx = args[5]
         vy = args[6]
-        major = args[7]/2
-        minor = args[8]/2
+        major = args[7]
+        minor = args[8]
         gid = args[9]
         gsize = args[10]
         channel = args[11]
         #print "OSC:event_update:",path,args,source
         if samp%FREQ_REG_REPORT == 0:
             #print "OSC:event_update:",path,args,source
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_update:id:",id,"pos:",(x,y),"axis:",major
-        #print "field.update_cell(",id,",",(x,y),",",major,")"
-        self.m_field.update_cell(id,(x,y),major)
-        #print "OSC:event_update: Done"
+            if dbug.LEV & dbug.MSGS: 
+                print " OSC:event_update:id:",id,"pos:", (x, y), "data:", \
+                        vx, vy, major, minor, gid, gsize
+        self.m_field.update_cell(id, x, y, vx, vy, major, minor, gid, gsize)
+
+    def event_tracking_group(self, path, tags, args, source):
+        """Information about people's movement within field.
+
+        Update info about group
+        /pf/group samp gid gsize duration centroidX centroidY diameter
+        args:
+            samp - sample number
+            gid - group ID 
+            gsize - number of people in group
+            duration - time since first formed in seconds
+            centroidX, centroidY - location of centroid of group
+            diameter - current diameter (mean distance from centroid)
+        """
+        for index, item in enumerate(args):
+            if item == 'nan':
+                args[index] = None
+        samp = args[0]
+        gid = args[1]
+        gsize = args[2]       # comes in meters
+        duration = args[3]
+        x = args[4]
+        y = args[5]
+        diam = args[6]
+        if gid not in self.m_field.m_group_dict:
+            if dbug.LEV & dbug.MSGS: print "OSC:event_group:no gid",gid,"in group list"
+        if samp%FREQ_REG_REPORT == 0:
+            if dbug.LEV & dbug.MSGS: 
+                print "    OSC:event_group:gid:",gid, "pos:", (x, y), "data:", \
+                        gsize, duration, diam
+        self.m_field.update_group(gid, gsize, duration, x, y, diam)
+
+    def event_tracking_geo(self, path, tags, args, source):
+        """Information about people's movement within field.
+
+        Update info about group
+        /pf/geo samp target fromcenter fromothers fromexit
+        args:
+            samp - sample number 
+            uid - UID of target
+            fromcenter -target's distance from geographic center of everyone
+            fromnearest - target's distance from the nearest other person (-1 if nobody else)
+            fromexit - This person's distance from nearest exit from tracked area
+        """
+        for index, item in enumerate(args):
+            if item == 'nan':
+                args[index] = None
+        samp = args[0]
+        uid = args[1]
+        fromcenter = args[2]       # comes in meters
+        fromnearest = args[3]
+        fromexit = args[4]
+        if uid not in self.m_field.m_cell_dict:
+            if dbug.LEV & dbug.MSGS: 
+                print "OSC:event_geo:no uid",uid,"in registered cell list"
+        if samp%FREQ_REG_REPORT == 0:
+            if dbug.LEV & dbug.MSGS: 
+                print "    OSC:event_geo:uid:",uid, "data:", \
+                        fromcenter, fromnearest, fromexit
+        self.m_field.update_geo(uid, fromcenter, fromnearest, fromexit)
 
     def event_tracking_frame(self, path, tags, args, source):
         """New frame event.

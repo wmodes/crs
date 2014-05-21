@@ -32,10 +32,10 @@ from shared import debug
 # local Classes
 
 # Constants
-OSCSERVERHOST = config.osc_conductor_host \
-    if config.osc_conductor_host else config.osc_default_host
-OSCSERVERPORT = config.osc_conductor_port \
-    if config.osc_conductor_port else config.osc_default_port
+OSCSERVERHOST = config.osc_visual_host \
+    if config.osc_visual_host else config.osc_default_host
+OSCSERVERPORT = config.osc_visual_port \
+    if config.osc_visual_port else config.osc_default_port
 
 OSCTRACKHOST = config.osc_tracking_host \
     if config.osc_tracking_host else config.osc_default_host
@@ -88,4 +88,6 @@ class MyOSCHandler(OSCHandler):
 
         super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)
 
-
+    def honey_im_home(self):
+        """Broadcast a hello message to the network."""
+        self.send_to_all_clients(OSCPATH['visual_start'],[])

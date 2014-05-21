@@ -25,14 +25,15 @@ from shared import config
 
 # local classes
 from shared import debug
-from shared.dataelements import Cell,Connector
+from shared.dataelements import Cell,Connector,Group
 from graphelements import Circle, Line
 
 # constants
 LOGFILE = config.logfile
 
-DEF_RADIUS = config.default_radius
+DEF_DIAM = config.default_diam
 DEF_LINECOLOR = config.default_linecolor
+DEF_GROUPCOLOR = config.default_groupcolor
 DEF_BODYCOLOR = config.default_bodycolor
 DEF_GUIDECOLOR = config.default_guidecolor
 DEF_BKGDCOLOR = config.default_bkgdcolor
@@ -50,12 +51,12 @@ class MyCell(Cell):
     Stores the following values:
         m_color: color of cell
 
-    set_location: set the location value for this cell as an XY tuple
     makeBasicShape: create the set of arcs that will define the shape
 
     """
 
-    def __init__(self, field, id, p=None, r=None, color=None):
+    def __init__(self, field, id, x=None, y=None, vx=None, vy=None, major=None,
+                 minor=None, gid=None, gsize=None, color=None):
         if color is None:
             self.m_color = DEF_LINECOLOR
         else:
@@ -63,36 +64,29 @@ class MyCell(Cell):
         self.m_body_color = DEF_BODYCOLOR
         self.m_shape = Circle()
         self.m_bodyshape = Circle()
-        super(MyCell, self).__init__(field,id,p,r)
+        super(MyCell, self).__init__(field, id, x, y, vx, vy, major, minor, 
+                                     gid, gsize)
 
-    def update(self, p=None, r=None, color=None):
+    def update(self, x=None, y=None, vx=None, vy=None, major=None,
+               minor=None, gid=None, gsize=None, color=None):
         """Store basic info and create a DataElement object"""
         if color is not None:
             self.m_color = color
-        super(MyCell, self).update(p,r)
-
-    #def set_location(self, p):
-    # moved to superclass
-
-    #def add_connector(self, connector):
-    # moved to superclass
-
-    #def del_connector(self, connector):
-    # moved to superclass
+        super(MyCell, self).update(x, y, vx, vy, major, minor, gid, gsize)
 
     def render(self):
-        if self.m_location:
-            self.m_shape.update(self.m_field, self.m_location, self.m_radius,
-                                  self.m_color, solid=False)
+        if self.m_x is not None and self.m_y is not None:
+            self.m_shape.update(self.m_field, (self.m_x, self.m_y),
+                                self.m_diam/2, self.m_color, solid=False)
             self.m_shape.render()
             if DRAW_BODIES:
-                self.m_bodyshape.update(self.m_field, self.m_location, 
-                                          self.m_body_radius, self.m_body_color,
+                self.m_bodyshape.update(self.m_field, (self.m_x, self.m_y),
+                                          self.m_body_diam/2, self.m_body_color,
                                           solid=True)
                 self.m_bodyshape.render()
 
     def draw(self):
-        if self.m_location:
+        if self.m_x is not None and self.m_y is not None:
             self.m_shape.draw()
             if DRAW_BODIES:
                 self.m_bodyshape.draw()
@@ -132,18 +126,56 @@ class MyConnector(Connector):
         self.m_path = path
 
     def render(self):
-        if self.m_cell0.m_location and self.m_cell1.m_location:
+        if self.m_cell0.m_x is not None and self.m_cell0.m_y is not None and \
+           self.m_cell1.m_x is not None and self.m_cell1.m_y is not None:
             self.m_shape.update(self.m_field, 
-                                self.m_cell0.m_location, self.m_cell0.m_location, 
-                                self.m_cell0.m_radius, self.m_cell1.m_radius,
+                                (self.m_cell0.m_x, self.m_cell0.m_y), 
+                                (self.m_cell1.m_x, self.m_cell1.m_y), 
+                                self.m_cell0.m_diam/2, self.m_cell1.m_diam/2,
                                 self.m_color,self.m_path)
-            #print ("Render Connector(%s):%s to %s" % (self.m_id,cell0.m_location,cell1.m_location))
             self.m_shape.render()
 
     def draw(self):
-        if self.m_cell0.m_location and self.m_cell1.m_location:
+        if self.m_cell0.m_x is not None and self.m_cell0.m_y is not None and \
+           self.m_cell1.m_x is not None and self.m_cell1.m_y is not None:
             self.m_shape.draw()
 
     #def conx_disconnect_thyself(self):
     # moved to superclass
 
+
+class MyGroup(Group):
+    """Represents a group on the floor.
+
+    Create a group as a subclass of the basic data element.
+    
+    Stores the following values:
+        m_color: color of cell
+
+    """
+
+    def __init__(self, field, id, gsize=None, duration=None, x=None, y=None,
+                 diam=None, color=None):
+        if color is None:
+            self.m_color = DEF_GROUPCOLOR
+        else:
+            self.m_color = color
+        self.m_shape = Circle()
+        super(MyGroup, self).__init__(field, id, gsize, duration, x, y, diam)
+
+    def update(self, gsize=None, duration=None, x=None, y=None,
+                 diam=None, color=None):
+        """Store basic info and create a DataElement object"""
+        if color is not None:
+            self.m_color = color
+        super(MyGroup, self).update(gsize, duration, x, y, diam)
+
+    def render(self):
+        if self.m_x is not None and self.m_y is not None:
+            self.m_shape.update(self.m_field, (self.m_x, self.m_y),
+                                self.m_diam/2, self.m_color, solid=False)
+            self.m_shape.render()
+
+    def draw(self):
+        if self.m_x is not None and self.m_y is not None:
+            self.m_shape.draw()

@@ -88,4 +88,6 @@ class MyOSCHandler(OSCHandler):
 
         super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)
 
-
+    def honey_im_home(self):
+        """Broadcast a hello message to the network."""
+        self.send_to_all_clients(OSCPATH['conduct_start'],[])

@@ -30,8 +30,8 @@ from shared import debug
 LOGFILE = config.logfile
 
 MAX_LEGS = config.max_legs
-DEF_RADIUS = config.default_radius
-RAD_PAD = config.radius_padding     # increased radius of circle around bodies
+DEF_DIAM = config.default_diam
+DIAM_PAD = config.diam_padding     # increased diam of circle around bodies
 
 # init debugging
 dbug = debug.Debug()
@@ -109,25 +109,27 @@ class Group(object):
 
     """
 
-    def __init__(self, field, id, gsize=None, duration=None, center=None,
+    def __init__(self, field, id, gsize=None, duration=None, x=None, y=None,
                  diam=None):
         self.m_field=field
         self.m_id = id
         self.m_gsize = gsize
         self.m_duration = duration
-        self.m_center = center
+        self.m_x = x
+        self.m_y = y
         self.m_diam = diam
         self.m_cell_dict = {}
         self.m_attr_dict = {}
 
-    def update(self, gsize=None, duration=None, center=None, diam=None):
+    def update(self, gsize=None, duration=None, x=None, y=None, diam=None):
         if gsize is not None:
             self.m_gsize = gsize
         if duration is not None:
             self.m_duration = duration
-        if center is not None:
-            self.m_x = center[0]
-            self.m_y = center[1]
+        if x is not None:
+            self.m_x = x
+        if y is not None:
+            self.m_y = y
         if diam is not None:
             self.m_diam = diam
 
@@ -297,9 +299,9 @@ class Cell(object):
     Stores the following values:
         m_field: store a back ref to the field that called us
         m_id: the id of this cell (unique, but not enforced)
-        m_location: center of cell (coordinate tupple in cm)
-        m_body_radius: radius of the person within the cell (cm)
-        m_radius: radius of the cell surrounding the person (cm)
+        m_x, m_y: center of cell (coordinate tupple in cm)
+        m_body_diam: diam of the person within the cell (cm)
+        m_diam: diam of the cell surrounding the person (cm)
         m_visible: is this cell displayed currently? (boolean)
         m_conx_dict: connectors attached to this cell (index by cid)
         m_attr_dict: dict of attrs applied to this cell (indexed by type)
@@ -308,46 +310,77 @@ class Cell(object):
         m_gid: GID of group this cell belongs to
 
     update: set center, readius, and attrs
-    set_location: set the location value for this cell as an XY tuple
+    geoupdate: set geo data for cell
     set_attrs: add attrs to the attrs list
     add_connector: add new connector to the list connected to this cell
     del_connector: delete a connector from the list connected to this cell
 
     """
 
-    def __init__(self, field, id, p=None, r=None, gid=None):
+    def __init__(self, field, id, x=None, y=None, vx=None, vy=None, major=None, 
+                    minor=None, gid=None, gsize=None):
         self.m_field=field
         self.m_id = id
-        if p is None:
-            self.m_location = ()
+        self.m_x = x
+        self.m_y = y
+        self.m_vx = vx
+        self.m_vy = vy
+        if major is None:
+            self.m_major = DEF_DIAM
+            self.m_body_diam = DEF_DIAM
+            self.m_diam = DEF_DIAM + DIAM_PAD
         else:
-            self.m_location = p
-        if r is None:
-            self.m_body_radius = DEF_RADIUS
-        else:
-            self.m_body_radius = r
+            self.m_major = major
+            self.m_body_diam = major
+            self.m_diam = major + DIAM_PAD
+        self.m_minor = minor
+        self.m_gid = gid
+        self.m_gsize = gsize
         self.m_attr_dict = {}
-        self.m_radius = self.m_body_radius*RAD_PAD
+        #TODO: Move this to graphics engine
+        self.m_diam = self.m_body_diam + DIAM_PAD
         self.m_visible = True
         self.m_conx_dict = {}
-        # create an array of leg instances
         self.m_body = Body(field, id)
+        # create an array of leg instances
         self.m_leglist = []
         for i in range(MAX_LEGS):
             self.m_leglist.append(Leg(field, id, i))
         self.m_gid = gid
+        self.m_fromcenter = 0
+        self.m_fromnearest = 0
+        self.m_fromexit = 0
 
-    def update(self, p=None, r=None, gid=None):
+    def update(self, x=None, y=None, vx=None, vy=None, major=None, 
+                    minor=None, gid=None, gsize=None):
         """Store basic info and create a DataElement object"""
-        if p is not None:
-            self.m_location = p
-            self.m_body.m_x = p[0]
-            self.m_body.m_y = p[0]
-        if r is not None:
-            self.m_body_radius = r
-            self.m_radius = r*RAD_PAD
+        if x is not None:
+            self.m_x = x
+        if y is not None:
+            self.m_y = y
+        if vx is not None:
+            self.m_vx = vx
+        if vy is not None:
+            self.m_vy = vy
+        if major is not None:
+            self.m_major = major
+            self.m_body_diam = major
+            self.m_diam = major + DIAM_PAD
+        if minor is not None:
+            self.m_minor = minor
         if gid is not None:
             self.m_gid = gid
+        if gsize is not None:
+            self.m_gsize = gsize
+
+    def geoupdate(self, fromcenter=None, fromnearest=None, fromexit=None):
+        """Store geo data for cell."""
+        if fromcenter is not None:
+            self.m_fromcenter = fromcenter
+        if fromnearest is not None:
+            self.m_fromnearest = fromnearest
+        if fromexit is not None:
+            self.m_fromexit = fromexit
 
     def update_body(self, x=None, y=None, ex=None, ey=None, 
                  spd=None, espd=None, facing=None, efacing=None, 
@@ -361,9 +394,6 @@ class Cell(object):
                  heading=None, eheading=None, vis=None):
         self.m_leglist[leg].update(nlegs, x, y, ex, ey, spd, espd, 
                                    heading, eheading, vis)
-
-    def set_location(self, p):
-        self.m_location=p
 
     def add_attr(self, type, value):
         self.m_attr_dict[type] = Attr(type, self.m_id, value)

@@ -29,7 +29,7 @@ from windowelements import Window
 from gridmap import GridMap
 from pathfinder import PathFinder
 from shared.fieldelements import Field
-from mydataelements import MyCell,MyConnector
+from mydataelements import MyCell,MyConnector,MyGroup
 
 # constants
 # removed to allow multiple simultaneous modes
@@ -45,13 +45,13 @@ GRAPHOPTS = {'screen': 1, 'osc': 2, 'etherdream':3}
 
 LOGFILE = config.logfile
 
-DEF_RADIUS = config.default_radius
+DEF_DIAM = config.default_diam
 DEF_LINECOLOR = config.default_linecolor
 DEF_BODYCOLOR = config.default_bodycolor
 DEF_GUIDECOLOR = config.default_guidecolor
 DEF_BKGDCOLOR = config.default_bkgdcolor
 
-RAD_PAD = config.radius_padding     # increased radius of circle around bodies
+RAD_PAD = config.diam_padding     # increased diam of circle around bodies
 CURVE_SEGS = config.curve_segments  # number of line segs in a curve
 
 XMIN_FIELD = config.xmin_field
@@ -72,8 +72,6 @@ BLOCK_FUZZ = config.fuzzy_area_for_cells
 
 MIN_CONX_DIST = config.minimum_connection_distance
 
-MAX_LOST_PATIENCE = config.max_lost_patience
-
 # init debugging
 dbug = debug.Debug()
 
@@ -83,6 +81,7 @@ class MyField(Field):
 
     cellClass = MyCell
     connectorClass = MyConnector
+    groupClass = MyGroup
 
     def __init__(self):
 
@@ -245,12 +244,14 @@ class MyField(Field):
         """Render all the cells and connectors."""
         self.render_all_cells()
         self.render_all_connectors()
+        self.render_all_groups()
 
     def draw_all(self):
         """Draw all the cells and connectors."""
         self.m_screen.draw_guides()
         self.draw_all_cells()
         self.draw_all_connectors()
+        self.draw_all_groups()
 
     def render_cell(self,cell):
         """Render a cell.
@@ -262,13 +263,6 @@ class MyField(Field):
         if self.is_cell_good_to_go(cell.m_id):
             cell.render()
             #del self.m_suspect_cells[cell.m_id]
-        else:
-            if dbug.LEV & dbug.FIELD: print "Field:renderCell:Cell",cell.m_id,"is suspected lost for",\
-                  self.m_suspect_cells[cell.m_id],"frames"
-            if self.m_suspect_cells[cell.m_id] > MAX_LOST_PATIENCE:
-                self.del_cell(cell.m_id)
-            else:
-                self.m_suspect_cells[cell.m_id] += 1
 
     def render_all_cells(self):
         # we don't call the Cell's render-er directly because we have some
@@ -277,7 +271,8 @@ class MyField(Field):
             self.render_cell(cell)
 
     def draw_cell(self,cell):
-        cell.draw()
+        if self.is_cell_good_to_go(cell.m_id):
+            cell.draw()
 
     def draw_all_cells(self):
         # we don't call the Cell's draw-er directly because we may want
@@ -287,12 +282,6 @@ class MyField(Field):
 
     # Connectors
 
-    #def create_connector(self, id, cell0, cell1):
-    # moved to superclass
-
-    #def del_connector(self,conxid):
-    # moved to superclass
-
     def render_connector(self,connector):
         """Render a connector.
 
@@ -300,18 +289,8 @@ class MyField(Field):
         If not, we increment its suspect count
         If yes, render it.
         """
-        if self.is_cell_good_to_go(connector.m_cell0.m_id) and \
-           self.is_cell_good_to_go(connector.m_cell1.m_id):
+        if self.is_conx_good_to_go(connector,m_id):
             connector.render()
-            if connector.m_id in self.m_suspect_conxs:
-                del self.m_suspect_conxs[connector.m_id]
-        else:
-            if dbug.LEV & dbug.FIELD: print "Field:renderConnector:Conx",connector.m_id,"between",\
-                connector.m_cell0.m_id,"and",connector.m_cell1.m_id,"is suspected lost"
-            if self.m_suspect_conxs[connector.m_id] > MAX_LOST_PATIENCE:
-                self.del_connector(connector.m_id)
-            else:
-                self.m_suspect_conxs[connector.m_id] += 1
 
     def render_all_connectors(self):
         # we don't call the Connector's render-er directly because we have some
@@ -327,6 +306,33 @@ class MyField(Field):
         # to introduce logic at this level
         for connector in self.m_conx_dict.values():
             self.draw_connector(connector)
+
+
+    # Groups
+
+    def render_group(self,group):
+        """Render a group.
+
+        We first check if the group's is in the group list
+        If yes, render it.
+        """
+        if self.is_group_good_to_go(group.m_id):
+            group.render()
+
+    def render_all_groups(self):
+        # we don't call the Connector's render-er directly because we have some
+        # logic here at this level
+        for group in self.m_group_dict.values():
+            self.render_group(group)
+
+    def draw_group(self,group):
+        group.draw()
+
+    def draw_all_groups(self):
+        # we don't call the Connector's draw-er directly because we may want
+        # to introduce logic at this level
+        for group in self.m_group_dict.values():
+            self.draw_group(group)
 
     # Distances - TODO: temporary -- this info will come from the conduction subsys
 
@@ -356,8 +362,8 @@ class MyField(Field):
     def path_score_cells(self):
         #print "***Before path: ",self.m_cell_dict
         for cell in self.m_cell_dict.values():
-            self.path_grid.set_blocked(self.scale2path(cell.m_location),
-                                       self.scale2path(cell.m_radius),BLOCK_FUZZ)
+            self.path_grid.set_blocked(self.scale2path((cell.m_x,cell.m_y)),
+                                       self.scale2path(cell.m_diam),BLOCK_FUZZ)
 
     def path_find_connectors(self):
         """ Find path for all the connectors.
@@ -369,8 +375,8 @@ class MyField(Field):
         #for i in conx_dict_rekeyed.iterkeys():
         conx_dict_rekeyed = {}
         for connector in self.m_conx_dict.values():
-            p0 = connector.m_cell0.m_location
-            p1 = connector.m_cell1.m_location
+            p0 = (connector.m_cell0.m_x, connector.m_cell0.m_y)
+            p1 = (connector.m_cell1.m_x, connector.m_cell1.m_y)
             # normally we'd take the sqrt to get the distance, but here this is 
             # just used as a sort comparison, so we'll not take the hit for sqrt
             score = ((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2) 
@@ -383,8 +389,8 @@ class MyField(Field):
 
     def find_path(self, connector):
         """ Find path in path_grid and then scale it appropriately."""
-        start = self.scale2path(connector.m_cell0.m_location)
-        goal = self.scale2path(connector.m_cell1.m_location)
+        start = self.scale2path((connector.m_cell0.m_x, connector.m_cell0.m_y))
+        goal = self.scale2path((connector.m_cell1.m_x, connector.m_cell1.m_y))
         # TODO: Either here or in compute_path we first try several simple/dumb
         # paths, reserving A* for the ones that are blocked and need more
         # smarts. We sort the connectors by distance and do easy paths for the

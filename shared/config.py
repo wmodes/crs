@@ -6,16 +6,16 @@
 # modeling configuration
 #
 max_legs = 4
-default_radius = 75
+default_diam = .75    # 3/4 of a meter
 default_orient = 0
-radius_padding = 1.5      # increased radius of circle around bodies
+diam_padding = .25      # 1/4 meter
 group_distance = 100
 ungroup_distance = 150
 
 # graphics configuration
 #
-#graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
-graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
+graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
+#graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
 #draw_bodies = True
 draw_bodies = False
 
@@ -24,6 +24,7 @@ if inverse:
     default_bkgdcolor = (0, 0, 0, 1)    # black
     default_guidecolor = (1,1,1)  # white
     default_linecolor = (1,1,1)     # white
+    default_groupcolor = (1,.25,.25)     # differt
     default_bodycolor = (.2,.2,.2)  # dk gray
 else:
     default_bkgdcolor = (1, 1, 1, 1)    # white
@@ -82,8 +83,9 @@ freq_regular_reports = 100
 debug_level = 22    # data (2), field (4), osc(16)
 #debug_level = 6    # data (2), field (4)
 #debug_level = 14    # data (2), field (4), graph (8)
+#debug_level = 255    # everything
 
-max_lost_patience = 10
+max_lost_patience = 25 * 5
 
 # OSC configuration
 
@@ -99,7 +101,7 @@ osc_tracking_port = 7770
 osc_sound_host = "localhost"
 osc_sound_port = 7010
 osc_conductor_host = "localhost"
-osc_conductor_port = 7012
+osc_conductor_port = 7010
 #osc_laser_host = "192.168.0.162"
 osc_laser_host = "localhost"
 osc_laser_port = 7780
@@ -136,6 +138,8 @@ oscpath = {
     'track_update': "/pf/update",
     'track_leg': "/pf/leg",
     'track_body': "/pf/body",
+    'track_group': "/pf/group",
+    'track_geo': "/pf/geo",
 
     # Visual subsystem
     #

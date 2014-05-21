@@ -5,10 +5,11 @@
     <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredIdentifiers">
         <value>
-          <list size="3">
+          <list size="4">
             <item index="0" class="java.lang.String" itemvalue="object.draw" />
             <item index="1" class="java.lang.String" itemvalue="visual.shared.oschandlers.OSC" />
             <item index="2" class="java.lang.String" itemvalue="visual.myfieldelements.MyField.is_cell_good_to_go" />
+            <item index="3" class="java.lang.String" itemvalue="shared.oschandlers.OSC" />
           </list>
         </value>
       </option>

@@ -1,5 +1,4 @@
 TODO
-* Add legs and body to vis
 * Add framerate
 * Don't make nans go to zero
 
@@ -102,5 +101,6 @@ was resized
 * Half implemented suspect system for groups
 * Made all sorts of group checks and mhousekeeping work
 * Made group render routines work so you can see the groups drawn
+* 'nans' if they are received from the tracker go to None rather than zero
 
 

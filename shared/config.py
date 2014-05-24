@@ -20,7 +20,7 @@ conductor_decay = {
     'coord': 10,
     'fof': 10,
     'friends': 10,
-    'grouped ': 20,
+    'grouped': 20,
     'irlbuds': 0,
     'leastconx': 20,
     'mirror': 10,

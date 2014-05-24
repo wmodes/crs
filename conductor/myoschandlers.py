@@ -137,9 +137,9 @@ class MyOSCHandler(OSCHandler):
         for uid, cell in self.m_field.m_cell_dict.iteritems():
             if cell.m_visible:
                 for type, attr in cell.m_attr_dict.iteritems():
-                    duration = time() - attr.timestamp
+                    duration = time() - attr.m_timestamp
                     self.m_field.m_osc.send_downstream(OSCPATH['conduct_attr'],
-                            [type, uid, attr.value, duration])
+                            [type, uid, attr.m_value, duration])
 
     def send_conxs(self):
         """Sends the current descriptions of connectors.
@@ -149,10 +149,10 @@ class MyOSCHandler(OSCHandler):
         for id,conx in self.m_field.m_conx_dict.iteritems():
             if conx.m_cell0.m_visible and conx.m_cell1.m_visible:
                 for type, attr in conx.m_attr_dict.iteritems():
-                    duration = time() - attr.timestamp
+                    duration = time() - attr.m_timestamp
                     self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                            [id, type, conx.cell0.m_id, conx.cell1.m_id,
-                            attr.value, duration])
+                            [id, type, conx.m_cell0.m_id, conx.m_cell1.m_id,
+                            attr.m_value, duration])
 
     def send_gattrs(self):
         """Sends the current attributes of visible groups.
@@ -162,9 +162,9 @@ class MyOSCHandler(OSCHandler):
         for gid,group in self.m_field.m_group_dict.iteritems():
             if group.m_visible:
                 for type,attr in group.m_attr_dict.iteritems():
-                    duration = time() - attr.timestamp
+                    duration = time() - attr.m_timestamp
                     self.m_field.m_osc.send_downstream(OSCPATH['conduct_gattr'],
-                            [type, gid, attr.value, duration])
+                            [type, gid, attr.m_value, duration])
 
     def send_events(self):
         """Sends notification of ongoing events.
@@ -186,9 +186,9 @@ class MyOSCHandler(OSCHandler):
             conx = self.m_field.m_conx_dict[cid]
             if type in conx.m_attr_dict:
                 attr = conx.m_attr_dict[type]
-                duration = time() - attr.timestamp
+                duration = time() - attr.m_timestamp
                 self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                        [cid, type, conx.cell0.m_id, conx.cell1.m_id,
+                        [cid, type, conx.m_cell0.m_id, conx.m_cell1.m_id,
                         0.0, duration])
 
     def nix_conxs(self, cid):                
@@ -199,8 +199,8 @@ class MyOSCHandler(OSCHandler):
         if cid in self.m_field.m_conx_dict:
             conx = self.m_field.m_conx_dict[cid]
             for type,attr in conx.m_attr_dict.iteritems():
-                duration = time() - attr.timestamp
+                duration = time() - attr.m_timestamp
                 self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                        [cid, type, conx.cell0.m_id, conx.cell1.m_id, 0.0, duration])
+                        [cid, type, conx.m_cell0.m_id, conx.m_cell1.m_id, 0.0, duration])
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_conxbreak'],
-                    [cid, conx.cell0.m_id, conx.cell1.m_id])
+                    [cid, conx.m_cell0.m_id, conx.m_cell1.m_id])

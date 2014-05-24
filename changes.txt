@@ -103,4 +103,12 @@ was resized
 * Made group render routines work so you can see the groups drawn
 * 'nans' if they are received from the tracker go to None rather than zero
 
+5/24/2014
+* Implemented conductor messages to visual subsys
+* Added age_and_expire_connections func
+* Added update_all_connections func
+* Added testing funcs: grouped, contact, nearby, strangers, and fusion
+* Implemented rollcall
+* Implemented flex system for adjusting decay
+* Implemented flex system for adjusting distances
 

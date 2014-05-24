@@ -20,6 +20,7 @@ __license__ = "GNU GPL 3.0 or later"
 from time import time
 from math import sqrt
 from itertools import combinations
+from copy import copy
 
 # installed modules
 
@@ -60,7 +61,7 @@ class Conductor(object):
             'coord': self.test_coord,
             'fof': self.test_fof,
             'friends': self.test_friends,
-            'grouped    ': self.test_grouped    ,
+            'grouped': self.test_grouped    ,
             'irlbuds': self.test_irlbuds,
             'leastconx': self.test_leastconx,
             'mirror': self.test_mirror,
@@ -79,20 +80,47 @@ class Conductor(object):
         
         Note that we should do this before we discover and create new
         connections. That way they are not prematurly aged.
+
+        iterate over every connector
+            iterate over ever attr
+                if decay time of type is not zero (no decay)
+                    if value of attr is zero or less
+                        delete atrr and maybe conx
+                    else
+                        calculate new value based on time and decay rate
+                        if new value is < 0
+                            we'll set it to 0
+                        record the new value
+
         """
         if dbug.LEV & dbug.MORE: 
             print "Conduct:age_and_expire_conx"
-        for cid,connector in self.m_field.m_conx_dict.iteritems():
-            for type, attr in connector.m_attrs_dict.iteritems():
-                # if value is already zero we should remove it
-                if attr.m_value == 0:
-                    self.m_field.del_conx_attr(cid, type)
-                else:
-                    age = time() - attr.m_timestamp
-                    newvalue = 1 - (age/COND_DECAY(type))
-                    if newage <= 0:
-                        newvalue = 0
-                    attr.m_value = newvalue
+        #print "KILLME:",self.m_field.m_conx_dict
+        #TODO: Do I need a deepcopy here?
+        new_conx_dict = copy(self.m_field.m_conx_dict)
+        # iterate over every connector
+        for cid,connector in new_conx_dict.iteritems():
+            new_attr_dict = copy(connector.m_attr_dict)
+            # iterate over ever attr
+            for type,attr in new_attr_dict.iteritems():
+                # if decay time of type is not zero (no decay)
+                if COND_DECAY[type]:
+                    # if value of attr is zero or less
+                    if attr.m_value == 0:
+                        # delete atrr and maybe conx
+                        self.m_field.del_conx_attr(cid, type)
+                    else:
+                        # calc new value based on time and decay rate
+                        age = time() - attr.m_timestamp
+                        newvalue = attr.m_origvalue - (age/COND_DECAY[type])
+                        #print "KILLME:",cid,type,"timestmp:",attr.m_timestamp,"age:",age,"orig:",attr.m_origvalue,"newvalue:",newvalue
+                        # if new value is < 0, we'll set it to 0
+                        if newvalue <= 0:
+                            if dbug.LEV & dbug.MORE: 
+                                print "Conduct:age_and_expire_conx:Expired:",cid,type
+                            newvalue = 0
+                        # record the new value
+                        attr.update(newvalue)
 
     def update_all_connections(self):
         """Test for and create new connections."""
@@ -115,11 +143,19 @@ class Conductor(object):
                 for type,func in self.connection_funcs.iteritems():
                     result = func(cell0, cell1)
                     if result:
-                        if self.m_field.check_for_conx_attr(cell0, cell1, type):
-                            self.m_field.update_conx_attr(cell0, cell1, type, result)
+                        if dbug.LEV & dbug.MORE: 
+                            print "Conduct:update_conx:results:%s-%s,%s,%s"%(cell0.m_id,
+                            cell1.m_id, type, result)
+                        # if a connection/attr does not already exist already
+                        if not self.m_field.check_for_conx_attr(cell0, cell1, type):
                             if dbug.LEV & dbug.COND: 
-                                print "Conduct:update_conx:%s-%s,%s,%s"%(cell0.m_id,
-                                cell1.m_id, type, result)
+                                print "Conduct:update_conx:adding connector/attr"
+                            # create one
+                            self.m_field.update_conx_attr(cell0, cell1, type, result)
+                        else:
+                            if dbug.LEV & dbug.MORE: 
+                                print "Conduct:update_conx:already there, bro"
+                            
 
 
     # Gather or calculate whether conditions are met for connection
@@ -228,7 +264,7 @@ class Conductor(object):
             value: how nearby are they? 1.0 = close
         """
         # If cells do not share a connections
-        for conx in cell0.m_conx_dict:
+        for conx in cell0.m_conx_dict.values():
             if (conx.m_cell0 == cell0 and conx.m_cell1 == cell1) or \
                (conx.m_cell0 == cell1 and conx.m_cell1 == cell0):
                 return 0
@@ -318,7 +354,8 @@ class Conductor(object):
         if cell_dist > COND_DIST['fusion_max'] or \
            cell_dist < COND_DIST['fusion_min']:
             return 0
-        return 1.0 - ((cell_dist-fusion_min) / (fusion_max-fusion_min))
+        return 1.0 - ((cell_dist-COND_DIST['fusion_min']) /
+                      (COND_DIST['fusion_max']-COND_DIST['fusion_min']))
 
     def test_transfer(self, cell0, cell1):
         """Is a transfer of highlight happening between these cells?

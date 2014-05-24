@@ -446,7 +446,7 @@ class Field(object):
 
     def create_connector(self, cell0, cell1):
         """Create connector and assign id."""
-        cid = get_cid(cell0, cell1)
+        cid = self.get_cid(cell0, cell1)
         # if a connector doesn't already exist between cells
         if cid in self.m_conx_dict:
             connector = self.m_conx_dict[cid]
@@ -485,9 +485,13 @@ class Field(object):
     def del_conx_attr(self, cid, type):
         """Delete an attribute to a connector, removing the connector if the
         list is empty."""
-        connector = self.m_conx_list[cid]
+        connector = self.m_conx_dict[cid]
         if type in connector.m_attr_dict:
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:del_conx_attr:del_attr:",cid,type
             connector.del_attr(type)
         if not len(connector.m_attr_dict):
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:del_conx_attr:del_conx:",cid
             self.del_connector(cid)
         

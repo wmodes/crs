@@ -108,6 +108,7 @@ class Conductor(object):
                     # if value of attr is zero or less
                     if attr.m_value == 0:
                         # delete atrr and maybe conx
+                        self.m_field.m_osc.nix_cattr(cid, type)
                         self.m_field.del_conx_attr(cid, type)
                     else:
                         # calc new value based on time and decay rate

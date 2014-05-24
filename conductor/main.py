@@ -20,8 +20,8 @@ __license__ = "GNU GPL 3.0 or later"
 # core modules
 import sys
 import warnings
-
 import logging
+from time import time
 
 
 # installed modules
@@ -78,6 +78,10 @@ warnings.filterwarnings('ignore')
 
 def main():
 
+    from sys import stdout
+
+    CYCLETIME = 1/25.0
+
     # initialize field
     field = MyField()
 
@@ -87,6 +91,8 @@ def main():
 
     keep_running = True
     while keep_running:
+
+        starttime = time()
 
         # call user script
         osc.each_frame()
@@ -99,6 +105,10 @@ def main():
         osc.send_regular_reports()
 
         keep_running = osc.m_run & field.m_still_running
+
+        #TODO: Change this to be triggered by Frame msg
+        while time() - starttime > CYCLETIME:
+            pass
 
     osc.m_oscserver.close()
 

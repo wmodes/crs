@@ -30,4 +30,5 @@ class Debug(object):
         self.GRAPH = 0b00001000 # 8
         self.MSGS  = 0b00010000 # 16
         self.PYG   = 0b00100000 # 32
+        self.COND  = 0b01000000 # 64
 

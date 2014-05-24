@@ -57,7 +57,7 @@ class Field(object):
         m_suspect_cells: list of cells we suspect are dead
         m_suspect_conx: list of connectors we suspect are dead
         m_suspect_groups: list of groups we suspect are dead
-
+        m_frame: which frame is the tracker reporting
     
     """
 
@@ -90,9 +90,10 @@ class Field(object):
         self.m_giddist = GROUP_DIST
         self.m_ungroupdist = UNGROUP_DIST
         self.m_oscfps = OSC_FPS
+        self.m_frame = 0
 
     def update(self, groupdist=None, ungroupdist=None, oscfps=None,
-               osc=None):
+               osc=None, frame=None):
         if groupdist is not None:
             self.m_giddist = groupdist
         if ungroupdist is not None:
@@ -101,6 +102,8 @@ class Field(object):
             self.m_oscfps = oscfps
         if osc is not None:
             self.m_osc = osc
+        if frame is not None:
+            self.m_frame = frame
 
     # Scaling
     def set_scaling(self,pmin_field=None,pmax_field=None):
@@ -385,6 +388,7 @@ class Field(object):
         #cell = self.m_cell_dict[id]
         # delete all cell's connectors from master list of connectors
         #for conxid in cell.m_conx_dict:
+
         #    if conxid in self.m_conx_dict:
         #        del self.m_conx_dict[conxid]
         # have cell disconnect all of its connections and refs
@@ -428,44 +432,62 @@ class Field(object):
 
     # Connectors
 
-    def create_connector(self, id, cell0, cell1):
-        # create connector - note we pass self since we want a back reference
-        # to field instance
-        # NOTE: Connector class takes care of storing the cells as well as
-        # telling each of the two cells that they now have a connector
-        connector = self.connectorClass(self, id, cell0, cell1)
-        # add to the connector list
-        self.m_conx_dict[id] = connector
+    def get_cid(self, cell0, cell1):
+        if cell0.m_id < cell1.m_id:
+            cid = str(cell0.m_id) + "-" + str(cell1.m_id)
+        else:
+            cid = str(cell1.m_id) + "-" + str(cell0.m_id)
+        return cid
 
-    def del_connector(self,conxid):
-        if conxid in self.m_conx_dict:
+    def get_connector(self, cid):
+        if cid in self.m_conx_dict:
+            return self.m_conx_dict[cid]
+        return None
+
+    def create_connector(self, cell0, cell1):
+        """Create connector and assign id."""
+        cid = get_cid(cell0, cell1)
+        # if a connector doesn't already exist between cells
+        if cid in self.m_conx_dict:
+            connector = self.m_conx_dict[cid]
+        else:
+            # create connector and add to the connector list
+            # Note1: Connector class takes care of storing the cells as well as
+            #   telling each of the two cells that they now have a connector
+            # Note2: we pass self since we want a back reference to field instance
+            connector = self.connectorClass(self, cid, cell0, cell1)
+            self.m_conx_dict[cid] = connector
+        return connector
+
+    def del_connector(self, cid):
+        if cid in self.m_conx_dict:
             # make sure the cells that this connector is attached to, delete
             # refs to it
-            self.m_conx_dict[id].conx_disconnect_thyself()
-            # delete from the connector list
-            del self.m_conx_dict[conxid]
+            self.m_conx_dict[cid].conx_disconnect_thyself()
+            # remove from the connector list
+            del self.m_conx_dict[cid]
 
-    # Distances - TODO: temporary -- this info will come from the conduction subsys
+    def check_for_conx_attr(self, cell0, cell1, type):
+        connector = self.get_connector(self.get_cid(cell0, cell1))
+        if not connector:
+            return False
+        if type not in connector.m_attr_dict:
+            return False
+        return True
 
-    def dist_sqd(self,cell0,cell1):
-        return ((cell0.m_x-cell1.m_x)**2 + 
-                (cell0.m_y-cell1.m_y)**2)
+    def update_conx_attr(self, cell0, cell1, type, value):
+        """Update an attribute to a connector, creating it if it doesn't exist."""
+        connector = self.create_connector(cell0, cell1)
+        if dbug.LEV & dbug.FIELD: 
+            print "Field:update_conx_attr:",connector.m_id
+        connector.update_attr(type, value)
 
-    def calc_distances(self):
-        self.distance = {}
-        for id0,c0 in self.m_cell_dict.iteritems():
-            for id1,c1 in self.m_cell_dict.iteritems():
-                conxid = str(id0)+'.'+str(id1)
-                conxid_ = str(id1)+'.'+str(id0)
-                if c0 != c1 and not (conxid in self.distance):
-                #if c0 != c1 and not (conxid in self.m_cell_dict) and \
-                        #not (conxid_ in self.m_cell_dict):
-                    dist = self.dist_sqd(c0,c1)
-                    #print "Calculating distance",conxid,"dist:",dist
-                    self.distance[conxid] = dist
-                    self.distance[conxid_] = dist
-                    #self.distance[str(c1.m_id)+'.'+str(c0.m_id)] = dist
-                    if dist < GROUP_DIST:
-                        self.create_connector(conxid,c0,c1)
-
-
+    def del_conx_attr(self, cid, type):
+        """Delete an attribute to a connector, removing the connector if the
+        list is empty."""
+        connector = self.m_conx_list[cid]
+        if type in connector.m_attr_dict:
+            connector.del_attr(type)
+        if not len(connector.m_attr_dict):
+            self.del_connector(cid)
+        

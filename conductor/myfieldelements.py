@@ -60,6 +60,18 @@ class MyField(Field):
         self.m_ymax_field = YMAX_FIELD
         super(MyField, self).__init__()
 
+    def record_history(self, type, uid0, uid1, value, time):
+        """Record symetrical cell history."""
+        self.m_cell_dict[uid0].record_history(type, uid1, value, time)
+        self.m_cell_dict[uid1].record_history(type, uid0, value, time)
+
+    def get_history(self, uid0, uid1):
+        """What history do these cells have?"""
+        return self.m_cell_dict[uid0].get_history(uid0, uid1)
+
+    def have_history(self, uid0, uid1):
+        """Do these cells have history?"""
+        return self.m_cell_dict[uid0].have_history(uid0, uid1)
 
     # Scaling
 

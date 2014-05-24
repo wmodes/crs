@@ -17,6 +17,7 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
+from time import time
 
 # installed modules
 
@@ -43,6 +44,7 @@ class Attr(object):
     Stores the following values:
         m_type: The time of attr (str)
         m_id: UID, CID, GID, and EID of the parent object
+        m_origvalue: A value associated with the attr
         m_value: A value associated with the attr
         m_timestamp: UTC unix time the event was created
     
@@ -51,6 +53,7 @@ class Attr(object):
     def __init__(self, type, id, value=None):
         self.m_type = type
         self.m_id = id
+        self.m_origvalue = value
         self.m_value = value
         self.m_timestamp = time()
 
@@ -106,6 +109,7 @@ class Group(object):
         m_diam: current diameter (float in m)
         m_cell_dict: dictionary of cells in this group (indexed by uid)
         m_attr_dict: dict of attrs applied to this cell (indexed by type)
+        m_visible: is this group displayed currently? (boolean)
 
     """
 
@@ -120,8 +124,10 @@ class Group(object):
         self.m_diam = diam
         self.m_cell_dict = {}
         self.m_attr_dict = {}
+        self.m_visible = True
 
-    def update(self, gsize=None, duration=None, x=None, y=None, diam=None):
+    def update(self, gsize=None, duration=None, x=None, y=None, diam=None,
+                visible=None):
         if gsize is not None:
             self.m_gsize = gsize
         if duration is not None:
@@ -132,6 +138,8 @@ class Group(object):
             self.m_y = y
         if diam is not None:
             self.m_diam = diam
+        if visible is not None:
+            self.m_visible = visible
 
     def add_attr(self, type, value):
         self.m_attr_dict[type] = Attr(type, self.m_id, value)
@@ -308,6 +316,7 @@ class Cell(object):
         m_leglist: list of Leg objects
         m_body: Body object
         m_gid: GID of group this cell belongs to
+        m_timestamp: time that cell was created
 
     update: set center, readius, and attrs
     geoupdate: set geo data for cell
@@ -350,6 +359,7 @@ class Cell(object):
         self.m_fromcenter = 0
         self.m_fromnearest = 0
         self.m_fromexit = 0
+        self.m_timestamp = time()
 
     def update(self, x=None, y=None, vx=None, vy=None, major=None, 
                     minor=None, gid=None, gsize=None):
@@ -409,12 +419,6 @@ class Cell(object):
         if connector.m_id in self.m_conx_dict:
             del self.m_conx_dict[connector.m_id]
 
-    #def render(self):
-    # moved to subclass
-
-    #def draw(self):
-    # moved to subclass
-
     def cell_disconnect(self):
         """Disconnects all the connectors and refs it can reach.
         
@@ -467,7 +471,6 @@ class Connector(object):
     """
 
     def __init__(self, field, id, cell0, cell1):
-        """Store basic info and create a DataElement object"""
         # process passed params
         self.m_field=field
         self.m_id = id
@@ -482,8 +485,12 @@ class Connector(object):
         cell0.add_connector(self)
         cell1.add_connector(self)
 
-    def add_attr(self, type, value):
-        self.m_attr_dict[type] = Attr(type, self.m_id, value)
+    def update_attr(self, type, value):
+        """Update attr, create it if needed."""
+        if type in self.m_attr_dict:
+            self.m_attr_dict[type].update(value)
+        else:
+            self.m_attr_dict[type] = Attr(type, self.m_id, value)
 
     def del_attr(self, type):
         if type in self.m_attr_dict:

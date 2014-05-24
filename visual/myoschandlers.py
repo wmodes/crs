@@ -64,7 +64,7 @@ OSCLASERPORT = config.osc_laser_port \
 
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
-FREQ_REG_REPORT = config.freq_regular_reports
+REPORT_FREQ = config.report_frequency
 
 # init debugging
 dbug = debug.Debug()

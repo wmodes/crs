@@ -34,7 +34,7 @@ from shared import debug
 
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
-FREQ_REG_REPORT = config.freq_regular_reports
+REPORT_FREQ = config.report_frequency
 
 # init debugging
 dbug = debug.Debug()
@@ -148,7 +148,9 @@ class OSCHandler(object):
         # don't do this at home (or it'll quit blender)
         self.m_run = False
 
-    # OUTGOING
+    #
+    # OUTGOING messages
+    #
 
     def send_to(self, clientkey, path, args):
         """Send OSC Message to one client."""
@@ -176,7 +178,9 @@ class OSCHandler(object):
         """Broadcast a hello message to the network."""
         pass
 
-    # INCOMING handlers
+    #
+    # INCOMING event handlers
+    #
 
     def default_handler(self, path, tags, args, source):
         if dbug.LEV & dbug.MORE: print "OSC:default_handler:No handler registered for ", path
@@ -365,7 +369,7 @@ class OSCHandler(object):
         vis = args[17]
         if id not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: print "OSC:event_body:no uid",id,"in registered cell list"
-        if samp%FREQ_REG_REPORT == 0:
+        if samp%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
                 print "    OSC:event_body:id:",id,"pos:", (x, y), "data:", \
                         ex, ey, spd, espd, facing, efacing, diam, sigmadiam, \
@@ -406,7 +410,7 @@ class OSCHandler(object):
         vis = args[12]
         if id not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: print "OSC:event_leg:no uid",id,"in registered cell list"
-        if samp%FREQ_REG_REPORT == 0:
+        if samp%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
                 print "    OSC:event_leg:id:", id, "leg:", leg, "pos:", (x,y), \
                 "data:", ex, ey, spd, espd, heading, eheading, vis
@@ -447,7 +451,7 @@ class OSCHandler(object):
         gsize = args[10]
         channel = args[11]
         #print "OSC:event_update:",path,args,source
-        if samp%FREQ_REG_REPORT == 0:
+        if samp%REPORT_FREQ['debug'] == 0:
             #print "OSC:event_update:",path,args,source
             if dbug.LEV & dbug.MSGS: 
                 print " OSC:event_update:id:",id,"pos:", (x, y), "data:", \
@@ -479,7 +483,7 @@ class OSCHandler(object):
         diam = args[6]
         if gid not in self.m_field.m_group_dict:
             if dbug.LEV & dbug.MSGS: print "OSC:event_group:no gid",gid,"in group list"
-        if samp%FREQ_REG_REPORT == 0:
+        if samp%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
                 print "    OSC:event_group:gid:",gid, "pos:", (x, y), "data:", \
                         gsize, duration, diam
@@ -508,7 +512,7 @@ class OSCHandler(object):
         if uid not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: 
                 print "OSC:event_geo:no uid",uid,"in registered cell list"
-        if samp%FREQ_REG_REPORT == 0:
+        if samp%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
                 print "    OSC:event_geo:uid:",uid, "data:", \
                         fromcenter, fromnearest, fromexit
@@ -522,7 +526,8 @@ class OSCHandler(object):
         """
         #print "OSC:event_frame:",path,args,source
         samp = args[0]
-        if samp%FREQ_REG_REPORT == 0:
+        self.m_field.update(frame=samp)
+        if samp%REPORT_FREQ['debug'] == 0:
             #print "OSC:event_update:",path,args,source
             if dbug.LEV & dbug.MSGS: print "    OSC:event_frame::",samp
         return None

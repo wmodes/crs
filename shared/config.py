@@ -12,6 +12,52 @@ diam_padding = .25      # 1/4 meter
 group_distance = 100
 ungroup_distance = 150
 
+# conductor configuration
+#
+conductor_decay = {
+    # as max age in secs
+    # 0 = no decay
+    'coord': 10,
+    'fof': 10,
+    'friends': 10,
+    'grouped ': 20,
+    'irlbuds': 0,
+    'leastconx': 20,
+    'mirror': 10,
+    'nearby': 5,
+    'strangers': 10,
+    'tag': 10,
+    'chosen': 20,
+    'facing': 20,
+    'contact': 10,
+    'fusion': 0,
+    'transfer': 0,
+}
+
+conductor_distances = {
+    # all in meters
+    'contact': .125,
+    'fusion_max': 1.5,
+    'fusion_min': 1,
+    'nearby_min': 3,
+    'nearby_max': 1.5,
+}
+
+conductor_times = {
+    # all in seconds
+    'a_while': 15,
+    'some_time': 30,
+    'decent_time': 60,
+    'pretty_long_time': 120,
+    'long_time': 180,
+    'really_long_time': 240,
+}
+
+conductor_latitude = {
+    # all as percentage variance
+    'heading': 10,
+}
+
 # graphics configuration
 #
 graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
@@ -71,7 +117,16 @@ path_unit = 30   # 20cm = about 8in
 osc_framerate = 25
 
 logfile="crs-visual.log"
-freq_regular_reports = 100
+
+report_frequency = {
+    # report every n frames
+    'debug': 100,
+    'rollcall': 25,
+    'attrs': 5,
+    'conxs': 5,
+    'gattrs': 5,
+    'events': 1,
+}
 
 # Debugging codes get and'ed together
 # MORE  = 1
@@ -80,9 +135,10 @@ freq_regular_reports = 100
 # GRAPH = 8
 # MSGS  = 16
 # PYG   = 32
-debug_level = 22    # data (2), field (4), osc(16)
-#debug_level = 6    # data (2), field (4)
-#debug_level = 14    # data (2), field (4), graph (8)
+# COND  = 32
+debug_level = 2 + 4 + 64    # data (2), field (4), osc(16), conduct(64)
+#debug_level = 2 + 4    # data (2), field (4)
+#debug_level = 2 + 4 + 8    # data (2), field (4), graph (8)
 #debug_level = 255    # everything
 
 max_lost_patience = 25 * 5

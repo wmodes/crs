@@ -35,6 +35,7 @@ from shared import config
 from shared import debug
 from myfieldelements import MyField
 from myoschandlers import MyOSCHandler
+from conductorelements import Conductor
 
 # constants
 LOGFILE = config.logfile
@@ -82,6 +83,7 @@ def main():
 
     osc = MyOSCHandler(field)
     field.update(osc=osc)
+    conductor = Conductor(field)
 
     keep_running = True
     while keep_running:
@@ -89,7 +91,12 @@ def main():
         # call user script
         osc.each_frame()
 
-        #TODO call main "do it" loop -- currently on_draw
+        # do conductor calculations and inferences
+        conductor.age_and_expire_connections()
+        conductor.update_all_connections()
+
+        # send regular reports out
+        osc.send_regular_reports()
 
         keep_running = osc.m_run & field.m_still_running
 

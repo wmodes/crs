@@ -21,7 +21,7 @@ __license__ = "GNU GPL 3.0 or later"
 import sys
 import warnings
 import logging
-from time import time
+from time import time,sleep
 
 
 # installed modules
@@ -39,6 +39,7 @@ from conductorelements import Conductor
 
 # constants
 LOGFILE = config.logfile
+FRAMERATE = config.framerate
 
 OSCPATH = config.oscpath
 
@@ -107,8 +108,10 @@ def main():
         keep_running = osc.m_run & field.m_still_running
 
         #TODO: Change this to be triggered by Frame msg
-        while time() - starttime > CYCLETIME:
-            pass
+        timeleft = 1/FRAMERATE - (time() - starttime)
+        if timeleft > 0:
+            #print "Sleep for",timeleft,"seconds"
+            sleep(timeleft)
 
     osc.m_oscserver.close()
 

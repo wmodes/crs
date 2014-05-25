@@ -60,6 +60,7 @@ class Attr(object):
     def update(self, value=None):
         if value is not None:
             self.m_value = value
+        self.m_timestamp = time()
 
 
 class Event(object):

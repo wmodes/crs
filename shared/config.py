@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """Co-related space shared config file """
 
+# system configuration
+framerate = 25.0
 
 # modeling configuration
 #
@@ -36,9 +38,9 @@ conductor_decay = {
 
 conductor_distances = {
     # all in meters
-    'contact': .125,
+    'contact': .33,
     'fusion_max': 1.5,
-    'fusion_min': 1,
+    'fusion_min': .75,
     'nearby_min': 3,
     'nearby_max': 1.5,
 }
@@ -60,8 +62,8 @@ conductor_latitude = {
 
 # graphics configuration
 #
-graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
-#graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
+#graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
+graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
 #draw_bodies = True
 draw_bodies = False
 
@@ -69,8 +71,8 @@ inverse=True
 if inverse:
     default_bkgdcolor = (0, 0, 0, 1)    # black
     default_guidecolor = (1,1,1)  # white
-    default_linecolor = (1,1,1)     # white
-    default_groupcolor = (1,.25,.25)     # differt
+    default_linecolor = (0,1,0)     # white
+    default_groupcolor = (0,0,0)     # differt
     default_bodycolor = (.2,.2,.2)  # dk gray
 else:
     default_bkgdcolor = (1, 1, 1, 1)    # white
@@ -136,7 +138,7 @@ report_frequency = {
 # MSGS  = 16
 # PYG   = 32
 # COND  = 32
-debug_level = 2 + 4 + 16 + 64    # data (2), field (4), osc(16), conduct(64)
+debug_level = 2 + 4 + 64    # data (2), field (4), osc(16), conduct(64)
 #debug_level = 2 + 4    # data (2), field (4)
 #debug_level = 2 + 4 + 8    # data (2), field (4), graph (8)
 #debug_level = 255    # everything
@@ -147,20 +149,31 @@ max_lost_patience = 25 * 5
 
 osc_default_host = "localhost"
 osc_default_port = 7011
-#osc_visual_host = "192.168.0.100"
-osc_visual_host = "localhost"
+
+#osc_visual_host = "localhost"
+osc_visual_host = "192.168.0.100"
 osc_visual_port = 7010
-#osc_tracking_host = "192.168.0.162"
-osc_tracking_host = "localhost"
+
+#osc_tracking_host = "localhost"
+osc_tracking_host = "192.168.0.162"
 osc_tracking_port = 7770
-#osc_sound_host = "192.168.0.101"
-osc_sound_host = "localhost"
+
+#osc_sound_host = "localhost"
+osc_sound_host = "192.168.0.101"
 osc_sound_port = 7010
-osc_conductor_host = "localhost"
-osc_conductor_port = 7010
-#osc_laser_host = "192.168.0.162"
-osc_laser_host = "localhost"
+
+#osc_conductor_host = "localhost"
+osc_conductor_host = "192.168.0.100"
+osc_conductor_port = 7011
+
+#osc_laser_host = "localhost"
+osc_laser_host = "192.168.0.162"
 osc_laser_port = 7780
+
+#osc_recorder_host = "localhost"
+osc_recorder_host = "192.168.0.162"
+osc_recorder_port = 7790
+
 osctimeout = 0
 
 oscpath = {
@@ -231,6 +244,5 @@ oscpath = {
     'conduct_conxbreak': "/conductor/conxbreak",
     'conduct_gattr': "/conductor/gattr",
     'conduct_event': "/conductor/event",
-    'conduct_geo': "/conductor/geo",
 
 }

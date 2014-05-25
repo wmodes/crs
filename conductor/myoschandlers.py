@@ -62,9 +62,18 @@ OSCLASERHOST = config.osc_laser_host \
 OSCLASERPORT = config.osc_laser_port \
     if config.osc_laser_port else config.osc_default_port
 
+OSCRECORDERHOST = config.osc_recorder_host \
+    if config.osc_recorder_host else config.osc_default_host
+OSCRECORDERPORT = config.osc_recorder_port \
+    if config.osc_recorder_port else config.osc_default_port
+
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
 REPORT_FREQ = config.report_frequency
+PERSIST = 'persistent'
+HAPPEN = 'happening'
+NOLINE_TYPES = ['fusion', 'transfer']
+
 
 # init debugging
 dbug = debug.Debug()
@@ -84,6 +93,7 @@ class MyOSCHandler(OSCHandler):
                 ('visual', OSCVISUALHOST, OSCVISUALPORT),
                 #('conductor', OSCCONDUCTHOST, OSCCONDUCTPORT),
                 ('laser', OSCLASERHOST, OSCLASERPORT),
+                ('recorder', OSCRECORDERHOST, OSCRECORDERPORT),
             ]
 
         super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)
@@ -146,12 +156,16 @@ class MyOSCHandler(OSCHandler):
         
         /conductor/conx [cid,"type",uid0,uid1,value,time]
         """
-        for id,conx in self.m_field.m_conx_dict.iteritems():
+        for cid,conx in self.m_field.m_conx_dict.iteritems():
             if conx.m_cell0.m_visible and conx.m_cell1.m_visible:
                 for type, attr in conx.m_attr_dict.iteritems():
                     duration = time() - attr.m_timestamp
+                    if type in NOLINE_TYPES:
+                        subtype = HAPPEN
+                    else:
+                        subtype = PERSIST
                     self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                            [id, type, conx.m_cell0.m_id, conx.m_cell1.m_id,
+                            [subtype, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
                             attr.m_value, duration])
 
     def send_gattrs(self):
@@ -187,8 +201,12 @@ class MyOSCHandler(OSCHandler):
             if type in conx.m_attr_dict:
                 attr = conx.m_attr_dict[type]
                 duration = time() - attr.m_timestamp
+                if type in NOLINE_TYPES:
+                    subtype = HAPPEN
+                else:
+                    subtype = PERSIST
                 self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                        [cid, type, conx.m_cell0.m_id, conx.m_cell1.m_id,
+                        [subtype, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
                         0.0, duration])
 
     def nix_conxs(self, cid):                
@@ -200,7 +218,11 @@ class MyOSCHandler(OSCHandler):
             conx = self.m_field.m_conx_dict[cid]
             for type,attr in conx.m_attr_dict.iteritems():
                 duration = time() - attr.m_timestamp
+                if type in NOLINE_TYPES:
+                    subtype = HAPPEN
+                else:
+                    subtype = PERSIST
                 self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                        [cid, type, conx.m_cell0.m_id, conx.m_cell1.m_id, 0.0, duration])
+                        [subtype, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id, 0.0, duration])
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_conxbreak'],
                     [cid, conx.m_cell0.m_id, conx.m_cell1.m_id])

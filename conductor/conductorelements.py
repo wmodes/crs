@@ -66,7 +66,7 @@ class Conductor(object):
             'leastconx': self.test_leastconx,
             'mirror': self.test_mirror,
             'nearby': self.test_nearby,
-            'strangers': self.test_strangers,
+            #'strangers': self.test_strangers,
             'tag': self.test_tag,
             'chosen': self.test_chosen,
             'facing': self.test_facing,
@@ -143,19 +143,27 @@ class Conductor(object):
                self.m_field.is_cell_good_to_go(cell1.m_id):
                 for type,func in self.connection_funcs.iteritems():
                     result = func(cell0, cell1)
-                    if result:
+                    if not result:
+                        # if result is zero AND decay time is zero, kill it
+                        if COND_DECAY[type] == 0:
+                            # delete atrr and maybe conx
+                            cid = self.m_field.get_cid(cell0,cell1)
+                            self.m_field.m_osc.nix_cattr(cid, type)
+                            self.m_field.del_conx_attr(cid, type)
+                    else:
                         if dbug.LEV & dbug.MORE: 
                             print "Conduct:update_conx:results:%s-%s,%s,%s"%(cell0.m_id,
                             cell1.m_id, type, result)
                         # if a connection/attr does not already exist already
-                        if not self.m_field.check_for_conx_attr(cell0, cell1, type):
-                            if dbug.LEV & dbug.COND: 
-                                print "Conduct:update_conx:adding connector/attr"
+                        #if not self.m_field.check_for_conx_attr(cell0, cell1, type):
+                        if dbug.LEV & dbug.COND: 
+                            print "Conduct:update_conx:update attr:",\
+                                   cell0.m_id,cell1.m_id,type,result
                             # create one
-                            self.m_field.update_conx_attr(cell0, cell1, type, result)
-                        else:
-                            if dbug.LEV & dbug.MORE: 
-                                print "Conduct:update_conx:already there, bro"
+                        self.m_field.update_conx_attr(cell0, cell1, type, result)
+                        #else:
+                            #if dbug.LEV & dbug.MORE: 
+                                #print "Conduct:update_conx:already there, bro"
                             
 
 
@@ -174,7 +182,7 @@ class Conductor(object):
             value: 1.0 if connected, 0 if no,
         """
         # If cell->m_gid the same for each cell
-        if cell0.m_gid == cell1.m_gid:
+        if cell0.m_gid and cell0.m_gid == cell1.m_gid:
             return 1.0
         return 0
 
@@ -198,7 +206,9 @@ class Conductor(object):
         Returns:
             value: 1.0 if connected, 0 if no
         """
-        if self.dist(cell0, cell1) < COND_DIST['contact']:
+        dist = self.dist(cell0, cell1)
+        #print "KILLME:cells:",cell0.m_id,cell1.m_id,dist
+        if dist < COND_DIST['contact']:
             return 1.0
         return 0
 
@@ -348,7 +358,7 @@ class Conductor(object):
             value: 1.0 if connected, 0 if no
         """
         # if they are not in a group together
-        if cell0.m_gid == cell1.m_gid:
+        if cell0.m_gid and cell0.m_gid == cell1.m_gid:
             return 0
         cell_dist = self.dist(cell0, cell1)
         # Is distance between fusion_min and fusion_max?

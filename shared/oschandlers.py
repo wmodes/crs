@@ -89,6 +89,17 @@ class OSCHandler(object):
             # to conductor
             'conduct_dump': self.event_conduct_dump,
 
+            # from conductor
+            'conduct_start': self.event_conduct_start,
+            'conduct_stop': self.event_conduct_stop,
+            'conduct_scene': self.event_conduct_scene,
+            'conduct_rollcall': self.event_conduct_rollcall,
+            'conduct_attr': self.event_conduct_attr,
+            'conduct_conx': self.event_conduct_conx,
+            'conduct_conxbreak': self.event_conduct_conxbreak,
+            'conduct_gattr': self.event_conduct_gattr,
+            'conduct_event': self.event_conduct_event,
+
             # from tracker
             'track_start': self.event_tracking_start,
             'track_stop': self.event_tracking_stop,
@@ -149,14 +160,14 @@ class OSCHandler(object):
         self.m_run = False
 
     #
-    # OUTGOING messages
+    # General OUTGOING
     #
 
     def send_to(self, clientkey, path, args):
         """Send OSC Message to one client."""
         try:
             self.m_osc_clients[clientkey].send(OSCMessage(path,args))
-            if dbug.LEV & dbug.MSGS:
+            if (dbug.LEV & dbug.MSGS) and args:
                 print "OSC:Send to %s: %s %s" % (clientkey,path,args)
         except:
             if dbug.LEV & dbug.MSGS:
@@ -164,10 +175,16 @@ class OSCHandler(object):
             return False
         return True
 
+    def send_laser(self, path, args):
+        """Send OSC Message to one client."""
+        self.send_to('laser', path, args)
+        self.send_to('recorder', path, args)
+
     def send_downstream(self, path, args):
         """Send OSC Message to one client."""
         self.send_to('visual', path, args)
         self.send_to('sound', path, args)
+        self.send_to('recorder', path, args)
 
     def send_to_all_clients(self, path, args):
         """Broadcast to all the clients."""
@@ -179,7 +196,7 @@ class OSCHandler(object):
         pass
 
     #
-    # INCOMING event handlers
+    # General INCOMING
     #
 
     def default_handler(self, path, tags, args, source):
@@ -219,20 +236,134 @@ class OSCHandler(object):
         if dbug.LEV & dbug.MSGS: print "OSC:event_ack:code",args[0]
         return None
 
+    #
+    # Conductor INCOMING
+    #
+
+    # from conductor
+    def event_conduct_start(self, path, tags, args, source):
+        """Conductor event: starting."""
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_start"
+
+    def event_conduct_stop(self, path, tags, args, source):
+        """Conductor event: stopping."""
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_stop"
+
+    def event_conduct_scene(self, path, tags, args, source):
+        """Conductor event: scene info.
+
+        /conductor/scene ["scene","variant",value]
+            scene: one of the following:
+                "calibrate" - begin calibration process
+                “empty” - begin empty field demo (usually after a time with npeople=0)
+                “cellconx” - standard mode of highlighting cells and connections
+                “tag” - limited highlights stolen by contact, including multiple steals
+            variant: currently unused, but may specify variants of above
+            value: (float) currently unused, but may specify values needed by above scenes
+        """
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_scene"
+
+    def event_conduct_rollcall(self, path, tags, args, source):
+        """Conductor event: sending rollcall.
+
+        /conductor/rollcall [uid,action,numconx]
+            uid: UID of target
+            action: either of two values
+                "visible" - the person is "visible" to the system
+                "hidden" - the person is not visible to the system
+            numconx: The number of (visible?) connections attached to this person
+        """
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_rollcall"
+
+    def event_conduct_attr(self, path, tags, args, source):
+        """Conductor event: cell attributes.
+
+        /conductor/attr ["type",uid,value,time]
+            type: one of the following:
+                "dance" - Person dancing to the music
+                "interactive" - Super interactive, lots of interaction over time
+                etc
+            uid: the UID of the target
+            value: a unit value (0.0-1.0) representing the intensity of the attribute
+            time: the length of time in seconds that the attribute has applied so far
+        """
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_attr"
+
+    def event_conduct_conx(self, path, tags, args, source):
+        """Conductor event: connector info.
+
+        /conductor/conx ["type",”subtype”,cid, uid0,uid1,value,time]
+            cid: connector id of the target
+            type:
+                persistent - joining people
+                    with subtypes:
+                        coord - Coordinated movement
+                        fof - Friend of a friend
+                        etc
+                happening - evolving attribute
+                    with subtypes
+                        fusion - Person within fusion range
+                        transfer - Highlight transfer from uid0 to uid1
+            uid0: the UID of the first target
+            uid1: the UID of the second target
+            value: a unit value (0.0-1.0) representing the intensity of the attribute
+            time: the length of time in seconds that the attribute has applied so far
+        """
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_conx"
+
+    def event_conduct_conxbreak(self, path, tags, args, source):
+        """Conductor event: break connection.
+
+        /conductor/conxbreak [cid,uid0,uid1]
+            cid: connector id of the target
+                uid0: the UID of the first target
+                uid1: the UID of the second target
+        """
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_conxbreak"
+
+    def event_conduct_gattr(self, path, tags, args, source):
+        """Conductor event: group attribute.
+
+        /conductor/gattr ["type",gid,value,time]
+            type: one of the following:
+                "biggroup" - group size reaches threshold values 
+                "static" - Stationary movement
+                etc
+            gid: the GID of the group (as provided by tracker)
+            value: a unit value (0.0-1.0) representing the intensity of the attribute
+            time: the length of time in seconds that the attribute has applied so far
+        """
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_gattr"
+
+    def event_conduct_event(self, path, tags, args, source):
+        """Conductor event: discrete events.
+
+        /conductor/event ["type",eid, uid0,uid1,value]
+            eid: unique event ID
+            type: one of the following:
+                tag - A person just tagged someone
+                contact - Extreme closeness (***)
+            uid0: the UID of the first target
+            uid1: the UID of the second target
+            value: a unit value (0.0-1.0) representing the intensity of the effect
+        """
+        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_event"
+
+
+    #
+    # Tracking INCOMING
+    #
+
     def event_tracking_start(self, path, tags, args, source):
         """Tracking system is starting.
 
         Sent before first /pf/update message for that target
         args:
-            [ aparently no params now]
-            samp - sample number
-            t - time of sample (elapsed time in seconds since beginning of run)
-            target - UID of target
-            channel - channel number assigned
+            no args
 
         """
         #samp = args[0]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_start"
+        if dbug.LEV & dbug.MSGS: print "OSC:event_track_start"
 
     def event_tracking_set(self, path, tags, args, source):
         """Tracking subsystem is setting params.
@@ -243,28 +374,28 @@ class OSCHandler(object):
             npeople - number of people currently present
 
         """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_set:",path,args,source
+        if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:",path,args,source
         if path == OSCPATH['track_minx']:
             self.m_xmin = args[0]
-            if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
+            if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:set_scaling(",\
                     (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmin_field=(self.m_xmin,self.m_field.m_ymin_field))
         elif path == OSCPATH['track_miny']:
             self.m_ymin = args[0]
-            if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
+            if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:set_scaling(",\
                     (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmin_field=(self.m_field.m_xmin_field,self.m_ymin))
         elif path == OSCPATH['track_maxx']:
             self.m_xmax = args[0]
-            if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
+            if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:set_scaling(",\
                     (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmax_field=(self.m_xmax,self.m_field.m_ymax_field))
         elif path == OSCPATH['track_maxy']:
             self.m_ymax = args[0]
-            if dbug.LEV & dbug.MSGS: print "OSC:event_set:set_scaling(",\
+            if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:set_scaling(",\
                     (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
             # we might not have everything yet, but we udate with what we have
             self.m_field.set_scaling(pmax_field=(self.m_field.m_xmax_field,self.m_ymax))
@@ -298,12 +429,12 @@ class OSCHandler(object):
             channel - channel number assigned
 
         """
-        #print "OSC:event_entry:",path,args,source
+        #print "OSC:event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
         samp = args[0]
         time = args[1]
         id = args[2]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_entry:cell:",id
+        if dbug.LEV & dbug.MSGS: print "OSC:event_track_entry:cell:",id
         self.m_field.create_cell(id)
 
     def event_tracking_exit(self, path, tags, args, source):
@@ -315,11 +446,11 @@ class OSCHandler(object):
              target - UID of target
 
         """
-        #print "OSC:event_exit:",path,args,source
+        #print "OSC:event_track_exit:",path,args,source
         samp = args[0]
         time = args[1]
         id = args[2]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_exit:cell:",id
+        if dbug.LEV & dbug.MSGS: print "OSC:event_track_exit:cell:",id
         #print "BEFORE: cells:",self.m_field.m_cell_dict
         #print "BEFORE: conx:",self.m_field.m_conx_dict
         self.m_field.del_cell(id)
@@ -368,10 +499,10 @@ class OSCHandler(object):
         leftness = args[16]
         vis = args[17]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_body:no uid",id,"in registered cell list"
+            if dbug.LEV & dbug.MSGS: print "OSC:event_track_body:no uid",id,"in registered cell list"
         if samp%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
-                print "    OSC:event_body:id:",id,"pos:", (x, y), "data:", \
+                print "    OSC:event_track_body:id:",id,"pos:", (x, y), "data:", \
                         ex, ey, spd, espd, facing, efacing, diam, sigmadiam, \
                         sep, sigmasep, leftness, vis
         self.m_field.update_body(id, x, y, ex, ey, spd, espd, facing, efacing, 
@@ -409,10 +540,10 @@ class OSCHandler(object):
         eheading = args[11]
         vis = args[12]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_leg:no uid",id,"in registered cell list"
+            if dbug.LEV & dbug.MSGS: print "OSC:event_track_leg:no uid",id,"in registered cell list"
         if samp%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
-                print "    OSC:event_leg:id:", id, "leg:", leg, "pos:", (x,y), \
+                print "    OSC:event_track_leg:id:", id, "leg:", leg, "pos:", (x,y), \
                 "data:", ex, ey, spd, espd, heading, eheading, vis
         self.m_field.update_leg(id, leg, nlegs, x, y, ex, ey, spd, espd, 
                                    heading, eheading, vis)
@@ -440,7 +571,7 @@ class OSCHandler(object):
         time = args[1]
         id = args[2]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_update:no uid",id,"in registered cell list"
+            if dbug.LEV & dbug.MSGS: print "OSC:event_track_update:no uid",id,"in registered cell list"
         x = args[3]       # comes in meters
         y = args[4]
         vx = args[5]
@@ -450,11 +581,11 @@ class OSCHandler(object):
         gid = args[9]
         gsize = args[10]
         channel = args[11]
-        #print "OSC:event_update:",path,args,source
+        #print "OSC:event_track_update:",path,args,source
         if samp%REPORT_FREQ['debug'] == 0:
-            #print "OSC:event_update:",path,args,source
+            #print "OSC:event_track_update:",path,args,source
             if dbug.LEV & dbug.MSGS: 
-                print " OSC:event_update:id:",id,"pos:", (x, y), "data:", \
+                print " OSC:event_track_update:id:",id,"pos:", (x, y), "data:", \
                         vx, vy, major, minor, gid, gsize
         self.m_field.update_cell(id, x, y, vx, vy, major, minor, gid, gsize)
 
@@ -482,10 +613,10 @@ class OSCHandler(object):
         y = args[5]
         diam = args[6]
         if gid not in self.m_field.m_group_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_group:no gid",gid,"in group list"
+            if dbug.LEV & dbug.MSGS: print "OSC:event_track_group:no gid",gid,"in group list"
         if samp%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
-                print "    OSC:event_group:gid:",gid, "pos:", (x, y), "data:", \
+                print "    OSC:event_track_group:gid:",gid, "pos:", (x, y), "data:", \
                         gsize, duration, diam
         self.m_field.update_group(gid, gsize, duration, x, y, diam)
 
@@ -511,10 +642,10 @@ class OSCHandler(object):
         fromexit = args[4]
         if uid not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: 
-                print "OSC:event_geo:no uid",uid,"in registered cell list"
+                print "OSC:event_track_geo:no uid",uid,"in registered cell list"
         if samp%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
-                print "    OSC:event_geo:uid:",uid, "data:", \
+                print "    OSC:event_track_geo:uid:",uid, "data:", \
                         fromcenter, fromnearest, fromexit
         self.m_field.update_geo(uid, fromcenter, fromnearest, fromexit)
 
@@ -524,17 +655,17 @@ class OSCHandler(object):
         args:
             samp - sample number
         """
-        #print "OSC:event_frame:",path,args,source
+        #print "OSC:event_track_frame:",path,args,source
         samp = args[0]
         self.m_field.update(frame=samp)
         if samp%REPORT_FREQ['debug'] == 0:
-            #print "OSC:event_update:",path,args,source
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_frame::",samp
+            #print "OSC:event_track_update:",path,args,source
+            if dbug.LEV & dbug.MSGS: print "    OSC:event_track_frame::",samp
         return None
 
     def event_tracking_stop(self, path, tags, args, source):
         """Tracking has stopped."""
-        if dbug.LEV & dbug.MSGS: print "OSC:event_stop:",path,args,source
+        if dbug.LEV & dbug.MSGS: print "OSC:event_track_stop:",path,args,source
         return None
 
 if __name__ == "__main__":

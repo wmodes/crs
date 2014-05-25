@@ -81,8 +81,6 @@ class Window(pyglet.window.Window):
         #self.path_score_cells()
         #self.path_find_connectors()
         self.clear()
-        self.m_field.render_all()
-        self.m_field.draw_all()
         #print "draw loop in",(time.clock() - start)*1000,"ms"
 
     def on_key_press(self, symbol, modifiers):

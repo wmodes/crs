@@ -167,7 +167,7 @@ class Field(object):
     def update_group(self, gid, gsize=None, duration=None, x=None, y=None,
                      diam=None):
         """Create group if it doesn't exist, update its info."""
-        if dbug.LEV & dbug.FIELD: 
+        if dbug.LEV & dbug.MORE: 
             print "Field:update_group:Group",gid
         if gid:
             self.check_for_missing_group(gid)
@@ -479,19 +479,20 @@ class Field(object):
         """Update an attribute to a connector, creating it if it doesn't exist."""
         connector = self.create_connector(cell0, cell1)
         if dbug.LEV & dbug.FIELD: 
-            print "Field:update_conx_attr:",connector.m_id
+            print "Field:update_conx_attr:",connector.m_id,type,value
         connector.update_attr(type, value)
 
     def del_conx_attr(self, cid, type):
         """Delete an attribute to a connector, removing the connector if the
         list is empty."""
-        connector = self.m_conx_dict[cid]
-        if type in connector.m_attr_dict:
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:del_conx_attr:del_attr:",cid,type
-            connector.del_attr(type)
-        if not len(connector.m_attr_dict):
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:del_conx_attr:del_conx:",cid
-            self.del_connector(cid)
-        
+        if cid in self.m_conx_dict:
+            connector = self.m_conx_dict[cid]
+            if type in connector.m_attr_dict:
+                if dbug.LEV & dbug.FIELD: 
+                    print "Field:del_conx_attr:del_attr:",cid,type
+                connector.del_attr(type)
+            if not len(connector.m_attr_dict):
+                if dbug.LEV & dbug.FIELD: 
+                    print "Field:del_conx_attr:del_conx:",cid
+                self.del_connector(cid)
+            

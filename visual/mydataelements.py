@@ -116,7 +116,7 @@ class MyConnector(Connector):
             self.m_color = color
         # store other params
         self.m_shape = Line()
-        self.m_path = []
+        self.m_path = None
         self.m_score = 0
         super(MyConnector,self).__init__(field,id,cell0,cell1)
 
@@ -132,16 +132,14 @@ class MyConnector(Connector):
                                 (self.m_cell0.m_x, self.m_cell0.m_y), 
                                 (self.m_cell1.m_x, self.m_cell1.m_y), 
                                 self.m_cell0.m_diam/2, self.m_cell1.m_diam/2,
-                                self.m_color,self.m_path)
+                                self.m_color)
+                                #self.m_color,self.m_path)
             self.m_shape.render()
 
     def draw(self):
         if self.m_cell0.m_x is not None and self.m_cell0.m_y is not None and \
            self.m_cell1.m_x is not None and self.m_cell1.m_y is not None:
             self.m_shape.draw()
-
-    #def conx_disconnect_thyself(self):
-    # moved to superclass
 
 
 class MyGroup(Group):

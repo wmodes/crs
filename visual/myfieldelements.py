@@ -289,7 +289,7 @@ class MyField(Field):
         If not, we increment its suspect count
         If yes, render it.
         """
-        if self.is_conx_good_to_go(connector,m_id):
+        if self.is_conx_good_to_go(connector.m_id):
             connector.render()
 
     def render_all_connectors(self):

@@ -20,9 +20,9 @@ __license__ = "GNU GPL 3.0 or later"
 # core modules
 import sys
 import warnings
-
 import logging
-
+from time import time,sleep
+from itertools import combinations
 
 # installed modules
 import pyglet
@@ -37,6 +37,7 @@ from myoschandlers import MyOSCHandler
 
 # constants
 LOGFILE = config.logfile
+FRAMERATE = config.framerate
 
 GRAPHMODES = config.graphic_modes
 GRAPHOPTS = {'screen': 1, 'osc': 2, 'etherdream':3}
@@ -90,26 +91,39 @@ def main():
     keep_running = True
     while keep_running:
 
+        starttime = time()
+
         # call user script
         osc.each_frame()
 
         pyglet.clock.tick()
 
         for window in pyglet.app.windows:
-            window.switch_to()
-            window.dispatch_events()
-            if field.m_still_running:
-                #TODO: Should the draw routine be somewhere else
-                window.dispatch_event('on_draw')
-                window.flip()
+            pass
+        window.switch_to()
+        window.dispatch_events()
+        field.render_all()
+        field.draw_all()
+        window.dispatch_event('on_draw')
+        #window.clear()
+        window.flip()
 
         #TODO: Move this somewhere sensible
         if GRAPHMODES & GRAPHOPTS['osc']:
             if dbug.LEV & dbug.GRAPH: 
                 print "Main:OSC to laser:", OSCPATH['graph_update']
-            field.m_osc.send_to('laser', OSCPATH['graph_update'],[])
+            field.m_osc.send_laser(OSCPATH['graph_update'],[])
 
         keep_running = osc.m_run & field.m_still_running
+
+        #for (cell0,cell1) in list(combinations(field.m_cell_dict.values(), 2)):
+            #field.update_conx_attr(cell0, cell1, 'friends', 1.0)
+
+        #TODO: Change this to be triggered by Frame msg
+        timeleft = 1/FRAMERATE - (time() - starttime)
+        if timeleft > 0:
+            #print "KILLME:Sleep for",timeleft,"seconds"
+            sleep(timeleft)
 
     osc.m_oscserver.close()
 

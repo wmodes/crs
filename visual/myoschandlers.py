@@ -62,6 +62,11 @@ OSCLASERHOST = config.osc_laser_host \
 OSCLASERPORT = config.osc_laser_port \
     if config.osc_laser_port else config.osc_default_port
 
+OSCRECORDERHOST = config.osc_recorder_host \
+    if config.osc_recorder_host else config.osc_default_host
+OSCRECORDERPORT = config.osc_recorder_port \
+    if config.osc_recorder_port else config.osc_default_port
+
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
 REPORT_FREQ = config.report_frequency
@@ -84,6 +89,7 @@ class MyOSCHandler(OSCHandler):
                 #('visual', OSCVISUALHOST, OSCVISUALPORT),
                 ('conductor', OSCCONDUCTHOST, OSCCONDUCTPORT),
                 ('laser', OSCLASERHOST, OSCLASERPORT),
+                ('recorder', OSCRECORDERHOST, OSCRECORDERPORT),
             ]
 
         super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)

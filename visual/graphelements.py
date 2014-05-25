@@ -146,8 +146,7 @@ class Circle(object):
                 if dbug.LEV & dbug.GRAPH: 
                     print "Circle:OSC to laser:", OSCPATH['graph_color'], \
                        [self.m_color[0],self.m_color[1],self.m_color[2]]
-                self.m_field.m_osc.send_to('laser',
-                            OSCPATH['graph_color'], 
+                self.m_field.m_osc.send_laser(OSCPATH['graph_color'], 
                             [self.m_color[0],self.m_color[1],self.m_color[2]])
                 for i in range(len(self.m_arcindex)):
                     # e.g., self.m_arcindex[i] = (0,1,2)
@@ -159,8 +158,7 @@ class Circle(object):
                         print "Circle:OSC to laser:", OSCPATH['graph_cubic'], \
                                 [p0[0], p0[1], p1[0], p1[1],
                                  p2[0], p2[1], p3[0], p3[1]]
-                    self.m_field.m_osc.send_to('laser',
-                                    OSCPATH['graph_cubic'], 
+                    self.m_field.m_osc.send_laser(OSCPATH['graph_cubic'], 
                                     [p0[0], p0[1], p1[0], p1[1], 
                                      p2[0], p2[1], p3[0], p3[1]])
 
@@ -199,11 +197,12 @@ class Line(object):
         self.m_index = []
 
     def update(self, field, p0, p1, r0, r1, color, path=None):
+        #import pdb;pdb.set_trace()
         self.m_field = field
         self.m_color = color
         # if we were given a path, we will use it
         if path is None:
-            path = []
+            path = [p0, p1]
         n = len(path) - 1
         #index = [0] + [int(x * 0.5) for x in range(2, n*2)] + [n]
         lastpt = []
@@ -247,6 +246,14 @@ class Line(object):
             #print "npath:", npath
         self.m_arcpoints = npath
         self.m_arcindex = [(x-3,x-2,x-1,x) for x in range(3,len(npath),3)]
+        #import pdb;pdb.set_trace()
+        #self.m_arcpoints = [ 
+            #(p0[0],p0[1]),
+            #(p0[0],abs(p0[1]-p1[1])/2),
+            #(p1[0],abs(p0[1]-p1[1])/2),
+            #(p1[0],p1[1]),
+        #]
+        #self.m_arcindex = [(0, 1, 2, 3), (3, 4, 5, 6), (6, 7, 8, 9), (9, 10, 11, 0)]
 
     def midpoint(self, p1, p2):
         return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
@@ -323,8 +330,7 @@ class Line(object):
                 if dbug.LEV & dbug.GRAPH: 
                     print "Line:OSC to laser:", OSCPATH['graph_color'], \
                        [self.m_color[0],self.m_color[1],self.m_color[2]]
-                self.m_field.m_osc.send_to('laser',
-                                OSCPATH['graph_color'], 
+                self.m_field.m_osc.send_laser(OSCPATH['graph_color'], 
                                 [self.m_color[0],self.m_color[1],self.m_color[2]])
                 for i in range(len(self.m_arcindex)):
                     # e.g., self.m_arcindex[i] = (0,1,2)
@@ -336,7 +342,6 @@ class Line(object):
                         print "Line:OSC to laser:", OSCPATH['graph_cubic'], \
                                 [p0[0], p0[1], p1[0], p1[1],
                                  p2[0], p2[1], p3[0], p3[1]]
-                    self.m_field.m_osc.send_to('laser',
-                                    OSCPATH['graph_cubic'], 
+                    self.m_field.m_osc.send_laser(OSCPATH['graph_cubic'], 
                                     [p0[0], p0[1], p1[0], p1[1], 
                                      p2[0], p2[1], p3[0], p3[1]])

@@ -28,6 +28,7 @@ from itertools import combinations
 import pyglet
 
 # local modules
+sys.path.append('..')     # Add path to find shared
 from shared import config
 
 # local classes

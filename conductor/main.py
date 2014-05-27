@@ -26,6 +26,7 @@ from time import time,sleep
 
 # installed modules
 # noinspection PyUnresolvedReferences
+sys.path.append('..')     # Add path to find shared and OSC
 from OSC import OSCMessage
 
 # local modules

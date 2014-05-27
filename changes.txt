@@ -125,6 +125,8 @@ was resized
 * Added severl line style choices in graphelements/Line
 * Added a render func in circle and line that does all the calc that was 
     formerly done in update
+* Added a smarter line drawing routine even for test curves (which look cool)
+
 
 
 

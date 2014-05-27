@@ -92,27 +92,25 @@ def main():
     conductor = Conductor(field)
 
     keep_running = True
+    lastframe = None
     while keep_running:
-
-        starttime = time()
-
         # call user script
         osc.each_frame()
 
-        # do conductor calculations and inferences
-        conductor.age_and_expire_connections()
-        conductor.update_all_connections()
+        if field.m_frame!=lastframe:
+            # do conductor calculations and inferences
+            conductor.age_and_expire_connections()
+            conductor.update_all_connections()
 
-        # send regular reports out
-        osc.send_regular_reports()
+            # send regular reports out
+            osc.send_regular_reports()
+            lastframe = field.m_frame
+        else:
+            # Still on the same frame, sleep for a fraction of the frame time to not hog CPU
+            #field.m_osc.send_laser('/conductor/sleep',[field.m_frame])    # Useful for debugging -- can see in OSC stream when this process was sleeping
+            sleep((1.0/FRAMERATE)/10)
 
         keep_running = osc.m_run & field.m_still_running
-
-        #TODO: Change this to be triggered by Frame msg
-        timeleft = 1/FRAMERATE - (time() - starttime)
-        if timeleft > 0:
-            #print "Sleep for",timeleft,"seconds"
-            sleep(timeleft)
 
     osc.m_oscserver.close()
 

@@ -90,42 +90,41 @@ def main():
     field.update(osc=osc)
 
     keep_running = True
+    lastframe = None
     while keep_running:
-
-        starttime = time()
-
         # call user script
         osc.each_frame()
-
         pyglet.clock.tick()
-
         for window in pyglet.app.windows:
             pass
         window.switch_to()
         window.dispatch_events()
-        #CHANGE: incorporated into draw
-        #field.render_all()
-        field.draw_all()
-        window.dispatch_event('on_draw')
-        #window.clear()
-        window.flip()
 
-        #TODO: Move this somewhere sensible
-        if GRAPHMODES & GRAPHOPTS['osc']:
-            if dbug.LEV & dbug.GRAPH: 
-                print "Main:OSC to laser:", OSCPATH['graph_update']
-            field.m_osc.send_laser(OSCPATH['graph_update'],[])
+        if field.m_frame!=lastframe:
+            #CHANGE: incorporated into draw
+            #field.render_all()
+            field.draw_all()
+            window.dispatch_event('on_draw')
+            #window.clear()
+            window.flip()
+
+            #TODO: Move this somewhere sensible
+            if GRAPHMODES & GRAPHOPTS['osc']:
+                if dbug.LEV & dbug.GRAPH: 
+                    print "Main:OSC to laser:", OSCPATH['graph_update'],", frame=",field.m_frame
+                field.m_osc.send_laser(OSCPATH['graph_update'],[field.m_frame])
+
+            for (cell0,cell1) in list(combinations(field.m_cell_dict.values(), 2)):
+                field.update_conx_attr(cell0, cell1, 'friends', 1.0)
+
+            lastframe=field.m_frame
+        else:
+            # Still on the same frame, sleep for a fraction of the frame time to not hog CPU
+            #field.m_osc.send_laser('/laser/sleep',[field.m_frame])    # Useful for debugging -- can see in OSC stream when this process was sleeping
+            sleep((1.0/FRAMERATE)/10)
 
         keep_running = osc.m_run & field.m_still_running
 
-        for (cell0,cell1) in list(combinations(field.m_cell_dict.values(), 2)):
-            field.update_conx_attr(cell0, cell1, 'friends', 1.0)
-
-        #TODO: Change this to be triggered by Frame msg
-        timeleft = 1/FRAMERATE - (time() - starttime)
-        if timeleft > 0:
-            #print "KILLME:Sleep for",timeleft,"seconds"
-            sleep(timeleft)
 
     osc.m_oscserver.close()
 

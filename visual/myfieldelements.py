@@ -70,8 +70,6 @@ DEF_MARGIN = config.default_margin
 PATH_UNIT = config.path_unit
 BLOCK_FUZZ = config.fuzzy_area_for_cells
 
-MIN_CONX_DIST = config.minimum_connection_distance
-
 # init debugging
 dbug = debug.Debug()
 
@@ -98,7 +96,7 @@ class MyField(Field):
         self.m_xmax_screen = XMAX_SCREEN
         self.m_ymax_screen = YMAX_SCREEN
         self.m_path_unit = PATH_UNIT
-        self.m_path_scale = 1
+        self.m_path_scale = 1.0/self.m_path_unit
         self.m_screen_scale = 1
         self.m_vector_scale = 1
         # our default margins, one will be overwriten below
@@ -106,8 +104,8 @@ class MyField(Field):
         self.m_ymargin = int(self.m_ymax_screen*DEF_MARGIN)
         self.set_scaling()
         self.m_screen = object
-        self.path_grid = object
-        self.pathfinder = object
+        self.m_pathgrid = object
+        self.m_pathfinder = object
         super(MyField, self).__init__()
         self.make_path_grid()
 
@@ -170,7 +168,7 @@ class MyField(Field):
             self.m_ymax_screen = pmax_screen[1]
         if path_unit is not None:
             self.m_path_unit = path_unit
-            self.m_path_scale = float(1)/path_unit
+            self.m_path_scale = 1.0/path_unit
         xmin_field = self.m_xmin_field
         ymin_field = self.m_ymin_field
         xmax_field = self.m_xmax_field
@@ -250,7 +248,7 @@ class MyField(Field):
         """Draw all the cells and connectors."""
         self.m_screen.draw_guides()
         self.draw_all_cells()
-        #self.calc_all_paths()
+        self.calc_all_paths()
         self.draw_all_connectors()
         self.draw_all_groups()
 
@@ -355,27 +353,37 @@ class MyField(Field):
     def calc_all_paths(self):
         self.reset_path_grid()
         self.path_score_cells()
-        self.path_find_connectors()
+        #self.path_find_connectors()
 
     def make_path_grid(self):
         # for our pathfinding, we're going to overlay a grid over the field with
         # squares that are sized by a constant in the config file
-        self.path_grid = GridMap(self.scale2path(self.m_xmax_field),
-                                 self.scale2path(self.m_ymax_field))
-        self.pathfinder = PathFinder(self.path_grid.successors, self.path_grid.move_cost, 
-                                     self.path_grid.estimate)
+        origdim = (self.m_xmax_field, self.m_ymax_field)
+        newdim = self.rescale_pt2path(origdim)
+        self.m_pathgrid = GridMap(
+                                *self.rescale_pt2path(
+                                        (self.m_xmax_field, self.m_ymax_field)))
+        self.m_pathfinder = PathFinder(
+                                self.m_pathgrid.successors, 
+                                self.m_pathgrid.move_cost, 
+                                self.m_pathgrid.estimate)
 
     def reset_path_grid(self):
-        self.path_grid.reset_grid()
+        self.m_pathgrid.reset_grid()
         # we store the results of all the paths, why? Not sure we need to anymore
         #self.allpaths = []
 
     def path_score_cells(self):
         #print "***Before path: ",self.m_cell_dict
         for cell in self.m_cell_dict.values():
-            if cell.m_x is not None and cell.m_y is not None:
-                self.path_grid.set_blocked(self.scale2path((cell.m_x,cell.m_y)),
-                                           self.scale2path(cell.m_diam),BLOCK_FUZZ)
+            if cell.m_id not in self.m_suspect_cells:
+                if cell.m_x is not None and cell.m_y is not None:
+                    origpt = (cell.m_x, cell.m_y)
+                    newpt = self.rescale_pt2path(origpt)
+                    self.m_pathgrid.set_blocked(
+                            self.rescale_pt2path((cell.m_x, cell.m_y)),
+                            self.rescale_num2path(cell.m_diam),
+                            BLOCK_FUZZ)
 
     def path_find_connectors(self):
         """ Find path for all the connectors.
@@ -403,23 +411,23 @@ class MyField(Field):
 
     def find_path(self, connector):
         """ Find path in path_grid and then scale it appropriately."""
-        start = self.scale2path((connector.m_cell0.m_x, connector.m_cell0.m_y))
-        goal = self.scale2path((connector.m_cell1.m_x, connector.m_cell1.m_y))
+        start = self.rescale_pt2path((connector.m_cell0.m_x, connector.m_cell0.m_y))
+        goal = self.rescale_pt2path((connector.m_cell1.m_x, connector.m_cell1.m_y))
         # TODO: Either here or in compute_path we first try several simple/dumb
         # paths, reserving A* for the ones that are blocked and need more
         # smarts. We sort the connectors by distance and do easy paths for the
         # closest ones first.
-        #path = list(self.path_grid.easy_path(start, goal))
+        #path = list(self.m_pathgrid.easy_path(start, goal))
         #print "connector:id",connector.m_id,"path:",path
         #if not path:
-        path = list(self.pathfinder.compute_path(start, goal))
+        path = list(self.m_pathfinder.compute_path(start, goal))
         # take results of found paths and block them on the map
-        self.path_grid.set_block_line(path)
+        self.m_pathgrid.set_block_line(path)
         #self.allpaths = self.allpaths + path
-        return self.path2scale(path)
+        return self.rescale_path2pt(path)
         
     def print_grid(self):
-        self.path_grid.printme()
+        self.m_pathgrid.printme()
     # Scaling conversions
 
     def _convert(self,obj,scale,min1,min2):
@@ -512,6 +520,20 @@ class MyField(Field):
         new_pmin = (self.m_xmin_vector,self.m_ymin_vector)
         return self._rescale_pts(p,scale,orig_pmin,new_pmin)
 
+    def rescale_pt2path(self,p):
+        """Convert coord in internal units (cm) to units usable for the vector or screen. """
+        orig_pmin = (self.m_xmin_field,self.m_ymin_field)
+        scale = self.m_path_scale
+        new_pmin = (0,0)
+        return self._rescale_pts(p,scale,orig_pmin,new_pmin)
+
+    def rescale_path2pt(self,p):
+        """Convert coord in internal units (cm) to units usable for the vector or screen. """
+        orig_pmin = (self.m_xmin_field,self.m_ymin_field)
+        scale = 1/self.m_path_scale
+        new_pmin = (0,0)
+        return self._rescale_pts(p,scale,orig_pmin,new_pmin)
+
     def rescale_num2screen(self,n):
         """Convert num in internal units (cm) to units usable for screen. """
         return n * self.m_screen_scale
@@ -519,4 +541,12 @@ class MyField(Field):
     def rescale_num2vector(self,n):
         """Convert num in internal units (cm) to units usable for vector. """
         return n * self.m_vector_scale
+
+    def rescale_num2path(self,n):
+        """Convert num in internal units (cm) to units usable for vector. """
+        return n * self.m_path_scale
+
+    def rescale_path2num(self,n):
+        """Convert num in internal units (cm) to units usable for vector. """
+        return float(n) / self.m_path_scale
 

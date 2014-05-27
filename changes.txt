@@ -130,3 +130,8 @@ was resized
 5/27/2014
 * Diagnosed a prob where the connectors of deleted cells were being drawn to 
     their former locations
+* Readded pathgrid routines
+* Rejiggered path scaling routines based on new scheme
+* Added exception handling for keyboard interupt
+* To visual sys, added capability to draw pathgrid (press SPACE)
+

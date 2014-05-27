@@ -87,12 +87,12 @@ else:
 curve_segments = 12     # number of line segs in a curve
 fuzzy_area_for_cells = 1
 
-minimum_connection_distance = 12000   # this is cm sq
+#minimum_connection_distance = 12000   # this is cm sq
 
-xmin_field = -1600
-ymin_field = 0
-xmax_field = 1600 # 40ft = 12.19m = 1219cm
-ymax_field = 1600
+xmin_field = -16  # (m)
+ymin_field = 0  # (m)
+xmax_field = 16   # (m)
+ymax_field = 16  # (m)
 
 # etherdream
 #xmin_vector = -32768 #
@@ -115,7 +115,7 @@ default_margin=.03
 
 #path_unit = 20   # 20cm = about 8in
 #path_unit = 40   # 20cm = about 8in
-path_unit = 30   # 20cm = about 8in
+path_unit = .2    # 0.2m = 20 cm
 
 # Internal config
 #

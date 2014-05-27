@@ -63,8 +63,6 @@ MODE_VECTOR = 1
 PATH_UNIT = config.path_unit
 BLOCK_FUZZ = config.fuzzy_area_for_cells
 
-MIN_CONX_DIST = config.minimum_connection_distance
-
 MAX_LOST_PATIENCE = config.max_lost_patience
 
 # init debugging
@@ -129,4 +127,7 @@ def main():
     osc.m_oscserver.close()
 
 if __name__ == '__main__':
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except:
+        pass

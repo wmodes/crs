@@ -64,7 +64,7 @@ class Window(pyglet.window.Window):
         self.m_field.m_xmax_screen = width
         self.m_field.m_ymax_screen = height
 
-    def on_close(self, width, height):
+    def on_close(self):
         self.m_field.m_still_running = False
         if dbug.LEV & dbug.PYG: print "Window:on_close:exiting"
         self.close()
@@ -87,8 +87,7 @@ class Window(pyglet.window.Window):
         MOVEME = 25
         if symbol == pyglet.window.key.SPACE:
             if dbug.LEV & dbug.PYG: print "Window:KeyPress:SPACE"
-            self.clear()
-            #self.m_field.render_all()
+            self.m_field.print_grid()
             return
         elif symbol == pyglet.window.key.LEFT:
             if dbug.LEV & dbug.PYG: print "Window:KeyPress:LEFT"

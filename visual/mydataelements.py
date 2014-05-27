@@ -74,25 +74,19 @@ class MyCell(Cell):
             self.m_color = color
         super(MyCell, self).update(x, y, vx, vy, major, minor, gid, gsize)
 
-    def render(self):
-        if self.m_x is not None and self.m_y is not None:
-            self.m_shape.update(self.m_field, (self.m_x, self.m_y),
-                                self.m_diam/2, self.m_color, solid=False)
-            self.m_shape.render()
-            if DRAW_BODIES:
-                self.m_bodyshape.update(self.m_field, (self.m_x, self.m_y),
-                                          self.m_body_diam/2, self.m_body_color,
-                                          solid=True)
-                self.m_bodyshape.render()
-
     def draw(self):
         if self.m_x is not None and self.m_y is not None:
+            self.m_shape.update(self.m_field, (self.m_x, self.m_y),
+                                self.m_diam/2, 
+                                color=self.m_color, 
+                                solid=False)
             self.m_shape.draw()
             if DRAW_BODIES:
+                self.m_bodyshape.update(self.m_field, (self.m_x, self.m_y),
+                                          self.m_body_diam/2, 
+                                          color=self.m_body_color,
+                                          solid=True)
                 self.m_bodyshape.draw()
-
-    #def cell_disconnect(self):
-    # moved to superclass
 
 
 class MyConnector(Connector):
@@ -120,25 +114,26 @@ class MyConnector(Connector):
         self.m_score = 0
         super(MyConnector,self).__init__(field,id,cell0,cell1)
 
+    def update(self, color=None):
+        """Store basic info and create a DataElement object"""
+        if color is not None:
+            self.m_color = color
+        super(MyConnector, self).update()
+
     # move to superclass?
     def addPath(self,path):
         """Record the path of this connector."""
         self.m_path = path
 
-    def render(self):
+    def draw(self):
         if self.m_cell0.m_x is not None and self.m_cell0.m_y is not None and \
            self.m_cell1.m_x is not None and self.m_cell1.m_y is not None:
             self.m_shape.update(self.m_field, 
                                 (self.m_cell0.m_x, self.m_cell0.m_y), 
                                 (self.m_cell1.m_x, self.m_cell1.m_y), 
                                 self.m_cell0.m_diam/2, self.m_cell1.m_diam/2,
-                                self.m_color)
-                                #self.m_color,self.m_path)
-            self.m_shape.render()
-
-    def draw(self):
-        if self.m_cell0.m_x is not None and self.m_cell0.m_y is not None and \
-           self.m_cell1.m_x is not None and self.m_cell1.m_y is not None:
+                                color=self.m_color)
+                                #path=self.m_color,self.m_path)
             self.m_shape.draw()
 
 
@@ -168,12 +163,8 @@ class MyGroup(Group):
             self.m_color = color
         super(MyGroup, self).update(gsize, duration, x, y, diam)
 
-    def render(self):
+    def draw(self):
         if self.m_x is not None and self.m_y is not None:
             self.m_shape.update(self.m_field, (self.m_x, self.m_y),
                                 self.m_diam/2, self.m_color, solid=False)
-            self.m_shape.render()
-
-    def draw(self):
-        if self.m_x is not None and self.m_y is not None:
             self.m_shape.draw()

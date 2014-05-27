@@ -328,7 +328,8 @@ class Cell(object):
     """
 
     def __init__(self, field, id, x=None, y=None, vx=None, vy=None, major=None, 
-                    minor=None, gid=None, gsize=None):
+                    minor=None, gid=None, gsize=None, visible=None):
+        # passed params
         self.m_field=field
         self.m_id = id
         self.m_x = x
@@ -349,7 +350,10 @@ class Cell(object):
         self.m_attr_dict = {}
         #TODO: Move this to graphics engine
         self.m_diam = self.m_body_diam + DIAM_PAD
-        self.m_visible = True
+        if visible is None:
+            self.m_visible = True
+        #
+        # init vars
         self.m_conx_dict = {}
         self.m_body = Body(field, id)
         # create an array of leg instances
@@ -363,7 +367,7 @@ class Cell(object):
         self.m_timestamp = time()
 
     def update(self, x=None, y=None, vx=None, vy=None, major=None, 
-                    minor=None, gid=None, gsize=None):
+                    minor=None, gid=None, gsize=None, visible=None):
         """Store basic info and create a DataElement object"""
         if x is not None:
             self.m_x = x
@@ -383,6 +387,8 @@ class Cell(object):
             self.m_gid = gid
         if gsize is not None:
             self.m_gsize = gsize
+        if visible is not None:
+            self.m_visible = visible
 
     def geoupdate(self, fromcenter=None, fromnearest=None, fromexit=None):
         """Store geo data for cell."""
@@ -486,6 +492,11 @@ class Connector(object):
         cell0.add_connector(self)
         cell1.add_connector(self)
 
+    def update(self, visible=None):
+        """Update attr, create it if needed."""
+        if visible is not None:
+            self.m_visible = visible
+
     def update_attr(self, type, value):
         """Update attr, create it if needed."""
         if type in self.m_attr_dict:
@@ -501,9 +512,6 @@ class Connector(object):
     def add_path(self,path):
         """Record the path of this connector."""
         self.m_path = path
-
-    #def render(self):
-    # moved to subclass
 
     def conx_disconnect_thyself(self):
         """Disconnect cells this connector refs & this connector ref'd by them.

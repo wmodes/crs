@@ -102,7 +102,8 @@ def main():
             pass
         window.switch_to()
         window.dispatch_events()
-        field.render_all()
+        #CHANGE: incorporated into draw
+        #field.render_all()
         field.draw_all()
         window.dispatch_event('on_draw')
         #window.clear()
@@ -116,8 +117,8 @@ def main():
 
         keep_running = osc.m_run & field.m_still_running
 
-        #for (cell0,cell1) in list(combinations(field.m_cell_dict.values(), 2)):
-            #field.update_conx_attr(cell0, cell1, 'friends', 1.0)
+        for (cell0,cell1) in list(combinations(field.m_cell_dict.values(), 2)):
+            field.update_conx_attr(cell0, cell1, 'friends', 1.0)
 
         #TODO: Change this to be triggered by Frame msg
         timeleft = 1/FRAMERATE - (time() - starttime)

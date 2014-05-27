@@ -88,7 +88,7 @@ class Window(pyglet.window.Window):
         if symbol == pyglet.window.key.SPACE:
             if dbug.LEV & dbug.PYG: print "Window:KeyPress:SPACE"
             self.clear()
-            self.m_field.render_all()
+            #self.m_field.render_all()
             return
         elif symbol == pyglet.window.key.LEFT:
             if dbug.LEV & dbug.PYG: print "Window:KeyPress:LEFT"

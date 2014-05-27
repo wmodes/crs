@@ -112,3 +112,13 @@ was resized
 * Implemented flex system for adjusting decay
 * Implemented flex system for adjusting distances
 * Added OSC to tell when conx attr is retired
+
+5/26/2014
+* Moved most render functionality to draw functions to simplify
+* Added update func to graphelements/Line
+* Added severl line style choices in graphelements/Line
+* Added a render func in circle and line that does all the calc that was 
+    formerly done in update
+
+
+

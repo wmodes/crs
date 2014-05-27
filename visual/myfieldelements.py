@@ -240,11 +240,12 @@ class MyField(Field):
 
     # Everything
 
-    def render_all(self):
-        """Render all the cells and connectors."""
-        self.render_all_cells()
-        self.render_all_connectors()
-        self.render_all_groups()
+    #CHANGE: incorporated into draw
+    #def render_all(self):
+    #    """Render all the cells and connectors."""
+    #    self.render_all_cells()
+    #    self.render_all_connectors()
+    #    self.render_all_groups()
 
     def draw_all(self):
         """Draw all the cells and connectors."""
@@ -253,22 +254,23 @@ class MyField(Field):
         self.draw_all_connectors()
         self.draw_all_groups()
 
-    def render_cell(self,cell):
-        """Render a cell.
+    #CHANGE: incorporated into draw
+    #def render_cell(self,cell):
+    #    """Render a cell.
+    #
+    #    We first check if the cell is good.
+    #    If not, we increment its suspect count
+    #    If yes, render it.
+    #    """
+    #    if self.is_cell_good_to_go(cell.m_id):
+    #        cell.render()
+    #        #del self.m_suspect_cells[cell.m_id]
 
-        We first check if the cell is good.
-        If not, we increment its suspect count
-        If yes, render it.
-        """
-        if self.is_cell_good_to_go(cell.m_id):
-            cell.render()
-            #del self.m_suspect_cells[cell.m_id]
-
-    def render_all_cells(self):
-        # we don't call the Cell's render-er directly because we have some
-        # logic here at this level
-        for cell in self.m_cell_dict.values():
-            self.render_cell(cell)
+    #def render_all_cells(self):
+    #    # we don't call the Cell's render-er directly because we have some
+    #    # logic here at this level
+    #    for cell in self.m_cell_dict.values():
+    #        self.render_cell(cell)
 
     def draw_cell(self,cell):
         if self.is_cell_good_to_go(cell.m_id):
@@ -282,51 +284,58 @@ class MyField(Field):
 
     # Connectors
 
-    def render_connector(self,connector):
-        """Render a connector.
+    #CHANGE: incorporated into draw
+    #def render_connector(self,connector):
+    #    """Render a connector.
+    #
+    #    We first check if the connector's two cells are both good.
+    #    If not, we increment its suspect count
+    #    If yes, render it.
+    #    """
+    #    if self.is_conx_good_to_go(connector.m_id):
+    #        connector.render()
 
-        We first check if the connector's two cells are both good.
-        If not, we increment its suspect count
-        If yes, render it.
-        """
-        if self.is_conx_good_to_go(connector.m_id):
-            connector.render()
-
-    def render_all_connectors(self):
-        # we don't call the Connector's render-er directly because we have some
-        # logic here at this level
-        for connector in self.m_conx_dict.values():
-            self.render_connector(connector)
+    #CHANGE: incorporated into draw
+    #def render_all_connectors(self):
+    #    # we don't call the Connector's render-er directly because we have some
+    #    # logic here at this level
+    #    for connector in self.m_conx_dict.values():
+    #        self.render_connector(connector)
 
     def draw_connector(self,connector):
-        connector.draw()
+        if self.is_conx_good_to_go(connector.m_id):
+            connector.draw()
 
     def draw_all_connectors(self):
         # we don't call the Connector's draw-er directly because we may want
         # to introduce logic at this level
         for connector in self.m_conx_dict.values():
+            connector.update()
             self.draw_connector(connector)
 
 
     # Groups
 
-    def render_group(self,group):
-        """Render a group.
+    #CHANGE: incorporated into draw
+    #def render_group(self,group):
+    #    """Render a group.
+    #
+    #    We first check if the group's is in the group list
+    #    If yes, render it.
+    #    """
+    #    if self.is_group_good_to_go(group.m_id):
+    #        group.render()
 
-        We first check if the group's is in the group list
-        If yes, render it.
-        """
-        if self.is_group_good_to_go(group.m_id):
-            group.render()
-
-    def render_all_groups(self):
-        # we don't call the Connector's render-er directly because we have some
-        # logic here at this level
-        for group in self.m_group_dict.values():
-            self.render_group(group)
+    #CHANGE: incorporated into draw
+    #def render_all_groups(self):
+    #    # we don't call the Connector's render-er directly because we have some
+    #    # logic here at this level
+    #    for group in self.m_group_dict.values():
+    #        self.render_group(group)
 
     def draw_group(self,group):
-        group.draw()
+        if self.is_group_good_to_go(group.m_id):
+            group.draw()
 
     def draw_all_groups(self):
         # we don't call the Connector's draw-er directly because we may want

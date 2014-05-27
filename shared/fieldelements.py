@@ -287,7 +287,8 @@ class Field(object):
             return False
         if id in self.m_suspect_cells:
             return False
-        if self.m_cell_dict[id].m_x is None or self.m_cell_dict[id].m_y is None:
+        cell = self.m_cell_dict[id]
+        if cell.m_x is None or cell.m_y is None:
             return False
         return True
 
@@ -295,14 +296,19 @@ class Field(object):
         """Test if conx is good to be rendered.
         Returns True if cell is on master list and not suspect.
         """
+        if not id in self.m_conx_dict:
+            print "KILLME:is_conx_good:not in dict:",id
+            return False
         connector = self.m_conx_dict[id]
-        if self.is_cell_good_to_go(connector.m_cell0.m_id) and \
-           self.is_cell_good_to_go(connector.m_cell1.m_id):
-            if connector.m_id in self.m_suspect_conxs:
-                #TODO: Is this the right place for this?
-                del self.m_suspect_conxs[connector.m_id]
-            return True
-        return False
+        if not self.is_cell_good_to_go(connector.m_cell0.m_id) or \
+           not self.is_cell_good_to_go(connector.m_cell1.m_id):
+            print "KILLME:is_conx_good:one of cells not good:",id
+            return False
+        print "KILLME:is_conx_good:good!",id
+        #TODO: Is this the right place for this?
+        if id in self.m_suspect_conxs:
+            del self.m_suspect_conxs[id]
+        return True
 
     def is_group_good_to_go(self, id):
         """Test if group is good to be rendered.
@@ -458,6 +464,12 @@ class Field(object):
             connector = self.connectorClass(self, cid, cell0, cell1)
             self.m_conx_dict[cid] = connector
         return connector
+
+    def update_connector(self, id):
+        """ Update a connector's information."""
+        if dbug.LEV & dbug.MORE: print "Field:update_conx:Cell",id
+        if id in self.m_conx_dict:
+            self.m_conx_dict[id].update()
 
     def del_connector(self, cid):
         if cid in self.m_conx_dict:

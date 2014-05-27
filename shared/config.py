@@ -60,12 +60,16 @@ conductor_latitude = {
     'heading': 10,
 }
 
-# graphics configuration
+# visual configuration
 #
 #graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
 graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
 #draw_bodies = True
 draw_bodies = False
+
+# Line mode, one of 
+#   'direct', 'curve', 'simple', 'improved-simple', 'pathfinding', 'improved_pathfinding'
+linemode = 'curve'
 
 inverse=True
 if inverse:
@@ -150,9 +154,13 @@ max_lost_patience = 25 * 5
 osc_default_host = "localhost"
 osc_default_port = 7011
 
-#osc_visual_host = "localhost"
-osc_visual_host = "192.168.0.100"
+osc_visual_host = "localhost"
+#osc_visual_host = "192.168.0.100"
 osc_visual_port = 7010
+
+#osc_conductor_host = "localhost"
+osc_conductor_host = "192.168.0.100"
+osc_conductor_port = 7011
 
 #osc_tracking_host = "localhost"
 osc_tracking_host = "192.168.0.162"
@@ -161,10 +169,6 @@ osc_tracking_port = 7770
 #osc_sound_host = "localhost"
 osc_sound_host = "192.168.0.101"
 osc_sound_port = 7010
-
-#osc_conductor_host = "localhost"
-osc_conductor_host = "192.168.0.100"
-osc_conductor_port = 7011
 
 #osc_laser_host = "localhost"
 osc_laser_host = "192.168.0.162"

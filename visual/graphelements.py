@@ -253,12 +253,16 @@ class Line(object):
         if path is None:
             path = [p0, p1]
 
-    def midpoint(self, p1, p2):
-        return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
+    def fracpoint(self, p1, p2, fract):
+        return ((p1[0]+p2[0])*fract, (p1[1]+p2[1])*fract)
 
-    def make_arc(self,p1,p2):
-        midpt = self.midpoint(p1,p2)
-        return p1,midpt,midpt,p2
+    def midpoint(self, p1, p2):
+        return self.fracpoint(p1, p2, 0.5)
+
+    def make_arc(self, p1, p2):
+         m1 = self.fracpoint(p1, p2, 0.333)
+         m2 = self.fracpoint(p1, p2, 0.666)
+         return (p1, m1, m2, p2)
 
     def in_circle(self,center, radius, p):
         square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
@@ -308,12 +312,11 @@ class Line(object):
                 (p1[0], p1[1]),
             ]
             self.m_arcindex = [(0, 1, 2, 3)]
+
         elif LINEMODE == 'curve':
             (x0,y0)=p0
             (x1,y1)=p1
             # get position of p1 relative to p0
-            vx = int(copysign(1,x1-x0))  # rel x pos vector as 1 or -1
-            vy = int(copysign(1,y1-y0))  # rel y pos vector as 1 or -1
             xdif = abs(x0 - x1)
             ydif = abs(y0 - y1)
             if not xdif or not ydif:
@@ -321,18 +324,44 @@ class Line(object):
                 midpt = self.midpoint(p0,p1)
                 self.m_arcpoints = [p0, midpt, midpt, p1]
             elif (xdif > ydif):
-                xmid = x0 + vx*xdif/2
+                xmid = (x0 + x1)/2
                 #print "longer on x: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"xmidpt:",xmid
                 self.m_arcpoints = [p0, (xmid,y0), (xmid,y1), p1]
             else:
-                ymid = y0 + vy*ydif/2
+                ymid = (y0 + y1)/2
                 #print "longer on y: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"ymidpt:",ymid
                 self.m_arcpoints = [p0, (x0,ymid), (x0,ymid), p1]
             self.m_arcindex = [(0, 1, 2, 3)]
+
         elif LINEMODE == 'simple':
-            pass
+            (x0,y0)=p0
+            (x1,y1)=p1
+            self.m_arcpoints = []
+            xdif = abs(x0 - x1)
+            ydif = abs(y0 - y1)
+            if not xdif or not ydif:
+                #print "straight x line: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif
+                midpt = self.midpoint(p0,p1)
+                self.m_arcpoints = [p0, midpt, midpt, p1]
+                self.m_arcindex = [(0, 1, 2, 3)]
+            elif (xdif > ydif):
+                xmid = (x0 + x1)/2
+                #print "longer on x: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"xmidpt:",xmid
+                self.m_arcpoints += self.make_arc(p0, (xmid, y0))
+                self.m_arcpoints += self.make_arc((xmid, y0), (xmid, y1))
+                self.m_arcpoints += self.make_arc((xmid, y1), p1)
+                self.m_arcindex = [(0, 1, 2, 3),(3, 5, 6, 7),(7, 9, 10, 11)]
+            else:
+                ymid = (y0 + y1)/2
+                #print "longer on y: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"ymidpt:",ymid
+                self.m_arcpoints += self.make_arc(p0, (x0, ymid))
+                self.m_arcpoints += self.make_arc((x0, ymid), (x1, ymid))
+                self.m_arcpoints += self.make_arc((x1, ymid), p1)
+                self.m_arcindex = [(0, 1, 2, 3),(3, 5, 6, 7),(7, 9, 10, 11)]
+
         elif LINEMODE == 'improved_simple':
             pass
+
         elif LINEMODE == 'pathfinding':
             #n = len(path) - 1
             for i in range(0, len(path)-1):

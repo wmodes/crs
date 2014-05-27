@@ -136,6 +136,7 @@ def b_n( p, n, t ):
     assert num_segments > 0
     from math import floor
     segment_offset = min( int( floor( t * num_segments ) ), num_segments-1 )
+    #segment_offset = min(  t * num_segments, num_segments-1 )
     
     p_offset = segment_offset * n
     

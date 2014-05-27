@@ -302,6 +302,9 @@ class Field(object):
         if not self.is_cell_good_to_go(connector.m_cell0.m_id) or \
            not self.is_cell_good_to_go(connector.m_cell1.m_id):
             return False
+        if connector.m_cell0.m_gid and \
+           (connector.m_cell0.m_gid == connector.m_cell1.m_gid):
+            return False
         #TODO: Is this the right place for this?
         if id in self.m_suspect_conxs:
             del self.m_suspect_conxs[id]

@@ -91,8 +91,6 @@ class Circle(object):
             self.m_visible = visible
 
     def render(self):
-
-        print "KILLME:",self.m_solid
         (x,y) = self.m_center
         r = self.m_radius
         k = 0.5522847498307935  # 4/3 (sqrt(2)-1)

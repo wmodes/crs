@@ -18,6 +18,7 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
+import sys
 
 # installed modules
 # noinspection PyUnresolvedReferences
@@ -92,7 +93,11 @@ class MyOSCHandler(OSCHandler):
                 ('recorder', OSCRECORDERHOST, OSCRECORDERPORT),
             ]
 
-        super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)
+        try:
+            super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)
+        except:
+            print "Unable to create OSC handler with server=",osc_server, ", clients=",osc_clients
+            sys.exit(1)
 
     def honey_im_home(self):
         """Broadcast a hello message to the network."""

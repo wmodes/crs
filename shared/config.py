@@ -151,8 +151,8 @@ max_lost_patience = 25 * 5
 
 # OSC configuration
 
-osc_default_host = "localhost"
-osc_default_port = 7011
+osc_default_host = "UNSPECIFIED"
+osc_default_port = -1
 
 osc_visual_host = "localhost"
 #osc_visual_host = "192.168.0.100"

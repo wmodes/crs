@@ -494,6 +494,19 @@ class Connector(object):
 
     def update(self, visible=None):
         """Update attr, create it if needed."""
+        # refresh the cells that the connector points to
+        uid0 = self.m_cell0.m_id
+        uid1 = self.m_cell1.m_id
+        if uid0 in self.m_field.m_cell_dict:
+            if self.m_cell0 != self.m_field.m_cell_dict[uid0]:
+                if dbug.LEV & dbug.DATA: 
+                    print "Connector:conx_update:Conx",self.m_id,"needed refresh"
+                self.m_cell0 = self.m_field.m_cell_dict[uid0]
+        if uid1 in self.m_field.m_cell_dict:
+            if self.m_cell1 != self.m_field.m_cell_dict[uid1]:
+                if dbug.LEV & dbug.DATA: 
+                    print "Connector:conx_update:Conx",self.m_id,"needed refresh"
+                self.m_cell1 = self.m_field.m_cell_dict[uid1]
         if visible is not None:
             self.m_visible = visible
 

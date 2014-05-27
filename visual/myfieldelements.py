@@ -26,7 +26,7 @@ from shared import debug
 
 # local classes
 from windowelements import Window
-from gridmap import GridMap
+from pathelements import GridMap
 from pathfinder import PathFinder
 from shared.fieldelements import Field
 from mydataelements import MyCell,MyConnector,MyGroup
@@ -109,7 +109,6 @@ class MyField(Field):
         self.path_grid = object
         self.pathfinder = object
         super(MyField, self).__init__()
-
         self.make_path_grid()
 
     # Screen Stuff
@@ -251,6 +250,7 @@ class MyField(Field):
         """Draw all the cells and connectors."""
         self.m_screen.draw_guides()
         self.draw_all_cells()
+        #self.calc_all_paths()
         self.draw_all_connectors()
         self.draw_all_groups()
 
@@ -343,7 +343,7 @@ class MyField(Field):
         for group in self.m_group_dict.values():
             self.draw_group(group)
 
-    # Distances - TODO: temporary -- this info will come from the conduction subsys
+    # Distances - TODO: temporary -- this info will come from the conductor subsys
 
     #def dist_sqd(self,cell0,cell1):
     # moved to superclass
@@ -352,9 +352,11 @@ class MyField(Field):
 
     # Paths
 
-    # should the next two functions be in the gridmap module? No, because the GridMap
-    # and Pathfinder classes have to be instantiated from somewhere. And if not
-    # here they have to be called from the main loop. Better here.
+    def calc_all_paths(self):
+        self.reset_path_grid()
+        self.path_score_cells()
+        self.path_find_connectors()
+
     def make_path_grid(self):
         # for our pathfinding, we're going to overlay a grid over the field with
         # squares that are sized by a constant in the config file
@@ -371,8 +373,9 @@ class MyField(Field):
     def path_score_cells(self):
         #print "***Before path: ",self.m_cell_dict
         for cell in self.m_cell_dict.values():
-            self.path_grid.set_blocked(self.scale2path((cell.m_x,cell.m_y)),
-                                       self.scale2path(cell.m_diam),BLOCK_FUZZ)
+            if cell.m_x is not None and cell.m_y is not None:
+                self.path_grid.set_blocked(self.scale2path((cell.m_x,cell.m_y)),
+                                           self.scale2path(cell.m_diam),BLOCK_FUZZ)
 
     def path_find_connectors(self):
         """ Find path for all the connectors.
@@ -386,15 +389,17 @@ class MyField(Field):
         for connector in self.m_conx_dict.values():
             p0 = (connector.m_cell0.m_x, connector.m_cell0.m_y)
             p1 = (connector.m_cell1.m_x, connector.m_cell1.m_y)
-            # normally we'd take the sqrt to get the distance, but here this is 
-            # just used as a sort comparison, so we'll not take the hit for sqrt
-            score = ((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2) 
-            # here we save time by sorting as we go through it
-            conx_dict_rekeyed[score] = connector
-        for i in sorted(conx_dict_rekeyed.iterkeys()):
-            connector = conx_dict_rekeyed[i]
-            print "findpath--id:",connector.m_id,"dist:",i**0.5
-            connector.add_path(self.find_path(connector))
+            if p0[0] is not None and p0[1] is not None and \
+                   p1[0] is not None and p1[1] is not None:
+                # normally we'd take the sqrt to get the distance, but here this is 
+                # just used as a sort comparison, so we'll not take the hit for sqrt
+                score = ((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2) 
+                # here we save time by sorting as we go through it
+                conx_dict_rekeyed[score] = connector
+            for i in sorted(conx_dict_rekeyed.iterkeys()):
+                connector = conx_dict_rekeyed[i]
+                print "findpath--id:",connector.m_id,"dist:",i**0.5
+                connector.add_path(self.find_path(connector))
 
     def find_path(self, connector):
         """ Find path in path_grid and then scale it appropriately."""

@@ -659,7 +659,7 @@ class OSCHandler(object):
         samp = args[0]
         self.m_field.update(frame=samp)
         if samp%REPORT_FREQ['debug'] == 0:
-            #print "OSC:event_track_update:",path,args,source
+            #print "OSC:event_track_update:",samp
             if dbug.LEV & dbug.MSGS: print "    OSC:event_track_frame::",samp
         return None
 

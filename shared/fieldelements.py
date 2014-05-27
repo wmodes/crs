@@ -29,6 +29,7 @@ from dataelements import Cell,Connector,Group,Event
 
 # constants
 LOGFILE = config.logfile
+REPORT_FREQ = config.report_frequency
 GROUP_DIST = config.group_distance
 UNGROUP_DIST = config.ungroup_distance
 OSC_FPS = config.osc_framerate
@@ -104,6 +105,8 @@ class Field(object):
             self.m_osc = osc
         if frame is not None:
             self.m_frame = frame
+            if frame%REPORT_FREQ['debug'] == 0:
+                print "Field:update:frame:",frame
 
     # Scaling
     def set_scaling(self,pmin_field=None,pmax_field=None):
@@ -255,7 +258,8 @@ class Field(object):
 
         Possibilities:
             * Cell does not exist:
-                create it, remove from suspect list, update it, increment count
+                create it, remove from suspect list, update it, increment
+                count, and refresh any connectors that point to it
             * Cell exists, but is on the suspect list
                 remove from suspect list, increment count
             * Cell exists in master list and is not suspect:
@@ -385,11 +389,21 @@ class Field(object):
 
     def del_cell(self, id):
         """Delete a cell.
+
         We used to delete all of it's connections, now we just delete it and
         let the connector sort it out. This allows us to defer connector
-        deletion -- instead we keep a cound of suspicious connectors. That way, 
+        deletion -- instead we keep a list of suspicious connectors. That way, 
         if the cells reappear, we can reconnect them without losing their
         connectors.
+
+        However, this created a problem: When a cell was deleted and then later
+        restored, its connectors were still referencing the previous cell.
+        Therefore, when we iterate through the conxs, they are still taking
+        their location from the former cell.  
+        Solution 1: Delete the conx along with the cell
+        Solution 2: When a cell reappears, refresh the connectors to point to
+        the new cell.
+
         """
         #cell = self.m_cell_dict[id]
         # delete all cell's connectors from master list of connectors
@@ -402,13 +416,17 @@ class Field(object):
         if id in self.m_cell_dict:
             #cell.cell_disconnect()
             # delete from the cell master list of cells
-            if dbug.LEV & dbug.FIELD: print "Field:del_cell:deleting",id
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:del_cell:deleting",id
+            # Note that this only deletes the cell from the master list, but
+            # doesn't destroy the instance, which may still be refd elsewhere.
             del self.m_cell_dict[id]
             if id in self.m_suspect_cells:
                 del self.m_suspect_cells[id]
             else:
                 self.m_our_cell_count -= 1
-            if dbug.LEV & dbug.FIELD: print "Field:del_cell:count:",self.m_our_cell_count
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:del_cell:count:",self.m_our_cell_count
 
     def check_people_count(self,reported_count):
         self.m_reported_cell_count = reported_count
@@ -490,7 +508,7 @@ class Field(object):
     def update_conx_attr(self, cell0, cell1, type, value):
         """Update an attribute to a connector, creating it if it doesn't exist."""
         connector = self.create_connector(cell0, cell1)
-        if dbug.LEV & dbug.FIELD: 
+        if dbug.LEV & dbug.MORE: 
             print "Field:update_conx_attr:",connector.m_id,type,value
         connector.update_attr(type, value)
 

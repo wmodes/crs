@@ -127,8 +127,6 @@ was resized
     formerly done in update
 * Added a smarter line drawing routine even for test curves (which look cool)
 
-
-
-
-
-
+5/27/2014
+* Diagnosed a prob where the connectors of deleted cells were being drawn to 
+    their former locations

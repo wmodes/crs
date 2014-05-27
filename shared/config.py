@@ -154,29 +154,34 @@ max_lost_patience = 25 * 5
 osc_default_host = "UNSPECIFIED"
 osc_default_port = -1
 
-osc_visual_host = "localhost"
-#osc_visual_host = "192.168.0.100"
+osc_visual_host = "192.168.0.100"
 osc_visual_port = 7012
 
-#osc_conductor_host = "localhost"
 osc_conductor_host = "192.168.0.100"
 osc_conductor_port = 7011
 
-#osc_tracking_host = "localhost"
 osc_tracking_host = "192.168.0.162"
 osc_tracking_port = 7770
 
-#osc_sound_host = "localhost"
 osc_sound_host = "192.168.0.101"
 osc_sound_port = 7010
 
-#osc_laser_host = "localhost"
 osc_laser_host = "192.168.0.162"
 osc_laser_port = 7780
 
-#osc_recorder_host = "localhost"
 osc_recorder_host = "192.168.0.162"
 osc_recorder_port = 7790
+
+osc_local_only=True
+
+if osc_local_only:
+    localhost="127.0.0.1"
+    osc_visual_host = localhost
+    osc_conductor_host = localhost
+    osc_tracking_host = localhost
+    osc_sound_host = localhost
+    osc_laser_host =localhost
+    osc_recorder_host =localhost
 
 osctimeout = 0
 

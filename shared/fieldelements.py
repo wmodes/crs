@@ -297,14 +297,11 @@ class Field(object):
         Returns True if cell is on master list and not suspect.
         """
         if not id in self.m_conx_dict:
-            print "KILLME:is_conx_good:not in dict:",id
             return False
         connector = self.m_conx_dict[id]
         if not self.is_cell_good_to_go(connector.m_cell0.m_id) or \
            not self.is_cell_good_to_go(connector.m_cell1.m_id):
-            print "KILLME:is_conx_good:one of cells not good:",id
             return False
-        print "KILLME:is_conx_good:good!",id
         #TODO: Is this the right place for this?
         if id in self.m_suspect_conxs:
             del self.m_suspect_conxs[id]

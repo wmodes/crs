@@ -18,6 +18,7 @@ __license__ = "GNU GPL 3.0 or later"
 
 # core modules
 from itertools import chain
+from math import copysign
 
 # installed modules
 import pyglet
@@ -308,12 +309,25 @@ class Line(object):
             ]
             self.m_arcindex = [(0, 1, 2, 3)]
         elif LINEMODE == 'curve':
-            self.m_arcpoints = [ 
-                (p0[0], p0[1]),
-                (p0[0], abs(p0[1]-p1[1])/2),
-                (abs(p0[0]-p1[0])/2, p0[1]),
-                (p1[0], p1[1]),
-            ]
+            (x0,y0)=p0
+            (x1,y1)=p1
+            # get position of p1 relative to p0
+            vx = int(copysign(1,x1-x0))  # rel x pos vector as 1 or -1
+            vy = int(copysign(1,y1-y0))  # rel y pos vector as 1 or -1
+            xdif = abs(x0 - x1)
+            ydif = abs(y0 - y1)
+            if not xdif or not ydif:
+                #print "straight x line: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif
+                midpt = self.midpoint(p0,p1)
+                self.m_arcpoints = [p0, midpt, midpt, p1]
+            elif (xdif > ydif):
+                xmid = x0 + vx*xdif/2
+                #print "longer on x: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"xmidpt:",xmid
+                self.m_arcpoints = [p0, (xmid,y0), (xmid,y1), p1]
+            else:
+                ymid = y0 + vy*ydif/2
+                #print "longer on y: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"ymidpt:",ymid
+                self.m_arcpoints = [p0, (x0,ymid), (x0,ymid), p1]
             self.m_arcindex = [(0, 1, 2, 3)]
         elif LINEMODE == 'simple':
             pass

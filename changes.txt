@@ -114,18 +114,19 @@ was resized
 * Added OSC to tell when conx attr is retired
 
 5/26/2014
+* Remove symbolic links (bst)
+* Remove .DS_Store files (bst)
+* Removed osc subdir from git (bst)
+* Added pyOSC-3.7 OSC.py (bst)
+* Added error handling in MyOSCHandler constructor (bst)
+* Add ../shared to sys.path (bst)
 * Moved most render functionality to draw functions to simplify
 * Added update func to graphelements/Line
 * Added severl line style choices in graphelements/Line
 * Added a render func in circle and line that does all the calc that was 
     formerly done in update
-From Brent:
-* Remove symbolic links
-* Remove .DS_Store files
-* Removed osc subdir from git
-* Added pyOSC-3.7 OSC.py
-* Added error handling in MyOSCHandler constructor
-* Add ../shared to sys.path
+
+
 
 
 

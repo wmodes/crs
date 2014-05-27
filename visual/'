@@ -18,7 +18,6 @@ __license__ = "GNU GPL 3.0 or later"
 
 # core modules
 from itertools import chain
-from math import copysign
 
 # installed modules
 import pyglet
@@ -68,8 +67,7 @@ class Circle(object):
         self.m_center = None
         self.m_radius = None
         self.m_color = None
-        self.m_solid = False
-        self.m_visible = True
+        self.m_solid = None
         self.m_arcpoints = None
         self.m_arcindex = None
         # each arc is broken down into a list of points and indecies
@@ -78,24 +76,17 @@ class Circle(object):
         self.m_points = []
         self.m_index = []
 
-    def update(self, field, p, r, color=None, solid=None, visible=None):
+    def update(self, field, p, r, color, solid=False):
         """Circle constructor."""
 
         self.m_field = field
         self.m_center = p
         self.m_radius = r
-        if color is not None:
-            self.m_color = color
-        if solid is not None:
-            self.m_solid = solid
-        if visible is not None:
-            self.m_visible = visible
-
-    def render(self):
-        (x,y) = self.m_center
-        r = self.m_radius
+        self.m_color = color
+        self.m_solid = solid
         k = 0.5522847498307935  # 4/3 (sqrt(2)-1)
-        kr = r * k
+        kr = r*k
+        (x,y)=p
         self.m_arcpoints = [(x+r,y), (x+r,y+kr), (x+kr,y+r), (x,y+r),
                            (x-kr,y+r), (x-r,y+kr), (x-r,y),
                            (x-r,y-kr), (x-kr,y-r), (x,y-r),
@@ -139,8 +130,6 @@ class Circle(object):
         The screen engine wants these arcs divded up into line segments
         The laser engine wants these arcs divied up into OSC messages
         """
-        if self.m_center and self.m_radius:
-            self.render()
         if self.m_field and self.m_arcpoints and self.m_arcindex and self.m_color:
             if GRAPHMODES & GRAPHOPTS['screen']:
                 # The screen engine, pyglet, wants output in this form
@@ -242,47 +231,7 @@ class Line(object):
         self.m_index = []
 
     def update(self, field, p0, p1, r0, r1, color, path=None):
-        """Update line information."""
-        self.m_field = field
-        self.m_p0 = p0
-        self.m_p1 = p1
-        self.m_r0 = r0
-        self.m_r1 = r1
-        self.m_color = color
-        # if we were given a path, we will use it
-        if path is None:
-            path = [p0, p1]
-
-    def fracpoint(self, p1, p2, fract):
-        return ((p1[0]+p2[0])*fract, (p1[1]+p2[1])*fract)
-
-    def midpoint(self, p1, p2):
-        return self.fracpoint(p1, p2, 0.5)
-
-    def make_arc(self, p1, p2):
-         m1 = self.fracpoint(p1, p2, 0.333)
-         m2 = self.fracpoint(p1, p2, 0.666)
-         return (p1, m1, m2, p2)
-
-    def in_circle(self,center, radius, p):
-        square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
-        return square_dist < radius ** 2
-
-    def find_intersect(self,outpt, inpt, center, radius):
-        # Here instead of checking whether the point is on the circle, 
-        # we just see if the points have converged on each other.
-        sum_dist = abs(inpt[0] - outpt[0]) + abs(inpt[1] - outpt[1])
-        #print "sum dist:",sum_dist
-        if sum_dist < 2:
-            return inpt
-        midpt = self.midpoint(outpt, inpt)
-        if self.in_circle(center, radius, midpt):
-            return self.find_intersect(outpt, midpt, center, radius)
-        else:
-            return self.find_intersect(midpt, inpt, center, radius)
-
-    def render(self):
-        """Render the line.
+        """Update the line.
 
         Going into this function, we know the end points of the cells we are
         connecting, and their radius.
@@ -290,11 +239,12 @@ class Line(object):
         Exiting, we have a list of points that make up the line, and a list of
         indecies that tell us how the points are organized into cubic arcs.
         """
-        p0 = self.m_p0
-        p1 = self.m_p1
-        r0 = self.m_r0
-        r1 = self.m_r1
         #import pdb;pdb.set_trace()
+        self.m_field = field
+        self.m_color = color
+        # if we were given a path, we will use it
+        if path is None:
+            path = [p0, p1]
         self.m_arcpoints = None
         self.m_arcindex = None
         self.m_points = []
@@ -314,50 +264,16 @@ class Line(object):
             self.m_arcindex = [(0, 1, 2, 3)]
 
         elif LINEMODE == 'curve':
-            (x0,y0)=p0
-            (x1,y1)=p1
-            # get position of p1 relative to p0
-            xdif = abs(x0 - x1)
-            ydif = abs(y0 - y1)
-            if not xdif or not ydif:
-                #print "straight x line: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif
-                midpt = self.midpoint(p0,p1)
-                self.m_arcpoints = [p0, midpt, midpt, p1]
-            elif (xdif > ydif):
-                xmid = (x0 + x1)/2
-                #print "longer on x: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"xmidpt:",xmid
-                self.m_arcpoints = [p0, (xmid,y0), (xmid,y1), p1]
-            else:
-                ymid = (y0 + y1)/2
-                #print "longer on y: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"ymidpt:",ymid
-                self.m_arcpoints = [p0, (x0,ymid), (x0,ymid), p1]
+            self.m_arcpoints = [ 
+                (p0[0], p0[1]),
+                (p0[0], abs(p0[1]-p1[1])/2),
+                (abs(p0[0]-p1[0])/2, p0[1]),
+                (p1[0], p1[1]),
+            ]
             self.m_arcindex = [(0, 1, 2, 3)]
 
         elif LINEMODE == 'simple':
-            (x0,y0)=p0
-            (x1,y1)=p1
-            self.m_arcpoints = []
-            xdif = abs(x0 - x1)
-            ydif = abs(y0 - y1)
-            if not xdif or not ydif:
-                #print "straight x line: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif
-                midpt = self.midpoint(p0,p1)
-                self.m_arcpoints = [p0, midpt, midpt, p1]
-                self.m_arcindex = [(0, 1, 2, 3)]
-            elif (xdif > ydif):
-                xmid = (x0 + x1)/2
-                #print "longer on x: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"xmidpt:",xmid
-                self.m_arcpoints += self.make_arc(p0, (xmid, y0))
-                self.m_arcpoints += self.make_arc((xmid, y0), (xmid, y1))
-                self.m_arcpoints += self.make_arc((xmid, y1), p1)
-                self.m_arcindex = [(0, 1, 2, 3),(3, 5, 6, 7),(7, 9, 10, 11)]
-            else:
-                ymid = (y0 + y1)/2
-                #print "longer on y: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"ymidpt:",ymid
-                self.m_arcpoints += self.make_arc(p0, (x0, ymid))
-                self.m_arcpoints += self.make_arc((x0, ymid), (x1, ymid))
-                self.m_arcpoints += self.make_arc((x1, ymid), p1)
-                self.m_arcindex = [(0, 1, 2, 3),(3, 5, 6, 7),(7, 9, 10, 11)]
+            pass
 
         elif LINEMODE == 'improved_simple':
             pass
@@ -406,6 +322,56 @@ class Line(object):
         elif LINEMODE == 'improved_pathfinding':
             pass
 
+    def midpoint(self, p1, p2):
+        return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
+
+    def make_arc(self,p1,p2):
+        midpt = self.midpoint(p1,p2)
+        return p1,midpt,midpt,p2
+
+    def in_circle(self,center, radius, p):
+        square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
+        return square_dist < radius ** 2
+
+    def find_intersect(self,outpt, inpt, center, radius):
+        # Here instead of checking whether the point is on the circle, 
+        # we just see if the points have converged on each other.
+        sum_dist = abs(inpt[0] - outpt[0]) + abs(inpt[1] - outpt[1])
+        #print "sum dist:",sum_dist
+        if sum_dist < 2:
+            return inpt
+        midpt = self.midpoint(outpt, inpt)
+        if self.in_circle(center, radius, midpt):
+            return self.find_intersect(outpt, midpt, center, radius)
+        else:
+            return self.find_intersect(midpt, inpt, center, radius)
+
+    # Render functions moved into draw routine for simplicity
+    #def render(self):
+    #    if self.m_field and self.m_arcpoints and self.m_arcindex and self.m_color:
+    #        # e.g., self.m_arcpoints = [(10,5),(15,5),(15,10),(15,15),(10,15),(5,15),(5,10)]
+    #        # e.g., self.m_arcindex = [(0,1,2,3),(3,4,5,6)]
+    #        if dbug.LEV & dbug.GRAPH: print "Graph:render:self.m_arcpoints = ",self.m_arcpoints
+    #        if dbug.LEV & dbug.GRAPH: print "Graph:render:self.m_arcindex = ",self.m_arcindex
+    #
+    #        for i in range(len(self.m_arcindex)):
+    #            # e.g., self.m_arcindex[i] = (0,1,2,3)
+    #            p0 = self.m_arcpoints[self.m_arcindex[i][0]]
+    #            p1 = self.m_arcpoints[self.m_arcindex[i][1]]
+    #            p2 = self.m_arcpoints[self.m_arcindex[i][2]]
+    #            p3 = self.m_arcpoints[self.m_arcindex[i][3]]
+    #            # if this is a straight line, don't chop into cubicSplines
+    #            if p0[0] == p1[0] == p2[0] == p3[0] or \
+    #                    p0[1] == p1[1] == p2[1] == p3[1]:
+    #                points = [p0,p1,p2,p3]
+    #                index = [0,1,1,2,2,3]
+    #                # TODO: convert CURVE_SEGS into a passable parameter, so in the
+    #                # case of a straight line, we pass t=1 so it makes ONE slice
+    #            else:
+    #                (points,index) = curves.cubic_spline(p0,p1,p2,p3,CURVE_SEGS)
+    #            self.m_points.append(points)
+    #            self.m_index.append(index)
+
     def draw(self):
         """Draw a line, which is actually a path made up of cubicsplines.
 
@@ -418,8 +384,6 @@ class Line(object):
         The screen engine wants these arcs divded up into line segments
         The laser engine wants these arcs divied up into OSC messages
         """
-        if self.m_p0 and self.m_p1:
-            self.render()
         if self.m_field and self.m_arcpoints and self.m_arcindex and self.m_color:
             if GRAPHMODES & GRAPHOPTS['screen']:
                 # The screen engine, pyglet, wants output in this form

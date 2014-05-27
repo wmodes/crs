@@ -156,7 +156,7 @@ osc_default_port = 7011
 
 osc_visual_host = "localhost"
 #osc_visual_host = "192.168.0.100"
-osc_visual_port = 7010
+osc_visual_port = 7012
 
 #osc_conductor_host = "localhost"
 osc_conductor_host = "192.168.0.100"

@@ -13,3 +13,5 @@ killme*
 htaccess
 .htpasswd
 htpasswd
+.DS_Store
+

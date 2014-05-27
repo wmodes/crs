@@ -353,7 +353,7 @@ class MyField(Field):
     def calc_all_paths(self):
         self.reset_path_grid()
         self.path_score_cells()
-        #self.path_find_connectors()
+        self.path_find_connectors()
 
     def make_path_grid(self):
         # for our pathfinding, we're going to overlay a grid over the field with
@@ -376,14 +376,13 @@ class MyField(Field):
     def path_score_cells(self):
         #print "***Before path: ",self.m_cell_dict
         for cell in self.m_cell_dict.values():
-            if cell.m_id not in self.m_suspect_cells:
-                if cell.m_x is not None and cell.m_y is not None:
-                    origpt = (cell.m_x, cell.m_y)
-                    newpt = self.rescale_pt2path(origpt)
-                    self.m_pathgrid.set_blocked(
-                            self.rescale_pt2path((cell.m_x, cell.m_y)),
-                            self.rescale_num2path(cell.m_diam),
-                            BLOCK_FUZZ)
+            if self.is_cell_good_to_go(cell.m_id):
+                origpt = (cell.m_x, cell.m_y)
+                newpt = self.rescale_pt2path(origpt)
+                self.m_pathgrid.set_blocked(
+                        self.rescale_pt2path((cell.m_x, cell.m_y)),
+                        self.rescale_num2path(cell.m_diam/2),
+                        BLOCK_FUZZ)
 
     def path_find_connectors(self):
         """ Find path for all the connectors.
@@ -395,19 +394,17 @@ class MyField(Field):
         #for i in conx_dict_rekeyed.iterkeys():
         conx_dict_rekeyed = {}
         for connector in self.m_conx_dict.values():
-            p0 = (connector.m_cell0.m_x, connector.m_cell0.m_y)
-            p1 = (connector.m_cell1.m_x, connector.m_cell1.m_y)
-            if p0[0] is not None and p0[1] is not None and \
-                   p1[0] is not None and p1[1] is not None:
+            if self.is_conx_good_to_go(connector.m_id):
                 # normally we'd take the sqrt to get the distance, but here this is 
                 # just used as a sort comparison, so we'll not take the hit for sqrt
-                score = ((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2) 
+                score = (connector.m_cell0.m_x - connector.m_cell1.m_x)**2 + \
+                        (connector.m_cell0.m_y - connector.m_cell1.m_y)**2
                 # here we save time by sorting as we go through it
                 conx_dict_rekeyed[score] = connector
-            for i in sorted(conx_dict_rekeyed.iterkeys()):
-                connector = conx_dict_rekeyed[i]
-                print "findpath--id:",connector.m_id,"dist:",i**0.5
-                connector.add_path(self.find_path(connector))
+        for i in sorted(conx_dict_rekeyed.iterkeys()):
+            connector = conx_dict_rekeyed[i]
+            #print "findpath--id:",connector.m_id,"dist:",i**0.5
+            connector.add_path(self.find_path(connector))
 
     def find_path(self, connector):
         """ Find path in path_grid and then scale it appropriately."""
@@ -417,10 +414,10 @@ class MyField(Field):
         # paths, reserving A* for the ones that are blocked and need more
         # smarts. We sort the connectors by distance and do easy paths for the
         # closest ones first.
-        #path = list(self.m_pathgrid.easy_path(start, goal))
-        #print "connector:id",connector.m_id,"path:",path
+        path = list(self.m_pathgrid.easy_path(start, goal))
+        print "connector:id",connector.m_id,"path:",path
         #if not path:
-        path = list(self.m_pathfinder.compute_path(start, goal))
+        #path = list(self.m_pathfinder.compute_path(start, goal))
         # take results of found paths and block them on the map
         self.m_pathgrid.set_block_line(path)
         #self.allpaths = self.allpaths + path

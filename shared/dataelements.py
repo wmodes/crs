@@ -467,12 +467,9 @@ class Connector(object):
         m_id: the id of this connector (unique, but not enforced)
         m_cell0, m_cell1: the two cells connected by this connector
         m_attr_dict: dict of attrs applied to this conx (indexed by type)
-        m_path: the computed coordinate path from cell0 to cell1
-        m_score: a score to help with sorting? I can't remember (check gridmap)
         m_visible: is this cell displayed currently? (boolean)
 
     add_atts: add attrs to the attrs list
-    add_path: add a computed path to this connector
     conx_disconnect_thyself: Disconnect cells this connector refs
 
     """
@@ -520,11 +517,6 @@ class Connector(object):
     def del_attr(self, type):
         if type in self.m_attr_dict:
             del self.m_attr_dict[type]
-
-    # move to subclass?
-    def add_path(self,path):
-        """Record the path of this connector."""
-        self.m_path = path
 
     def conx_disconnect_thyself(self):
         """Disconnect cells this connector refs & this connector ref'd by them.

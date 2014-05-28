@@ -253,13 +253,15 @@ class Line(object):
         self.m_color = color
         # if we were given a path, we will use it
         if path is None:
-            path = [p0, p1]
+            self.m_path = [p0, p1]
+        else:
+            self.m_path = path
 
     def fracpoint(self, p1, p2, fract):
-        return ((p1[0]+p2[0])*fract, (p1[1]+p2[1])*fract)
+        return (p1[0]+(p2[0]-p1[0])*fract, p1[1]+(p2[1]-p1[1])*fract)
 
     def midpoint(self, p1, p2):
-        return self.fracpoint(p1, p2, 0.5)
+        return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
 
     def make_arc(self, p1, p2):
          m1 = self.fracpoint(p1, p2, 0.333)
@@ -267,6 +269,7 @@ class Line(object):
          return (p1, m1, m2, p2)
 
     def in_circle(self,center, radius, p):
+        """Is point, p, inside circle of given center and radius."""
         square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
         return square_dist < radius ** 2
 
@@ -336,8 +339,6 @@ class Line(object):
             self.m_arcindex = [(0, 1, 2, 3)]
 
         elif LINEMODE == 'simple':
-
-            
             (x0,y0)=p0
             (x1,y1)=p1
             self.m_arcpoints = []
@@ -362,15 +363,17 @@ class Line(object):
                 self.m_arcpoints += self.make_arc((x0, ymid), (x1, ymid))
                 self.m_arcpoints += self.make_arc((x1, ymid), p1)
                 self.m_arcindex = [(0, 1, 2, 3),(3, 5, 6, 7),(7, 9, 10, 11)]
+            #break pt
+            #import pdb;pdb.set_trace()
 
         elif LINEMODE == 'improved_simple':
             pass
 
         elif LINEMODE == 'pathfinding':
             #n = len(path) - 1
-            for i in range(0, len(path)-1):
-                thispt = path[i]
-                nextpt = path[i+1]
+            for i in range(0, len(self.m_path)-1):
+                thispt = self.m_path[i]
+                nextpt = self.m_path[i+1]
                 # Remove parts of path within the radius of cell
                 # TODO: Ensure that the logic here works in every case
                 # if both ends of this line segment are inside a circle fugetaboutit
@@ -386,24 +389,16 @@ class Line(object):
                     # find the point intersecting the circle
                     nextpt = self.find_intersect(thispt, nextpt, p1, r1)
 
-                # if one end of this line segment is inside a circle
-                #if in_circle(p1, r1, thispt) and not in_circle(p1, r1, nextpt):
-                    # find the point intersecting the circle
-                    #thispt = find_intersect(thispt, nextpt, p1, r1)
-                # if one end of this line segment is inside the other circle
-                #if in_circle(p0, r0, nextpt) and not in_circle(p0, r0, thispt):
-                    # find the point intersecting the circle
-                    #nextpt = find_intersect(nextpt, thispt, p0, r0)
-
                 # if neither point is inside one of our circles, use it
                 #print path[i],"inside cell"
                 # take segment of two points, and transform to three point arc
                 arc = self.make_arc(thispt,nextpt)
                 npath.append(arc[0])
                 npath.append(arc[1])
-                lastpt = arc[2]
-                npath.append(lastpt)
-                #print "npath:", npath
+                npath.append(arc[2])
+                lastpt = arc[3]
+            npath.append(lastpt)
+            #print "npath:", npath
             self.m_arcpoints = npath
             self.m_arcindex = [(x-3,x-2,x-1,x) for x in range(3,len(npath),3)]
             #import pdb;pdb.set_trace()

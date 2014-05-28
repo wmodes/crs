@@ -96,8 +96,11 @@ class MyConnector(Connector):
     
     Stores the following values:
         m_cell0, m_cell1: the two cells connected by this connector
+        m_path: the computed coordinate path from cell0 to cell1
+        m_score: a score to help with sorting? I can't remember (check gridmap)
 
     makeBasicShape: create the set of arcs that will define the shape
+    add_path: add a computed path to this connector
 
     """
 
@@ -120,9 +123,9 @@ class MyConnector(Connector):
             self.m_color = color
         super(MyConnector, self).update()
 
-    # move to superclass?
-    def addPath(self,path):
+    def add_path(self,path):
         """Record the path of this connector."""
+        #print "KILLME:add_path:",path
         self.m_path = path
 
     def draw(self):
@@ -132,8 +135,8 @@ class MyConnector(Connector):
                                 (self.m_cell0.m_x, self.m_cell0.m_y), 
                                 (self.m_cell1.m_x, self.m_cell1.m_y), 
                                 self.m_cell0.m_diam/2, self.m_cell1.m_diam/2,
-                                color=self.m_color)
-                                #path=self.m_color,self.m_path)
+                                color=self.m_color,
+                                path=self.m_path)
             self.m_shape.draw()
 
 

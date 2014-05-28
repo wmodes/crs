@@ -134,4 +134,8 @@ was resized
 * Rejiggered path scaling routines based on new scheme
 * Added exception handling for keyboard interupt
 * To visual sys, added capability to draw pathgrid (press SPACE)
+* Fixed a problem with scaling in pathgrid (radius, not diam)
+* confirmed draw pathgrid was working
+* Debugged a problem where the midpoint of lines was totally wack, traced to make_arc
+* Got pathfinder working. at least the easy_path portion
 

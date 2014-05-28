@@ -352,8 +352,8 @@ class MyField(Field):
 
     def calc_all_paths(self):
         self.reset_path_grid()
-        self.path_score_cells()
-        self.path_find_connectors()
+        self.set_path_blocks()
+        self.calc_connector_paths()
 
     def make_path_grid(self):
         # for our pathfinding, we're going to overlay a grid over the field with
@@ -373,7 +373,7 @@ class MyField(Field):
         # we store the results of all the paths, why? Not sure we need to anymore
         #self.allpaths = []
 
-    def path_score_cells(self):
+    def set_path_blocks(self):
         #print "***Before path: ",self.m_cell_dict
         for cell in self.m_cell_dict.values():
             if self.is_cell_good_to_go(cell.m_id):
@@ -384,7 +384,7 @@ class MyField(Field):
                         self.rescale_num2path(cell.m_diam/2),
                         BLOCK_FUZZ)
 
-    def path_find_connectors(self):
+    def calc_connector_paths(self):
         """ Find path for all the connectors.
 
         We sort the connectors by distance and do easy paths for the closest 
@@ -399,12 +399,14 @@ class MyField(Field):
                 # just used as a sort comparison, so we'll not take the hit for sqrt
                 score = (connector.m_cell0.m_x - connector.m_cell1.m_x)**2 + \
                         (connector.m_cell0.m_y - connector.m_cell1.m_y)**2
-                # here we save time by sorting as we go through it
+                # here we save time by reindexing as we go through it
                 conx_dict_rekeyed[score] = connector
         for i in sorted(conx_dict_rekeyed.iterkeys()):
             connector = conx_dict_rekeyed[i]
             #print "findpath--id:",connector.m_id,"dist:",i**0.5
-            connector.add_path(self.find_path(connector))
+            path = self.find_path(connector)
+            connector.add_path(path)
+            #import pdb;pdb.set_trace()
 
     def find_path(self, connector):
         """ Find path in path_grid and then scale it appropriately."""
@@ -415,13 +417,14 @@ class MyField(Field):
         # smarts. We sort the connectors by distance and do easy paths for the
         # closest ones first.
         path = list(self.m_pathgrid.easy_path(start, goal))
-        print "connector:id",connector.m_id,"path:",path
         #if not path:
         #path = list(self.m_pathfinder.compute_path(start, goal))
         # take results of found paths and block them on the map
         self.m_pathgrid.set_block_line(path)
         #self.allpaths = self.allpaths + path
-        return self.rescale_path2pt(path)
+        rescaled_path = self.rescale_path2pt(path)
+        #import pdb;pdb.set_trace()
+        return rescaled_path
         
     def print_grid(self):
         self.m_pathgrid.printme()
@@ -466,7 +469,7 @@ class MyField(Field):
         #print "m_path_scale",self.m_path_scale
         return self._convert(n,1/self.m_path_scale,0,self.m_xmin_field)
 
-    def _rescale_pts(self,obj,scale,orig_pmin,new_pmin):
+    def _rescale_pts(self,obj,scale,orig_pmin,new_pmin,type=None):
         """Recursively rescales points or lists of points.
 
         This function accepts single integers, tuples, lists, or combinations.
@@ -477,25 +480,26 @@ class MyField(Field):
                 isinstance(obj[0], (int,float)) and \
                 isinstance(obj[1], (int,float)):
             # if we were given ints (pixel scaling), return ints
-            if isinstance(new_pmin[0],int) and isinstance(new_pmin[1],int):
+            if type == 'int':
                 x = int((obj[0]-orig_pmin[0])*scale) + new_pmin[0]
                 y = int((obj[1]-orig_pmin[1])*scale) + new_pmin[1]
             # otherwise (m scaling), return floats
             else:
-                x = (obj[0]-orig_pmin[0])*scale + new_pmin[0]
-                y = (obj[1]-orig_pmin[1])*scale + new_pmin[1]
+                x = float(obj[0]-orig_pmin[0])*scale + new_pmin[0]
+                y = float(obj[1]-orig_pmin[1])*scale + new_pmin[1]
             return x,y
         # if this is a list, examine each element, return list
         elif isinstance(obj, (list,tuple)):
             mylist = []
             for i in obj:
-                mylist.append(self._rescale_pts(i,scale,orig_pmin,new_pmin))
+                mylist.append(self._rescale_pts(i, scale, orig_pmin, 
+                              new_pmin, type))
             return mylist
         # if this is a tuple, examine each element, return tuple
         elif isinstance(obj, tuple):
             mylist = []
             for i in obj:
-                mylist.append(self._rescale_pts(i,scale,orig_pmin,new_pmin))
+                mylist.append(self._rescale_pts(i, scale, orig_pmin, new_pmin))
             return tuple(mylist)
         # otherwise, we don't know what to do with it, return it
         # TODO: Consider throwing an exception
@@ -508,40 +512,40 @@ class MyField(Field):
         orig_pmin = (self.m_xmin_field,self.m_ymin_field)
         scale = self.m_screen_scale
         new_pmin = (self.m_xmin_screen+self.m_xmargin,self.m_ymin_screen+self.m_ymargin)
-        return self._rescale_pts(p,scale,orig_pmin,new_pmin)
+        return self._rescale_pts(p,scale,orig_pmin,new_pmin, 'int')
 
     def rescale_pt2vector(self,p):
         """Convert coord in internal units (cm) to units usable for the vector or screen. """
         orig_pmin = (self.m_xmin_field,self.m_ymin_field)
         scale = self.m_vector_scale
         new_pmin = (self.m_xmin_vector,self.m_ymin_vector)
-        return self._rescale_pts(p,scale,orig_pmin,new_pmin)
+        return self._rescale_pts(p,scale,orig_pmin,new_pmin, 'float')
 
     def rescale_pt2path(self,p):
         """Convert coord in internal units (cm) to units usable for the vector or screen. """
         orig_pmin = (self.m_xmin_field,self.m_ymin_field)
         scale = self.m_path_scale
         new_pmin = (0,0)
-        return self._rescale_pts(p,scale,orig_pmin,new_pmin)
+        return self._rescale_pts(p,scale,orig_pmin,new_pmin, 'int')
 
     def rescale_path2pt(self,p):
         """Convert coord in internal units (cm) to units usable for the vector or screen. """
-        orig_pmin = (self.m_xmin_field,self.m_ymin_field)
-        scale = 1/self.m_path_scale
-        new_pmin = (0,0)
-        return self._rescale_pts(p,scale,orig_pmin,new_pmin)
+        orig_pmin = (0.0,0.0)
+        scale = 1.0/self.m_path_scale
+        new_pmin = (self.m_xmin_field,self.m_ymin_field)
+        return self._rescale_pts(p, scale, orig_pmin, new_pmin, 'float')
 
     def rescale_num2screen(self,n):
         """Convert num in internal units (cm) to units usable for screen. """
-        return n * self.m_screen_scale
+        return int(n * self.m_screen_scale)
 
     def rescale_num2vector(self,n):
         """Convert num in internal units (cm) to units usable for vector. """
-        return n * self.m_vector_scale
+        return float(n) * self.m_vector_scale
 
     def rescale_num2path(self,n):
         """Convert num in internal units (cm) to units usable for vector. """
-        return n * self.m_path_scale
+        return int(n * self.m_path_scale)
 
     def rescale_path2num(self,n):
         """Convert num in internal units (cm) to units usable for vector. """

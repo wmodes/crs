@@ -69,7 +69,7 @@ draw_bodies = False
 
 # Line mode, one of 
 #   'direct', 'curve', 'simple', 'improved-simple', 'pathfinding', 'improved_pathfinding'
-linemode = 'curve'
+linemode = 'pathfinding'
 
 inverse=True
 if inverse:

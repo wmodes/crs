@@ -131,8 +131,10 @@ class GridMap(object):
         """Sets the blocked state of an entire path."""
         for p in pathlist:
             (x,y) = p
-            if not self.map[x][y]:
-                self.map[x][y] = PATH_COST_LINE
+            if 0 <= x < self.xmax and \
+               0 <= y < self.ymax:
+                if not self.map[x][y]:
+                    self.map[x][y] = PATH_COST_LINE
 
     def midpoint(self, p1, p2):
         return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
@@ -234,9 +236,6 @@ class GridMap(object):
         (x0,y0)=start
         (x1,y1)=goal
         path = []
-        # get position of p1 relative to p0 
-        vx = int(copysign(1,x1-x0))  # rel x pos vector as 1 or -1
-        vy = int(copysign(1,y1-y0))  # rel y pos vector as 1 or -1
         xdif = abs(x0 - x1)
         ydif = abs(y0 - y1)
         if not xdif:
@@ -246,13 +245,13 @@ class GridMap(object):
             #print "straight y line: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif
             path = enumXpath((x0,y0),(x1,y1))
         elif (xdif > ydif):
-            xmid = x0 + vx*xdif/2
+            xmid = (x0 + x1)/2
             #print "longer on x: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"xmidpt:",xmid
             path += enumXpath((x0,y0),(xmid,y0))
             path += enumYpath((xmid,y0),(xmid,y1))
             path += enumXpath((xmid,y1),(x1,y1))
         else:
-            ymid = y0 + vy*ydif/2
+            ymid = (y0 + y1)/2
             #print "longer on y: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"ymidpt:",ymid
             path += enumYpath((x0,y0),(x0,ymid))
             path += enumXpath((x0,ymid),(x1,ymid))

@@ -97,7 +97,7 @@ class MyConnector(Connector):
     Stores the following values:
         m_cell0, m_cell1: the two cells connected by this connector
         m_path: the computed coordinate path from cell0 to cell1
-        m_score: a score to help with sorting? I can't remember (check gridmap)
+        m_dist: a dist to help with sorting
 
     makeBasicShape: create the set of arcs that will define the shape
     add_path: add a computed path to this connector
@@ -114,13 +114,15 @@ class MyConnector(Connector):
         # store other params
         self.m_shape = Line()
         self.m_path = None
-        self.m_score = 0
+        self.m_dist = 0
         super(MyConnector,self).__init__(field,id,cell0,cell1)
 
-    def update(self, color=None):
+    def update(self, color=None, dist=None):
         """Store basic info and create a DataElement object"""
         if color is not None:
             self.m_color = color
+        if dist is not None:
+            self.m_dist = dist
         super(MyConnector, self).update()
 
     def add_path(self,path):

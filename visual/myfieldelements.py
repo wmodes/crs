@@ -17,6 +17,7 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
+from math import sqrt
 
 # installed modules
 
@@ -397,10 +398,11 @@ class MyField(Field):
             if self.is_conx_good_to_go(connector.m_id):
                 # normally we'd take the sqrt to get the distance, but here this is 
                 # just used as a sort comparison, so we'll not take the hit for sqrt
-                score = (connector.m_cell0.m_x - connector.m_cell1.m_x)**2 + \
-                        (connector.m_cell0.m_y - connector.m_cell1.m_y)**2
+                dist = sqrt((connector.m_cell0.m_x - connector.m_cell1.m_x)**2 + \
+                        (connector.m_cell0.m_y - connector.m_cell1.m_y)**2)
                 # here we save time by reindexing as we go through it
-                conx_dict_rekeyed[score] = connector
+                connector.update(dist=dist)
+                conx_dict_rekeyed[dist] = connector
         for i in sorted(conx_dict_rekeyed.iterkeys()):
             connector = conx_dict_rekeyed[i]
             #print "findpath--id:",connector.m_id,"dist:",i**0.5

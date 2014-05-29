@@ -139,3 +139,5 @@ was resized
 * Debugged a problem where the midpoint of lines was totally wack, traced to make_arc
 * Got pathfinder working. at least the easy_path portion
 
+5/28/2014
+* Added routine that trims the ends of connectors so they don't go in cells

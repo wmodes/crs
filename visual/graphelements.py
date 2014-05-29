@@ -18,7 +18,7 @@ __license__ = "GNU GPL 3.0 or later"
 
 # core modules
 from itertools import chain
-from math import copysign
+from math import sqrt
 
 # installed modules
 import pyglet
@@ -268,23 +268,53 @@ class Line(object):
          m2 = self.fracpoint(p1, p2, 0.666)
          return (p1, m1, m2, p2)
 
-    def in_circle(self,center, radius, p):
+    def in_circle(self, p, center, radius):
         """Is point, p, inside circle of given center and radius."""
         square_dist = (center[0] - p[0]) ** 2 + (center[1] - p[1]) ** 2
         return square_dist < radius ** 2
 
-    def find_intersect(self,outpt, inpt, center, radius):
+    def find_intersect(self, inpt, outpt, center, radius):
         # Here instead of checking whether the point is on the circle, 
         # we just see if the points have converged on each other.
-        sum_dist = abs(inpt[0] - outpt[0]) + abs(inpt[1] - outpt[1])
-        #print "sum dist:",sum_dist
-        if sum_dist < 2:
+        # 1. test to end recursion
+        dist = sqrt((inpt[0] - outpt[0])**2 + (inpt[1] - outpt[1])**2)
+        print "KILME: dist",dist
+        if dist < .05:
             return inpt
+        # 2. divide the segment in half
         midpt = self.midpoint(outpt, inpt)
-        if self.in_circle(center, radius, midpt):
-            return self.find_intersect(outpt, midpt, center, radius)
+        # 3. recurse with segment that stradles the circle boundary
+        if self.in_circle(midpt, center, radius):
+            return self.find_intersect(midpt, outpt, center, radius)
         else:
-            return self.find_intersect(midpt, inpt, center, radius)
+            return self.find_intersect(inpt, midpt, center, radius)
+
+    def trim_ends(self, end0, end1, p0, p1, r0, r1):
+        # Remove parts of path within the radius of cell
+        # TODO: Ensure that the logic here works in every case
+        # if both ends of this line segment are inside a circle fugetaboutit
+        print "KILLME:start:",end0,end1,
+        if (self.in_circle(end0, p0, r0) and self.in_circle(end1, p0, r0)) or\
+            (self.in_circle(end0, p1, r1) and self.in_circle(end1, p1, r1)):
+            return (end0, end1)
+        # if near end of this line segment is inside first circle
+        if self.in_circle(end0, p0, r0):
+            # find the point intersecting circle
+            end0 = self.find_intersect(end0, end1, p0, r0)
+        # if far end of this line segment is inside first circle
+        if self.in_circle(end1, p0, r0):
+            # find the point intersecting the circle
+            end0 = self.find_intersect(end1, end0, p0, r0)
+        # if near end of this line segment is inside second circle
+        elif self.in_circle(end0, p1, r1):
+            # find the point intersecting the circle
+            end1 = self.find_intersect(end0, end1, p1, r1)
+        # if near end of this line segment is inside second circle
+        elif self.in_circle(end1, p1, r1):
+            # find the point intersecting the circle
+            end1 = self.find_intersect(end1, end0, p1, r1)
+        print "end:",end0,end1
+        return (end0, end1)
 
     def render(self):
         """Render the line.
@@ -318,7 +348,7 @@ class Line(object):
             ]
             self.m_arcindex = [(0, 1, 2, 3)]
 
-        elif LINEMODE == 'curve':
+        elif LINEMODE == 'curves':
             (x0,y0)=p0
             (x1,y1)=p1
             # get position of p1 relative to p0
@@ -327,15 +357,19 @@ class Line(object):
             if not xdif or not ydif:
                 #print "straight x line: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif
                 midpt = self.midpoint(p0,p1)
-                self.m_arcpoints = [p0, midpt, midpt, p1]
+                arcpts = [p0, midpt, midpt, p1]
             elif (xdif > ydif):
                 xmid = (x0 + x1)/2
                 #print "longer on x: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"xmidpt:",xmid
-                self.m_arcpoints = [p0, (xmid,y0), (xmid,y1), p1]
+                arcpts = [p0, (xmid,y0), (xmid,y1), p1]
             else:
                 ymid = (y0 + y1)/2
                 #print "longer on y: p0:",start,"p1:",goal,"xdif:",xdif,"ydif:",ydif,"ymidpt:",ymid
-                self.m_arcpoints = [p0, (x0,ymid), (x0,ymid), p1]
+                arcpts = [p0, (x0,ymid), (x0,ymid), p1]
+            (arcpts[0],arcpts[1]) = self.trim_ends(arcpts[0],arcpts[1], p0, p1, r0, r1)
+            (arcpts[2],arcpts[3]) = self.trim_ends(arcpts[2],arcpts[3], p0, p1, r0, r1)
+            self.m_arcpoints = arcpts
+            #print "KILLME:",arcpts
             self.m_arcindex = [(0, 1, 2, 3)]
 
         elif LINEMODE == 'simple':
@@ -377,17 +411,17 @@ class Line(object):
                 # Remove parts of path within the radius of cell
                 # TODO: Ensure that the logic here works in every case
                 # if both ends of this line segment are inside a circle fugetaboutit
-                if (self.in_circle(p0, r0, thispt) and self.in_circle(p0, r0, nextpt)) or\
-                    (self.in_circle(p1, r1, thispt) and self.in_circle(p1, r1, nextpt)):
+                if (self.in_circle(thispt, p0, r0) and self.in_circle(nextpt, p0, r0)) or\
+                    (self.in_circle(thispt, p1, r1) and self.in_circle(nextpt, p1, r1)):
                     continue
                 # if near end of this line segment is inside a circle
-                if self.in_circle(p0, r0, thispt):
+                if self.in_circle(thispt, p0, r0):
                     # find the point intersecting the circle
-                    thispt = self.find_intersect(nextpt, thispt, p0, r0)
+                    thispt = self.find_intersect(thispt, nextpt, p0, r0)
                 # if far end of this line segment is inside the other circle
-                elif self.in_circle(p1, r1, nextpt):
+                elif self.in_circle(nextpt, p1, r1):
                     # find the point intersecting the circle
-                    nextpt = self.find_intersect(thispt, nextpt, p1, r1)
+                    nextpt = self.find_intersect(nextpt, thispt, p1, r1)
 
                 # if neither point is inside one of our circles, use it
                 #print path[i],"inside cell"

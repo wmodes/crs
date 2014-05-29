@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Graphic Element classes.
 
@@ -276,7 +276,7 @@ class Line(object):
         # we just see if the points have converged on each other.
         # 1. test to end recursion
         dist = sqrt((inpt[0] - outpt[0])**2 + (inpt[1] - outpt[1])**2)
-        print "KILME: dist",dist
+        #print "KILLME: dist",dist
         if dist < .05:
             return inpt
         # 2. divide the segment in half
@@ -291,7 +291,7 @@ class Line(object):
         # Remove parts of path within the radius of cell
         # TODO: Ensure that the logic here works in every case
         # if both ends of this line segment are inside a circle fugetaboutit
-        print "KILLME:start:",end0,end1,
+        #print "KILLME:start:",end0,end1,
         if (self.in_circle(end0, p0, r0) and self.in_circle(end1, p0, r0)) or\
             (self.in_circle(end0, p1, r1) and self.in_circle(end1, p1, r1)):
             return (end0, end1)
@@ -311,7 +311,7 @@ class Line(object):
         elif self.in_circle(end1, p1, r1):
             # find the point intersecting the circle
             end1 = self.find_intersect(end1, end0, p1, r1)
-        print "end:",end0,end1
+        #print "end:",end0,end1
         return (end0, end1)
 
     def render(self):

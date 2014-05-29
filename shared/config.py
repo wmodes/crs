@@ -16,13 +16,50 @@ ungroup_distance = 150
 
 # conductor configuration
 #
-conductor_decay = {
+connector_avg_triggers = {
+    # what avg value triggers the connection
+    # 0 = no avg triggers
+    'default': 0.8,
+    'grouped': 0.3,
+    'contact': 0.3,
+    'friends': 0.8,
+    'coord': 0.9,
+    'fof': 0,
+    'leastconx': 0,
+    'nearby': 0,
+    'tag': 0,
+    'chosen': 0,
+    'fusion': 0,
+    'transfer': 0,
+}
+
+connector_memory_time = {
+    # Haw far back do we consider (in sec)
+    # 0 = no timed triggers
+    'default': 10,
+    'grouped': 3,
+    'contact': 20,
+    'friends': 30,
+    'coord': 5,
+    'fof': 0,
+    'leastconx': 0,
+    'nearby': 0,
+    'tag': 0,
+    'chosen': 0,
+    'facing': 20,
+    'fusion': 0,
+    'transfer': 0,
+}
+
+connector_max_age = {
     # as max age in secs
-    # 0 = no decay
+    # 0 = immortal
+    'default': 10,
+    'grouped': 20,
+    'contact': 10,
+    'friends': 10,
     'coord': 10,
     'fof': 10,
-    'friends': 10,
-    'grouped': 20,
     'irlbuds': 0,
     'leastconx': 20,
     'mirror': 10,
@@ -31,13 +68,15 @@ conductor_decay = {
     'tag': 10,
     'chosen': 20,
     'facing': 20,
-    'contact': 10,
     'fusion': 0,
     'transfer': 0,
 }
 
-conductor_distances = {
+connector_distance_triggers = {
     # all in meters
+    'default': 2, # totally arbitrary since default dist is meaningless
+    'friends': 10,
+    'coord': 20,
     'contact': .33,
     'fusion_max': 1.5,
     'fusion_min': .75,
@@ -45,25 +84,15 @@ conductor_distances = {
     'nearby_max': 1.5,
 }
 
-conductor_times = {
-    # all in seconds
-    'a_while': 15,
-    'some_time': 30,
-    'decent_time': 60,
-    'pretty_long_time': 120,
-    'long_time': 180,
-    'really_long_time': 240,
-}
-
-conductor_latitude = {
+connector_latitude = {
     # all as percentage variance
     'heading': 10,
 }
 
 # visual configuration
 #
-#graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
-graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
+graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
+#graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
 #draw_bodies = True
 draw_bodies = False
 
@@ -120,7 +149,7 @@ path_unit = .2    # 0.2m = 20 cm
 # Internal config
 #
 
-osc_framerate = 25
+framerate = 25
 
 logfile="crs-visual.log"
 
@@ -142,7 +171,7 @@ report_frequency = {
 # MSGS  = 16
 # PYG   = 32
 # COND  = 32
-debug_level = 2 + 4 + 64    # data (2), field (4), osc(16), conduct(64)
+debug_level = 2 + 4 + 16 + 64    # data (2), field (4), osc(16), conduct(64)
 #debug_level = 2 + 4    # data (2), field (4)
 #debug_level = 2 + 4 + 8    # data (2), field (4), graph (8)
 #debug_level = 255    # everything

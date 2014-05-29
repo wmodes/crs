@@ -38,7 +38,7 @@ OSCPATH = config.oscpath
 
 FRAMERATE = config.framerate
 CONX_AVG = config.connector_avg_triggers
-CONX_TIME = config.connector_time_triggers
+CONX_TIME = config.connector_memory_time
 CONX_DIST = config.connector_distance_triggers
 CONX_AGE = config.connector_max_age
 CONX_LAT = config.connector_latitude

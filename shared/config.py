@@ -78,6 +78,7 @@ connector_distance_triggers = {
     'friends': 10,
     'coord': 20,
     'contact': .33,
+    'facing': 30,   # degrees
     'fusion_max': 1.5,
     'fusion_min': .75,
     'nearby_min': 3,

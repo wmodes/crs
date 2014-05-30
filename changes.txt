@@ -140,4 +140,17 @@ was resized
 * Got pathfinder working. at least the easy_path portion
 
 5/28/2014
-* Added routine that trims the ends of connectors so they don't go in cells
+* Visual: Added routine that trims the ends of connectors so they don't go in cells
+* Visual: Made the 'curves' routine the default for now
+* In conductor, moved from a conditional sceme for conections to a decaying 
+    running average that is triggered by passing an assigned trigger
+* Added conductor configs for conx_age, conx_avg_time, conx_avg_trigger, 
+    conx_distance
+* Added conductor test routines for grouped, contact, friends, coord, facing,
+    and fusion
+* Added record_running_avg routine
+* Added get_runnning_avg routine
+* Refactored and debugged update_all_connections routine
+* Fixed a problem where groups were not being recorder properly in dataelements
+* Adjusted the triggers and memory_times so they fired off when they should
+* 

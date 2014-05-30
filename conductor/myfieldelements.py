@@ -38,7 +38,7 @@ XMAX_FIELD = config.xmax_field
 YMAX_FIELD = config.ymax_field
 BLOCK_FUZZ = config.fuzzy_area_for_cells
 
-MIN_CONX_DIST = config.minimum_connection_distance
+#MIN_CONX_DIST = config.minimum_connection_distance
 
 MAX_LOST_PATIENCE = config.max_lost_patience
 

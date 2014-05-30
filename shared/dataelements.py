@@ -232,18 +232,18 @@ class Body(object):
     Stores the following values:
         m_field: store a back ref to the field that called us
         m_id: UID of target
-        x,y: position of person within field in m
-        ex,ey: standard error of measurement (SEM) of position, in meters 
-        spd, heading: estimate of speed of person in m/s, heading in degrees
-        espd, eheading: SEM of spd, heading
-        facing: direction person is facing in degees
-        efacing: SEM of facing direction
-        diam: estimated mean diameter of legs
-        sigmadiam: estimated sigma (sqrt(variance)) of diameter
-        sep: estimated mean separation of legs
-        sigmasep: estimated sigma (sqrt(variance)) of sep
-        leftness: measure of how likely leg 0 is the left leg
-        vis: number of frames since a positive fix was found for either leg
+        m_x,m_y: position of person within field in m
+        m_ex,m_ey: standard error of measurement (SEM) of position, in meters 
+        m_spd, m_heading: estimate of speed of person in m/s, heading in degrees
+        m_espd, m_eheading: SEM of spd, heading
+        m_facing: direction person is facing in degees
+        m_efacing: SEM of facing direction
+        m_diam: estimated mean diameter of legs
+        m_sigmadiam: estimated sigma (sqrt(variance)) of diameter
+        m_sep: estimated mean separation of legs
+        m_sigmasep: estimated sigma (sqrt(variance)) of sep
+        m_leftness: measure of how likely leg 0 is the left leg
+        m_vis: number of frames since a positive fix was found for either leg
 
     """
 
@@ -347,20 +347,19 @@ class Cell(object):
         self.m_minor = minor
         self.m_gid = gid
         self.m_gsize = gsize
-        self.m_attr_dict = {}
         #TODO: Move this to graphics engine
         self.m_diam = self.m_body_diam + DIAM_PAD
         if visible is None:
             self.m_visible = True
         #
         # init vars
+        self.m_attr_dict = {}
         self.m_conx_dict = {}
         self.m_body = Body(field, id)
         # create an array of leg instances
         self.m_leglist = []
         for i in range(MAX_LEGS):
             self.m_leglist.append(Leg(field, id, i))
-        self.m_gid = gid
         self.m_fromcenter = 0
         self.m_fromnearest = 0
         self.m_fromexit = 0

@@ -62,7 +62,6 @@ MODE_VECTOR = 1
 PATH_UNIT = config.path_unit
 BLOCK_FUZZ = config.fuzzy_area_for_cells
 
-MIN_CONX_DIST = config.minimum_connection_distance
 
 MAX_LOST_PATIENCE = config.max_lost_patience
 
@@ -97,7 +96,7 @@ def main():
         # call user script
         osc.each_frame()
 
-        if field.m_frame!=lastframe:
+        if field.m_frame != lastframe:
             # do conductor calculations and inferences
             conductor.age_and_expire_connections()
             conductor.update_all_connections()
@@ -115,7 +114,7 @@ def main():
     osc.m_oscserver.close()
 
 if __name__ == '__main__':
-    try:
-        sys.exit(main())
-    except:
-        pass
+    #try:
+    sys.exit(main())
+    #except:
+        #pass

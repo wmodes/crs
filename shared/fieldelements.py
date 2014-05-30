@@ -32,7 +32,7 @@ LOGFILE = config.logfile
 REPORT_FREQ = config.report_frequency
 GROUP_DIST = config.group_distance
 UNGROUP_DIST = config.ungroup_distance
-OSC_FPS = config.osc_framerate
+OSC_FPS = config.framerate
 XMIN_FIELD = config.xmin_field
 YMIN_FIELD = config.ymin_field
 XMAX_FIELD = config.xmax_field
@@ -156,6 +156,8 @@ class Field(object):
                 group = self.groupClass(self, gid)
                 # add to the group list
                 self.m_group_dict[gid] = group
+                if dbug.LEV & dbug.FIELD: 
+                    print "Field:create_group:Group",gid,"created"
                 #self.m_our_group_count += 1
                 #if dbug.LEV & dbug.FIELD:
                     #print "Field:create_group:count:",self.m_our_group_count
@@ -376,10 +378,14 @@ class Field(object):
             self.check_for_missing_group(gid)
             self.check_for_new_group(id, gid)
             # now update the cell's gid membership
-            self.m_cell_dict[id].m_group = gid
+            # this is redundant but okay
+            self.m_cell_dict[id].m_gid = gid
             # if non-zero, add cell to cell_dict in group
             if gid:
                 self.m_group_dict[gid].m_cell_dict[id] = self.m_cell_dict[id]
+                if dbug.LEV & dbug.FIELD: 
+                    print "Field:update_cell:Cell",id,"added to group", \
+                            self.m_cell_dict[id].m_gid
         self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize)
 
     def update_geo(self, id, fromcenter=None, fromnearest=None, fromexit=None):

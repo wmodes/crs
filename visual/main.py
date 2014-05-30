@@ -112,8 +112,8 @@ def main():
                     print "Main:OSC to laser:", OSCPATH['graph_update'],", frame=",field.m_frame
                 field.m_osc.send_laser(OSCPATH['graph_update'],[field.m_frame])
 
-            for (cell0,cell1) in list(combinations(field.m_cell_dict.values(), 2)):
-                field.update_conx_attr(cell0, cell1, 'friends', 1.0)
+            #for (cell0,cell1) in list(combinations(field.m_cell_dict.values(), 2)):
+                #field.update_conx_attr(cell0, cell1, 'friends', 1.0)
 
             lastframe=field.m_frame
         else:

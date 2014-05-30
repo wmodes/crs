@@ -25,6 +25,7 @@ connector_avg_triggers = {
     'friends': 0.8,
     'coord': 0.9,
     'fof': 0,
+    'irlbuds': 0.8,
     'leastconx': 0,
     'nearby': 0,
     'tag': 0,
@@ -42,6 +43,7 @@ connector_memory_time = {
     'friends': 30,
     'coord': 5,
     'fof': 0,
+    'irlbuds': 5*60,
     'leastconx': 0,
     'nearby': 0,
     'tag': 0,
@@ -60,7 +62,7 @@ connector_max_age = {
     'friends': 10,
     'coord': 10,
     'fof': 10,
-    'irlbuds': 0,
+    'irlbuds': 30,
     'leastconx': 20,
     'mirror': 10,
     'nearby': 5,
@@ -172,7 +174,7 @@ report_frequency = {
 # MSGS  = 16
 # PYG   = 32
 # COND  = 32
-debug_level = 2 + 4 + 16 + 64    # data (2), field (4), osc(16), conduct(64)
+debug_level = 2 + 4 + 64    # data (2), field (4), osc(16), conduct(64)
 #debug_level = 2 + 4    # data (2), field (4)
 #debug_level = 2 + 4 + 8    # data (2), field (4), graph (8)
 #debug_level = 255    # everything

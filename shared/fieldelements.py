@@ -285,6 +285,38 @@ class Field(object):
             if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
                         "was suspected lost but is now above suspicion"
 
+    def check_for_missing_conx(self, cid, uid0, uid1):
+        """Check for missing or suspect conx, handle it.
+
+        Possibilities:
+            * Conx does not exist:
+                create it, remove from suspect list, update it, increment
+                count, and refresh any connectors that point to it
+            * Conx exists, but is on the suspect list
+                remove from suspect list, increment count
+            * Conx exists in master list and is not suspect:
+                update its info; count unchanged
+        """
+        # if conx does not exist:
+        if not cid in self.m_conx_dict:
+            # create it and increment count
+            self.create_connector(
+                    self.m_cell_dict[uid0], self.m_cell_dict[uid1])
+            # remove from suspect list
+            if cid in self.m_suspect_conxs:
+                del self.m_suspect_conxs[cid]
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:conx_check:Cell",cid, "was lost and has been recreated"
+        # if conx exists, but is on suspect list
+        elif cid in self.m_suspect_conxs:
+            # remove from suspect list
+            del self.m_suspect_conxs[cid]
+            # increment count
+            self.m_our_conx_count += 1
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:conx_check:Conx",cid,\
+                        "was suspected lost but is now above suspicion"
+
     def is_cell_good_to_go(self, id):
         """Test if cell is good to be rendered.
         Returns True if cell is on master list and not suspect.
@@ -511,9 +543,12 @@ class Field(object):
             return False
         return True
 
-    def update_conx_attr(self, cell0, cell1, type, value):
+    def update_conx_attr(self, cid, uid0, uid1, type, value):
         """Update an attribute to a connector, creating it if it doesn't exist."""
-        connector = self.create_connector(cell0, cell1)
+        self.check_for_missing_cell(uid0)
+        self.check_for_missing_cell(uid1)
+        self.check_for_missing_conx(cid, uid0, uid1)
+        connector = self.m_conx_dict[cid]
         if dbug.LEV & dbug.MORE: 
             print "Field:update_conx_attr:",connector.m_id,type,value
         connector.update_attr(type, value)

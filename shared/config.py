@@ -94,7 +94,7 @@ connector_latitude = {
 
 # visual configuration
 #
-graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
+graphic_modes = 3   # 1=screen; 2=osc; 3=etherdream
 #graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
 #draw_bodies = True
 draw_bodies = False

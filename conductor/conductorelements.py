@@ -139,11 +139,11 @@ class Conductor(object):
                     # if avg is under trigger value 
                     else:
                         if type in CONX_AGE:
-                            maxage = CONX_AGE[type]
+                            max_age = CONX_AGE[type]
                         else:
-                            maxage = CONX_AGE['default']
+                            max_age = CONX_AGE['default']
                         #   AND decay time is zero, kill it
-                        if CONX_AGE[type] == 0:
+                        if not max_age:
                             # delete atrr and maybe conx
                             self.m_field.m_osc.nix_cattr(cid, type)
                             self.m_field.del_conx_attr(cid, type)
@@ -201,7 +201,11 @@ class Conductor(object):
             # iterate over ever attr
             for type,attr in new_attr_dict.iteritems():
                 # if decay time of type is not zero (no decay)
-                if CONX_AGE[type]:
+                if type in CONX_AGE:
+                    max_age = CONX_AGE[type]
+                else:
+                    max_age = CONX_AGE['default']
+                if max_age:
                     # if value of attr is zero or less
                     if attr.m_value == 0:
                         # delete atrr and maybe conx
@@ -210,7 +214,7 @@ class Conductor(object):
                     else:
                         # calc new value based on time and decay rate
                         age = time() - attr.m_timestamp
-                        newvalue = attr.m_origvalue - (age/CONX_AGE[type])
+                        newvalue = attr.m_origvalue - (age/max_age)
                         #print "KILLME:",cid,type,"timestmp:",attr.m_timestamp,"age:",age,"orig:",attr.m_origvalue,"newvalue:",newvalue
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:

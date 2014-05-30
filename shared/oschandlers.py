@@ -185,6 +185,7 @@ class OSCHandler(object):
         self.send_to('visual', path, args)
         self.send_to('sound', path, args)
         self.send_to('recorder', path, args)
+        self.send_to('laser', path, args)
 
     def send_to_all_clients(self, path, args):
         """Broadcast to all the clients."""

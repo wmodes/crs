@@ -68,7 +68,7 @@ class Conductor(object):
             'coord': self.test_coord,
             #'mirror': self.test_mirror,
             #'fof': self.test_fof,
-            #'irlbuds': self.test_irlbuds,
+            'irlbuds': self.test_irlbuds,
             #'leastconx': self.test_leastconx,
             #'nearby': self.test_nearby,
             #'strangers': self.test_strangers,
@@ -131,18 +131,19 @@ class Conductor(object):
                                         "%s-%s %.2f"%(cid,type,avg), \
                                         "(trigger:%.2f)"%avg_trigger
                             # create one
-                        self.m_field.update_conx_attr(cell0, cell1, type, avg)
+                        self.m_field.update_conx_attr(cid, cell0.m_id,
+                                cell1.m_id, type, avg)
                         #else:
                             #if dbug.LEV & dbug.MORE: 
                                 #print "Conduct:update_conx:already there, bro"
                     # if avg is under trigger value 
                     else:
                         if type in CONX_AGE:
-                            maxage = CONX_AGE[type]
+                            max_age = CONX_AGE[type]
                         else:
-                            maxage = CONX_AGE['default']
+                            max_age = CONX_AGE['default']
                         #   AND decay time is zero, kill it
-                        if CONX_AGE[type] == 0:
+                        if not max_age:
                             # delete atrr and maybe conx
                             self.m_field.m_osc.nix_cattr(cid, type)
                             self.m_field.del_conx_attr(cid, type)
@@ -200,7 +201,11 @@ class Conductor(object):
             # iterate over ever attr
             for type,attr in new_attr_dict.iteritems():
                 # if decay time of type is not zero (no decay)
-                if CONX_AGE[type]:
+                if type in CONX_AGE:
+                    max_age = CONX_AGE[type]
+                else:
+                    max_age = CONX_AGE['default']
+                if max_age:
                     # if value of attr is zero or less
                     if attr.m_value == 0:
                         # delete atrr and maybe conx
@@ -209,7 +214,7 @@ class Conductor(object):
                     else:
                         # calc new value based on time and decay rate
                         age = time() - attr.m_timestamp
-                        newvalue = attr.m_origvalue - (age/CONX_AGE[type])
+                        newvalue = attr.m_origvalue - (age/max_age)
                         #print "KILLME:",cid,type,"timestmp:",attr.m_timestamp,"age:",age,"orig:",attr.m_origvalue,"newvalue:",newvalue
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:
@@ -327,15 +332,28 @@ class Conductor(object):
         return 0
 
     def test_irlbuds(self, cid, cell0, cell1):
-        """Did these people come in together?
+        """Did these people come in together? Have they spent most of their
+        time together?
 
-        Note: This requires something to be saved over time.
-        Meets the following conditions:
-            1.
+        Evaluates the folllowing criteria
+            1. distance between people
+            2. length of time they've been close
         Returns:
-            value: 1.0 if connected, 0 if no
+            The exponentially decaying weighted moving average
         """
-        return 0
+        # we calculate a score
+        # we get the distance between cells
+        dist = self.m_dist_table[cid]
+        # we normalize this dist where 
+        #   right on top of each other would be 1.0
+        #   as far as you could get would be 0.0
+        if 'irlbuds' in CONX_DIST:
+            max_dist = CONX_DIST['irlbuds']
+        else:
+            max_dist = CONX_DIST['default']
+        score = max(0, 1 - float(dist) / max_dist)
+        # we record our score in our running avg table
+        return self.record_running_avg(cid,'irlbuds',score)
 
     def test_leastconx(self, cid, cell0, cell1):
         """Are these individuals among the least connected in the field?

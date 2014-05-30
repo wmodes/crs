@@ -310,7 +310,26 @@ class OSCHandler(object):
             value: a unit value (0.0-1.0) representing the intensity of the attribute
             time: the length of time in seconds that the attribute has applied so far
         """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_conx"
+        for index, item in enumerate(args):
+            if item == 'nan':
+                args[index] = None
+        type = args[0]
+        subtype = args[1]
+        cid = args[2]
+        if cid not in self.m_field.m_conx_dict:
+            if dbug.LEV & dbug.MSGS: 
+                print "OSC:event_conduct_conx:no cid", cid, "in registered conx list"
+        uid0 = args[3]
+        uid1 = args[4]
+        value = args[5]
+        time = args[6]
+        if self.m_field.m_frame%REPORT_FREQ['debug'] == 0:
+            #print "OSC:event_track_update:",path,args,source
+            if dbug.LEV & dbug.MSGS: 
+                print " OSC:event_conduct_conx:cid:",cid,type,subtype,uid0,uid1,value
+        #TODO: Deal with cid
+        #TODO: Deal with 
+        self.m_field.update_conx_attr(cid, uid0, uid1, type, value)
 
     def event_conduct_conxbreak(self, path, tags, args, source):
         """Conductor event: break connection.

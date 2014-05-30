@@ -55,6 +55,7 @@ class Attr(object):
         self.m_id = id
         self.m_origvalue = value
         self.m_value = value
+        self.m_createtime = time()
         self.m_timestamp = time()
 
     def update(self, value=None):
@@ -84,6 +85,7 @@ class Event(object):
         self.m_uid0 = uid0
         self.m_uid1 = uid1
         self.m_value = value
+        self.m_createtime = time()
         self.m_timestamp = time()
 
     def update(self, type=None, uid0=None, uid1=None, value=None):
@@ -363,6 +365,7 @@ class Cell(object):
         self.m_fromcenter = 0
         self.m_fromnearest = 0
         self.m_fromexit = 0
+        self.m_createtime = time()
         self.m_timestamp = time()
 
     def update(self, x=None, y=None, vx=None, vy=None, major=None, 

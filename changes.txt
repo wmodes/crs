@@ -153,4 +153,8 @@ was resized
 * Refactored and debugged update_all_connections routine
 * Fixed a problem where groups were not being recorder properly in dataelements
 * Adjusted the triggers and memory_times so they fired off when they should
-* 
+* Fixed prob with timestamp numbers in OSC msgs by adding origtime (timestamp still
+    used when aging conx)
+* Fixed keyerror in conductorelements where I forgot to check if a key was in a dict first
+
+

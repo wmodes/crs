@@ -147,7 +147,7 @@ class MyOSCHandler(OSCHandler):
         for uid, cell in self.m_field.m_cell_dict.iteritems():
             if cell.m_visible:
                 for type, attr in cell.m_attr_dict.iteritems():
-                    duration = time() - attr.m_timestamp
+                    duration = time() - attr.m_createtime
                     self.m_field.m_osc.send_downstream(OSCPATH['conduct_attr'],
                             [type, uid, attr.m_value, duration])
 
@@ -159,7 +159,7 @@ class MyOSCHandler(OSCHandler):
         for cid,conx in self.m_field.m_conx_dict.iteritems():
             if conx.m_cell0.m_visible and conx.m_cell1.m_visible:
                 for type, attr in conx.m_attr_dict.iteritems():
-                    duration = time() - attr.m_timestamp
+                    duration = time() - attr.m_createtime
                     if type in NOLINE_TYPES:
                         subtype = HAPPEN
                     else:
@@ -176,7 +176,7 @@ class MyOSCHandler(OSCHandler):
         for gid,group in self.m_field.m_group_dict.iteritems():
             if group.m_visible:
                 for type,attr in group.m_attr_dict.iteritems():
-                    duration = time() - attr.m_timestamp
+                    duration = time() - attr.m_createtime
                     self.m_field.m_osc.send_downstream(OSCPATH['conduct_gattr'],
                             [type, gid, attr.m_value, duration])
 
@@ -186,7 +186,7 @@ class MyOSCHandler(OSCHandler):
         /conductor/event ["type",uid0,uid1,value,time]
         """
         for id,event in self.m_field.m_event_dict.iteritems():
-            duration = time() - event.timestamp
+            duration = time() - event.createtime
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_event'],
                     [event.m_type, event.m_uid0, event.m_uid1, event.m_value, duration])
 

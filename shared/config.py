@@ -16,6 +16,7 @@ ungroup_distance = 150
 
 # conductor configuration
 #
+connector_avg_min = 0.01    # below this and we consider it zero
 connector_avg_triggers = {
     # what avg value triggers the connection
     # 0 = no avg triggers
@@ -57,7 +58,7 @@ connector_max_age = {
     # as max age in secs
     # 0 = immortal
     'default': 10,
-    'grouped': 20,
+    'grouped': 10,
     'contact': 10,
     'friends': 10,
     'coord': 10,
@@ -207,7 +208,8 @@ osc_recorder_port = 7790
 osc_local_only=True
 
 if osc_local_only:
-    localhost="127.0.0.1"
+    #localhost="127.0.0.1"
+    localhost="localhost"
     osc_visual_host = localhost
     osc_conductor_host = localhost
     osc_tracking_host = localhost

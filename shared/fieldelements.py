@@ -59,6 +59,9 @@ class Field(object):
         m_suspect_conx: list of connectors we suspect are dead
         m_suspect_groups: list of groups we suspect are dead
         m_frame: which frame is the tracker reporting
+        m_scene: the current scene we are performing
+        m_scene_variant: the current scene variant we are performing
+        m_scene_value: value associated with scene
     
     """
 
@@ -92,6 +95,9 @@ class Field(object):
         self.m_ungroupdist = UNGROUP_DIST
         self.m_oscfps = OSC_FPS
         self.m_frame = 0
+        self.m_scene = None
+        self.m_scene_variant = None
+        self.m_scene_value = None
 
     def update(self, groupdist=None, ungroupdist=None, oscfps=None,
                osc=None, frame=None):
@@ -107,6 +113,11 @@ class Field(object):
             self.m_frame = frame
             if frame%REPORT_FREQ['debug'] == 0:
                 print "Field:update:frame:",frame
+
+    def update_scene(self, scene, variant, value):
+        self.m_scene = scene
+        self.m_scene_variant = variant
+        self.m_scene_value = value
 
     # Scaling
     def set_scaling(self,pmin_field=None,pmax_field=None):
@@ -326,7 +337,7 @@ class Field(object):
         if id in self.m_suspect_cells:
             return False
         cell = self.m_cell_dict[id]
-        if cell.m_x is None or cell.m_y is None:
+        if not cell.m_visible or cell.m_x is None or cell.m_y is None:
             return False
         return True
 
@@ -337,6 +348,8 @@ class Field(object):
         if not id in self.m_conx_dict:
             return False
         connector = self.m_conx_dict[id]
+        if not connector.m_visible:
+            return False
         if not self.is_cell_good_to_go(connector.m_cell0.m_id) or \
            not self.is_cell_good_to_go(connector.m_cell1.m_id):
             return False
@@ -400,7 +413,7 @@ class Field(object):
                 del self.m_suspect_cells[id]
 
     def update_cell(self, id, x=None, y=None, vx=None, vy=None, major=None, 
-                    minor=None, gid=None, gsize=None):
+                    minor=None, gid=None, gsize=None, visible=None):
         """ Update a cells information."""
         if dbug.LEV & dbug.MORE: print "Field:update_cell:Cell",id
         self.check_for_missing_cell(id)
@@ -418,7 +431,8 @@ class Field(object):
                 if dbug.LEV & dbug.FIELD: 
                     print "Field:update_cell:Cell",id,"added to group", \
                             self.m_cell_dict[id].m_gid
-        self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize)
+        self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize,
+                                    visible=visible)
 
     def update_geo(self, id, fromcenter=None, fromnearest=None, fromexit=None):
         """Update geo info for cell."""
@@ -559,11 +573,11 @@ class Field(object):
         if cid in self.m_conx_dict:
             connector = self.m_conx_dict[cid]
             if type in connector.m_attr_dict:
+                connector.del_attr(type)
                 if dbug.LEV & dbug.FIELD: 
                     print "Field:del_conx_attr:del_attr:",cid,type
-                connector.del_attr(type)
             if not len(connector.m_attr_dict):
+                self.del_connector(cid)
                 if dbug.LEV & dbug.FIELD: 
                     print "Field:del_conx_attr:del_conx:",cid
-                self.del_connector(cid)
             

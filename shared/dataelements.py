@@ -63,6 +63,10 @@ class Attr(object):
             self.m_value = value
         self.m_timestamp = time()
 
+    def decay_value(self, value=None):
+        if value is not None:
+            self.m_value = value
+
 
 class Event(object):
     """Represents a grouping of cells.

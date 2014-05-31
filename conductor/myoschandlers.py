@@ -96,10 +96,34 @@ class MyOSCHandler(OSCHandler):
                 ('recorder', OSCRECORDERHOST, OSCRECORDERPORT),
             ]
 
+        self.eventfunc = {
+            # to conductor
+            'conduct_dump': self.event_conduct_dump,
+        }
+
         super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)
-    
+
     #
-    # OUTGOING Messages
+    # INCOMING to Conductor
+    #
+
+    def event_conduct_dump(self, path, tags, args, source):
+        source_ip = source[0]
+        if dbug.LEV & dbug.MSGS:
+            print "OSC:dump req:from", source_ip
+        for clientkey, client in self.m_osc_clients.iteritems():
+            target_ip = client.address()[0]
+            if target_ip == source_ip:
+                try:
+                    #TODO: Decide what we dump and dump it
+                    #self.sendto(clientkey, OSCPATH('ping'), ping_code)
+                    print "OSC:dump_req:from", clientkey
+                except:
+                    if dbug.LEV & dbug.MSGS:
+                        print "OSC:dump_req:unable to reach", clientkey
+
+    #
+    # OUTGOING from Conductor
     #
 
     # Startup
@@ -200,7 +224,7 @@ class MyOSCHandler(OSCHandler):
             conx = self.m_field.m_conx_dict[cid]
             if type in conx.m_attr_dict:
                 attr = conx.m_attr_dict[type]
-                duration = time() - attr.m_timestamp
+                duration = time() - attr.m_createtime
                 if type in NOLINE_TYPES:
                     subtype = HAPPEN
                 else:
@@ -217,7 +241,7 @@ class MyOSCHandler(OSCHandler):
         if cid in self.m_field.m_conx_dict:
             conx = self.m_field.m_conx_dict[cid]
             for type,attr in conx.m_attr_dict.iteritems():
-                duration = time() - attr.m_timestamp
+                duration = time() - attr.m_createtime
                 if type in NOLINE_TYPES:
                     subtype = HAPPEN
                 else:

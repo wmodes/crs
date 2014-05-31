@@ -228,9 +228,9 @@ class MyOSCHandler(OSCHandler):
             #print "OSC:event_track_update:",path,args,source
             if dbug.LEV & dbug.MSGS: 
                 print " OSC:event_conduct_conx:cid:",cid,type,subtype,uid0,uid1,value
+        print "KILLME:OSC:event_conduct_conx:cid:",cid,type,subtype,uid0,uid1,value
         #TODO: Deal with cid
-        #TODO: Deal with 
-        self.m_field.update_conx_attr(cid, uid0, uid1, type, value)
+        self.m_field.update_conx_attr(cid, uid0, uid1, subtype, value)
 
     def event_conduct_conxbreak(self, path, tags, args, source):
         """Conductor event: break connection.

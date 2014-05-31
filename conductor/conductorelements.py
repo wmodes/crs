@@ -76,7 +76,7 @@ class Conductor(object):
             #'tag': self.test_tag,
             #'chosen': self.test_chosen,
             'facing': self.test_facing,
-            'fusion': self.test_fusion,
+            #'fusion': self.test_fusion,
             #'transfer': self.test_transfer,
         }
         self.m_avg_table = {}

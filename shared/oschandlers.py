@@ -53,7 +53,11 @@ class OSCHandler(object):
         self.m_field = field
         self.m_run = True
 
-        (name, host, port) = osc_server[0]
+        try:
+            (name, host, port) = osc_server[0]
+        except:
+            print "Unable to create OSC handler with server=",osc_server
+            sys.exit(1)
         self.m_oscserver = OSCServer( (host, port) )
         if dbug.LEV & dbug.MSGS: print "OSC:init server: %s:%s"%(host, port)
         self.m_oscserver.timeout = OSCTIMEOUT
@@ -70,7 +74,10 @@ class OSCHandler(object):
                         print "OSC:init %s:same as %s"%(name,oldname)
                     break
             if not name in self.m_osc_clients:
-                self.m_osc_clients[name] = OSCClient()
+                try:
+                    self.m_osc_clients[name] = OSCClient()
+                except:
+                    print "Unable to create OSC handler with client=",(name,host,port)
                 self.m_osc_clients[name].connect( (host, port) )
                 if dbug.LEV & dbug.MSGS: 
                     print "OSC:init %s: %s:%s"%(name,host,port)
@@ -81,24 +88,18 @@ class OSCHandler(object):
         self.m_xmax = 0
         self.m_ymax = 0
 
-        self.eventfunc = {
+        """
+        self.eventfunc = update({
             # common
             'ping': self.event_ping,
             'ack': self.event_ack,
+        })
+        """
 
-            # to conductor
-            'conduct_dump': self.event_conduct_dump,
-
-            # from conductor
-            'conduct_start': self.event_conduct_start,
-            'conduct_stop': self.event_conduct_stop,
-            'conduct_scene': self.event_conduct_scene,
-            'conduct_rollcall': self.event_conduct_rollcall,
-            'conduct_attr': self.event_conduct_attr,
-            'conduct_conx': self.event_conduct_conx,
-            'conduct_conxbreak': self.event_conduct_conxbreak,
-            'conduct_gattr': self.event_conduct_gattr,
-            'conduct_event': self.event_conduct_event,
+        self.eventfunc.update({
+            # common
+            'ping': self.event_ping,
+            'ack': self.event_ack,
 
             # from tracker
             'track_start': self.event_tracking_start,
@@ -119,7 +120,7 @@ class OSCHandler(object):
             'track_body': self.event_tracking_body,
             'track_group': self.event_tracking_group,
             'track_geo': self.event_tracking_geo,
-        }
+        })
 
         # add a method to an instance of the class
         self.m_oscserver.handle_timeout = types.MethodType(handle_timeout, 
@@ -204,21 +205,6 @@ class OSCHandler(object):
         if dbug.LEV & dbug.MORE: print "OSC:default_handler:No handler registered for ", path
         return None
 
-    def event_conduct_dump(self, path, tags, args, source):
-        source_ip = source[0]
-        if dbug.LEV & dbug.MSGS:
-            print "OSC:dump req:from", source_ip
-        for clientkey, client in self.m_osc_clients.iteritems():
-            target_ip = client.address()[0]
-            if target_ip == source_ip:
-                try:
-                    #TODO: Decide what we dump and dump it
-                    #self.sendto(clientkey, OSCPATH('ping'), ping_code)
-                    print "OSC:dump_req:from", clientkey
-                except:
-                    if dbug.LEV & dbug.MSGS:
-                        print "OSC:dump_req:unable to reach", clientkey
-
     def event_ping(self, path, tags, args, source):
         ping_code = args[0]
         source_ip = source[0]
@@ -236,139 +222,6 @@ class OSCHandler(object):
     def event_ack(self, path, tags, args, source):
         if dbug.LEV & dbug.MSGS: print "OSC:event_ack:code",args[0]
         return None
-
-    #
-    # Conductor INCOMING
-    #
-
-    # from conductor
-    def event_conduct_start(self, path, tags, args, source):
-        """Conductor event: starting."""
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_start"
-
-    def event_conduct_stop(self, path, tags, args, source):
-        """Conductor event: stopping."""
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_stop"
-
-    def event_conduct_scene(self, path, tags, args, source):
-        """Conductor event: scene info.
-
-        /conductor/scene ["scene","variant",value]
-            scene: one of the following:
-                "calibrate" - begin calibration process
-                “empty” - begin empty field demo (usually after a time with npeople=0)
-                “cellconx” - standard mode of highlighting cells and connections
-                “tag” - limited highlights stolen by contact, including multiple steals
-            variant: currently unused, but may specify variants of above
-            value: (float) currently unused, but may specify values needed by above scenes
-        """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_scene"
-
-    def event_conduct_rollcall(self, path, tags, args, source):
-        """Conductor event: sending rollcall.
-
-        /conductor/rollcall [uid,action,numconx]
-            uid: UID of target
-            action: either of two values
-                "visible" - the person is "visible" to the system
-                "hidden" - the person is not visible to the system
-            numconx: The number of (visible?) connections attached to this person
-        """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_rollcall"
-
-    def event_conduct_attr(self, path, tags, args, source):
-        """Conductor event: cell attributes.
-
-        /conductor/attr ["type",uid,value,time]
-            type: one of the following:
-                "dance" - Person dancing to the music
-                "interactive" - Super interactive, lots of interaction over time
-                etc
-            uid: the UID of the target
-            value: a unit value (0.0-1.0) representing the intensity of the attribute
-            time: the length of time in seconds that the attribute has applied so far
-        """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_attr"
-
-    def event_conduct_conx(self, path, tags, args, source):
-        """Conductor event: connector info.
-
-        /conductor/conx ["type",”subtype”,cid, uid0,uid1,value,time]
-            cid: connector id of the target
-            type:
-                persistent - joining people
-                    with subtypes:
-                        coord - Coordinated movement
-                        fof - Friend of a friend
-                        etc
-                happening - evolving attribute
-                    with subtypes
-                        fusion - Person within fusion range
-                        transfer - Highlight transfer from uid0 to uid1
-            uid0: the UID of the first target
-            uid1: the UID of the second target
-            value: a unit value (0.0-1.0) representing the intensity of the attribute
-            time: the length of time in seconds that the attribute has applied so far
-        """
-        for index, item in enumerate(args):
-            if item == 'nan':
-                args[index] = None
-        type = args[0]
-        subtype = args[1]
-        cid = args[2]
-        if cid not in self.m_field.m_conx_dict:
-            if dbug.LEV & dbug.MSGS: 
-                print "OSC:event_conduct_conx:no cid", cid, "in registered conx list"
-        uid0 = args[3]
-        uid1 = args[4]
-        value = args[5]
-        time = args[6]
-        if self.m_field.m_frame%REPORT_FREQ['debug'] == 0:
-            #print "OSC:event_track_update:",path,args,source
-            if dbug.LEV & dbug.MSGS: 
-                print " OSC:event_conduct_conx:cid:",cid,type,subtype,uid0,uid1,value
-        #TODO: Deal with cid
-        #TODO: Deal with 
-        self.m_field.update_conx_attr(cid, uid0, uid1, subtype, value)
-
-    def event_conduct_conxbreak(self, path, tags, args, source):
-        """Conductor event: break connection.
-
-        /conductor/conxbreak [cid,uid0,uid1]
-            cid: connector id of the target
-                uid0: the UID of the first target
-                uid1: the UID of the second target
-        """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_conxbreak"
-
-    def event_conduct_gattr(self, path, tags, args, source):
-        """Conductor event: group attribute.
-
-        /conductor/gattr ["type",gid,value,time]
-            type: one of the following:
-                "biggroup" - group size reaches threshold values 
-                "static" - Stationary movement
-                etc
-            gid: the GID of the group (as provided by tracker)
-            value: a unit value (0.0-1.0) representing the intensity of the attribute
-            time: the length of time in seconds that the attribute has applied so far
-        """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_gattr"
-
-    def event_conduct_event(self, path, tags, args, source):
-        """Conductor event: discrete events.
-
-        /conductor/event ["type",eid, uid0,uid1,value]
-            eid: unique event ID
-            type: one of the following:
-                tag - A person just tagged someone
-                contact - Extreme closeness (***)
-            uid0: the UID of the first target
-            uid1: the UID of the second target
-            value: a unit value (0.0-1.0) representing the intensity of the effect
-        """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_conduct_event"
-
 
     #
     # Tracking INCOMING
@@ -701,14 +554,6 @@ if __name__ == "__main__":
     keep_running = True
     while keep_running:
 
-        #for window in pyglet.app.windows:
-            #window.switch_to()
-            #window.dispatch_events()
-            #window.dispatch_event('on_draw')
-            #window.flip()
-
-        # do all the things
-        #field.on_cycle()
         # call user script
         osc.each_frame()
         keep_running = osc.m_run and field.m_still_running

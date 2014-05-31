@@ -157,4 +157,8 @@ was resized
     used when aging conx)
 * Fixed keyerror in conductorelements where I forgot to check if a key was in a dict first
 
-
+5/30/2014
+* Fixed a problem where the age never went down (because the expiration routine was
+    updating the timestamp)
+* (Visual) Added response to all conductor messages
+* Fixed prob where conductor used timestamp rather than createtime to report age

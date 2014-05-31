@@ -37,6 +37,7 @@ LOGFILE = config.logfile
 OSCPATH = config.oscpath
 
 FRAMERATE = config.framerate
+CONX_MIN = config.connector_avg_min
 CONX_AVG = config.connector_avg_triggers
 CONX_TIME = config.connector_memory_time
 CONX_DIST = config.connector_distance_triggers
@@ -62,7 +63,7 @@ class Conductor(object):
     def __init__(self, field):
         self.m_field = field
         self.connector_tests = {
-            'grouped': self.test_grouped    ,
+            'grouped': self.test_grouped,
             'contact': self.test_contact,
             'friends': self.test_friends,
             'coord': self.test_coord,
@@ -104,49 +105,54 @@ class Conductor(object):
                 cid = self.m_field.get_cid(cell0,cell1)
                 # calc distance once
                 self.m_dist_table[cid] = self.dist(cell0, cell1)
-                for type,func in self.connector_tests.iteritems():
-                    avg = func(cid, cell0, cell1)
+                for type,test in self.connector_tests.iteritems():
+                    running_avg = test(cid, cell0, cell1)
                     if type in CONX_AVG:
                         avg_trigger = CONX_AVG[type]
                     else:
                         avg_trigger = CONX_AVG['default']
-                    if dbug.LEV & dbug.MORE: 
-                        if avg and avg_trigger:
+                    if dbug.LEV & dbug.COND: 
+                        if running_avg and avg_trigger:
                         #if avg_trigger:
                             print "Conduct:update_conx:results:id:", \
-                                    "%s-%s %.2f"%(cid,type,avg), \
+                                    "%s-%s %.2f"%(cid,type,running_avg), \
                                     "(trigger:%.2f)"%avg_trigger
-                    # TODO: We should return running avg and then compare to
-                    #   trigger
-                    # if avg is above trigger
-                    if avg > avg_trigger:
+                    # if running_avg is above trigger
+                    if running_avg > avg_trigger:
                         #if dbug.LEV & dbug.MORE: 
                             #print "Conduct:update_conx:results:%s-%s,%s,%s"% \
-                                    #(cell0.m_id, cell1.m_id, type, avg)
+                                    #(cell0.m_id, cell1.m_id, type, running_avg)
                         # if a connection/attr does not already exist already
                         #if not self.m_field.check_for_conx_attr(cell0, cell1, type):
                         if dbug.LEV & dbug.COND: 
                             if avg_trigger:
                                 print "Conduct:update_conx:triggered:id:", \
-                                        "%s-%s %.2f"%(cid,type,avg), \
+                                        "%s-%s %.2f"%(cid,type,running_avg), \
                                         "(trigger:%.2f)"%avg_trigger
                             # create one
                         self.m_field.update_conx_attr(cid, cell0.m_id,
-                                cell1.m_id, type, avg)
+                                cell1.m_id, type, running_avg)
                         #else:
                             #if dbug.LEV & dbug.MORE: 
                                 #print "Conduct:update_conx:already there, bro"
-                    # if avg is under trigger value 
+                    # if running_avg is under trigger value 
                     else:
                         if type in CONX_AGE:
                             max_age = CONX_AGE[type]
                         else:
                             max_age = CONX_AGE['default']
+                        print "KILLME:Attr not triggered:",cid,type,max_age
                         #   AND decay time is zero, kill it
                         if not max_age:
-                            # delete atrr and maybe conx
+                            # send "del conx" osc msg
                             self.m_field.m_osc.nix_cattr(cid, type)
+                            # delete attr and maybe conx
                             self.m_field.del_conx_attr(cid, type)
+                            index = str(cid)+'-'+str(type)
+                            if index in self.m_avg_table:
+                                del self.m_avg_table[index]
+                            if dbug.LEV & dbug.COND: 
+                                print "Conduct:update_conx:delete happening:",cid,type
 
     def record_running_avg(self,cid,type,sample):
         """Track Exponentially decaying weighted moving averages (ema) in an 
@@ -200,29 +206,40 @@ class Conductor(object):
             new_attr_dict = copy(connector.m_attr_dict)
             # iterate over ever attr
             for type,attr in new_attr_dict.iteritems():
-                # if decay time of type is not zero (no decay)
                 if type in CONX_AGE:
                     max_age = CONX_AGE[type]
                 else:
                     max_age = CONX_AGE['default']
+                # if decay time of type is not zero (no decay)
                 if max_age:
                     # if value of attr is zero or less
-                    if attr.m_value == 0:
-                        # delete atrr and maybe conx
+                    if attr.m_value <= CONX_MIN:
+                        # send "del conx" osc msg
                         self.m_field.m_osc.nix_cattr(cid, type)
+                        # delete attr and maybe conx
                         self.m_field.del_conx_attr(cid, type)
+                        index = str(cid)+'-'+str(type)
+                        if index in self.m_avg_table:
+                            del self.m_avg_table[index]
+                        if dbug.LEV & dbug.COND: 
+                            print "Conduct:age_and_expire_conx:Expired:",cid,type
+                    # if attr still has a non-zero value
                     else:
                         # calc new value based on time and decay rate
-                        age = time() - attr.m_timestamp
-                        newvalue = attr.m_origvalue - (age/max_age)
-                        #print "KILLME:",cid,type,"timestmp:",attr.m_timestamp,"age:",age,"orig:",attr.m_origvalue,"newvalue:",newvalue
+                        since_last = time() - attr.m_timestamp
+                        age = time() - attr.m_createtime
+                        newvalue = attr.m_origvalue - (since_last/max_age)
+                        if dbug.LEV & dbug.COND: 
+                            print "Conduct:age_and_expire_conx:",cid,type,\
+                                "age:",age, "since_last:",since_last,\
+                                "orig:",attr.m_origvalue, "newvalue:",newvalue
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:
-                            if dbug.LEV & dbug.MORE: 
+                            if dbug.LEV & dbug.COND: 
                                 print "Conduct:age_and_expire_conx:Expired:",cid,type
                             newvalue = 0
                         # record the new value
-                        attr.update(newvalue)
+                        attr.decay_value(newvalue)
 
     # Gather or calculate whether conditions are met for connection
 

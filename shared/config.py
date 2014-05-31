@@ -272,8 +272,10 @@ oscpath = {
     'graph_attr': "/laser/set/attribute",
     'graph_pps': "/laser/set/pps",
     'graph_update': "/laser/update",
-    'graph_begin':"/laser/shape/begin",
-    'graph_end':"/laser/shape/end",
+    'graph_begin_conx':"/laser/conx/begin",
+    'graph_end_conx':"/laser/conx/end",
+    'graph_begin_cell':"/laser/cell/begin",
+    'graph_end_cell':"/laser/cell/end",
     
     # Conductor subsystem
     #

@@ -80,10 +80,14 @@ class MyCell(Cell):
                                 self.m_diam/2,
                                 color=self.m_color,
                                 solid=False)
+            self.m_field.m_osc.send_laser(OSCPATH['graph_begin_cell'],[self.m_id])
             self.m_shape.draw()
             if DRAW_BODIES:
                 self.m_bodyshape.update(self.m_field, (self.m_x, self.m_y),
-                                          self.m_body_diam/2,
+                                          self.m_body_diam/2, 
                                           color=self.m_body_color,
                                           solid=True)
                 self.m_bodyshape.draw()
+            self.m_field.m_osc.send_laser(OSCPATH['graph_end_cell'],[self.m_id])
+
+

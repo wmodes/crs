@@ -30,6 +30,7 @@ from shared import debug
 
 # constants
 LOGFILE = config.logfile
+OSCPATH=config.oscpath
 
 DEF_DIAM = config.default_diam
 DEF_LINECOLOR = config.default_linecolor
@@ -93,6 +94,8 @@ class MyConnector(Connector):
                                 self.m_cell0.m_diam/2, self.m_cell1.m_diam/2,
                                 color=self.m_color,
                                 path=self.m_path)
+            self.m_field.m_osc.send_laser(OSCPATH['graph_begin_conx'],[self.m_id])
             self.m_shape.draw()
+            self.m_field.m_osc.send_laser(OSCPATH['graph_end_conx'],[self.m_id])
 
 

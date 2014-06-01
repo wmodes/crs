@@ -95,7 +95,7 @@ connector_latitude = {
 
 # visual configuration
 #
-graphic_modes = 1   # 1=screen; 2=osc; 3=etherdream
+graphic_modes = 3   # 1=screen; 2=osc; 3=etherdream
 #graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
 #draw_bodies = True
 draw_bodies = False
@@ -270,7 +270,11 @@ oscpath = {
     'graph_attr': "/laser/set/attribute",
     'graph_pps': "/laser/set/pps",
     'graph_update': "/laser/update",
-
+    'graph_begin_conx':"/laser/conx/begin",
+    'graph_end_conx':"/laser/conx/end",
+    'graph_begin_cell':"/laser/cell/begin",
+    'graph_end_cell':"/laser/cell/end",
+    
     # Conductor subsystem
     #
     # Incoming to the conductor

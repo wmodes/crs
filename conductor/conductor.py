@@ -412,10 +412,12 @@ class Conductor(object):
             return 0
         # If dist of cells are < nearby_dist
         cell_dist = self.dist(cell0, cell1)
-        if cell_dist < CONX_DIST['nearby_min'] or cell_dist > CONX_DIST['nearby_max']:
+        mindist = CONX_DIST['nearby_min']
+        maxdist = CONX_DIST['nearby_max']
+        if cell_dist < mindist or cell_dist > maxdist:
             return 0
         # nearby_max = 0; nearby_min = 1.0
-        return 1.0 - ((cell_dist-nearby_min) / (nearby_max-nearby_min))
+        return 1.0 - ((cell_dist-mindist) / (maxdist-mindist))
 
     def test_strangers(self, cid, cell0, cell1):
         """Are these cells unconnected? Have they never been connected?
@@ -428,9 +430,9 @@ class Conductor(object):
             value: 1.0 if connected, 0 if no
         """
         # If cells been in space for some_time
-        if cell0.age < COND_TIMES['some_time'] or \
-            cell1.age < COND_TIMES['some_time']:
-            return 0
+        #if cell0.age < COND_TIMES['some_time'] or \
+            #cell1.age < COND_TIMES['some_time']:
+            #return 0
         # They have no connection in their history
         if self.m_field.have_history(cell0.m_id,cell1.m_id):
             return 0

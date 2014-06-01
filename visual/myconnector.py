@@ -10,8 +10,10 @@ Space highlights participants' active engagement and experimentation with sound
 and light, including complex direct and indirect behavior and relationships.
 
 """
+from shared.connector import Connector
+from line import Line
 
-__appname__ = "mydataelements.py"
+__appname__ = "myconnector.py"
 __author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -25,8 +27,6 @@ from shared import config
 
 # local classes
 from shared import debug
-from shared.dataelements import Cell,Connector,Group
-from graphelements import Circle, Line
 
 # constants
 LOGFILE = config.logfile
@@ -41,53 +41,6 @@ DRAW_BODIES = config.draw_bodies
 
 # init debugging
 dbug = debug.Debug()
-
-
-class MyCell(Cell):
-    """Represents one person/object on the floor.
-
-    Create a cell as a subclass of the basic data element.
-    
-    Stores the following values:
-        m_color: color of cell
-
-    makeBasicShape: create the set of arcs that will define the shape
-
-    """
-
-    def __init__(self, field, id, x=None, y=None, vx=None, vy=None, major=None,
-                 minor=None, gid=None, gsize=None, color=None):
-        if color is None:
-            self.m_color = DEF_LINECOLOR
-        else:
-            self.m_color = color
-        self.m_body_color = DEF_BODYCOLOR
-        self.m_shape = Circle()
-        self.m_bodyshape = Circle()
-        super(MyCell, self).__init__(field, id, x, y, vx, vy, major, minor, 
-                                     gid, gsize)
-
-    def update(self, x=None, y=None, vx=None, vy=None, major=None,
-               minor=None, gid=None, gsize=None, color=None, visible=None):
-        """Store basic info and create a DataElement object"""
-        if color is not None:
-            self.m_color = color
-        super(MyCell, self).update(x, y, vx, vy, major, minor, gid, gsize,
-                                   visible)
-
-    def draw(self):
-        if self.m_x is not None and self.m_y is not None:
-            self.m_shape.update(self.m_field, (self.m_x, self.m_y),
-                                self.m_diam/2, 
-                                color=self.m_color, 
-                                solid=False)
-            self.m_shape.draw()
-            if DRAW_BODIES:
-                self.m_bodyshape.update(self.m_field, (self.m_x, self.m_y),
-                                          self.m_body_diam/2, 
-                                          color=self.m_body_color,
-                                          solid=True)
-                self.m_bodyshape.draw()
 
 
 class MyConnector(Connector):
@@ -143,34 +96,3 @@ class MyConnector(Connector):
             self.m_shape.draw()
 
 
-class MyGroup(Group):
-    """Represents a group on the floor.
-
-    Create a group as a subclass of the basic data element.
-    
-    Stores the following values:
-        m_color: color of cell
-
-    """
-
-    def __init__(self, field, id, gsize=None, duration=None, x=None, y=None,
-                 diam=None, color=None):
-        if color is None:
-            self.m_color = DEF_GROUPCOLOR
-        else:
-            self.m_color = color
-        self.m_shape = Circle()
-        super(MyGroup, self).__init__(field, id, gsize, duration, x, y, diam)
-
-    def update(self, gsize=None, duration=None, x=None, y=None,
-                 diam=None, color=None):
-        """Store basic info and create a DataElement object"""
-        if color is not None:
-            self.m_color = color
-        super(MyGroup, self).update(gsize, duration, x, y, diam)
-
-    def draw(self):
-        if self.m_x is not None and self.m_y is not None:
-            self.m_shape.update(self.m_field, (self.m_x, self.m_y),
-                                self.m_diam/2, self.m_color, solid=False)
-            self.m_shape.draw()

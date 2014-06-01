@@ -12,7 +12,7 @@ and light, including complex direct and indirect behavior and relationships.
 """
 
 
-__appname__ = "oschandlers.py"
+__appname__ = "oschandler.py"
 __author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -548,7 +548,7 @@ if __name__ == "__main__":
     field = MyField()
     #field.init_screen()
 
-    osc = OSCHandler(field)
+    #osc = OSCHandler(field)
 
     keep_running = True
     while keep_running:

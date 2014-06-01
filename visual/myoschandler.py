@@ -12,13 +12,12 @@ and light, including complex direct and indirect behavior and relationships.
 """
 
 
-__appname__ = "oschandlers.py"
+__appname__ = "oschandler.py"
 __author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
-import sys
 
 # installed modules
 # noinspection PyUnresolvedReferences
@@ -26,7 +25,7 @@ from OSC import OSCServer, OSCClient, OSCMessage
 #import pyglet
 
 # local modules
-from shared.oschandlers import OSCHandler
+from shared.oschandler import OSCHandler
 from shared import config
 from shared import debug
 
@@ -180,7 +179,7 @@ class MyOSCHandler(OSCHandler):
         uid = args[1]
         if uid not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: 
-                print "OSC:event_conduct_conx:no cid", cid, "in registered conx list"
+                print "OSC:event_conduct_attr:no uid", uid, "in registered cell list"
         value = args[2]
         time = args[3]
         if self.m_field.m_frame%REPORT_FREQ['debug'] == 0:
@@ -189,7 +188,7 @@ class MyOSCHandler(OSCHandler):
                 print " OSC:event_conduct_attr:uid:",uid,type,value,time
         #TODO: Deal with cid
         #TODO: Deal with 
-        self.m_field.update_conx_attr(cid, uid0, uid1, type, value)
+        #self.m_field.update_conx_attr(cid, uid0, uid1, type, value)
 
     def event_conduct_conx(self, path, tags, args, source):
         """Conductor event: connector info.

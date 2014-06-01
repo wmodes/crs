@@ -162,3 +162,4 @@ was resized
     updating the timestamp)
 * (Visual) Added response to all conductor messages
 * Fixed prob where conductor used timestamp rather than createtime to report age
+* Refactoring: Moved all classes to their own modules

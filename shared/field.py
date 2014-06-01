@@ -25,7 +25,10 @@ from shared import config
 from shared import debug
 
 # local classes
-from dataelements import Cell,Connector,Group,Event
+from shared.cell import Cell
+from shared.connector import Connector
+from shared.group import Group
+from shared.event import Event
 
 # constants
 LOGFILE = config.logfile
@@ -261,9 +264,9 @@ class Field(object):
                     # now delete the cell ref in the group's cell list
                     if id in former_group.m_cell_dict:
                         del former_group.m_cell_dict[id]
-                # if the length of this list is zero, we can nix the group
-                if not len(former_group.m_cell_dict):
-                    self.del_group(former_gid)
+                    # if the length of this list is zero, we can nix the group
+                    if not len(former_group.m_cell_dict):
+                        self.del_group(former_gid)
         #TODO: When do we send the osc notice?
 
     def check_for_missing_cell(self, id):

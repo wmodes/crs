@@ -153,8 +153,6 @@ path_unit = .2    # 0.2m = 20 cm
 # Internal config
 #
 
-framerate = 25
-
 logfile="crs-visual.log"
 
 report_frequency = {

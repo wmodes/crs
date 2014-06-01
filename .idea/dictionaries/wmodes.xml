@@ -1,0 +1,19 @@
+<component name="ProjectDictionaryState">
+  <dictionary name="wmodes">
+    <words>
+      <w># each arc is broken down into a list of points and indices</w>
+      <w>appname</w>
+      <w>arcindex</w>
+      <w>arcpoints</w>
+      <w>dbug</w>
+      <w>etherdream</w>
+      <w>graphmodes</w>
+      <w>graphopts</w>
+      <w>linemode</w>
+      <w>oscpath</w>
+      <w>segs</w>
+      <w>soundscape</w>
+      <w>sqrt</w>
+    </words>
+  </dictionary>
+</component>

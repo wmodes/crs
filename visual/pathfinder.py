@@ -25,7 +25,7 @@ from shared import config
 
 # local classes
 from priorityqueueset import PriorityQueueSet
-from pathelements import GridMap
+from gridmap import GridMap
 
 # constants
 LOGFILE = config.logfile

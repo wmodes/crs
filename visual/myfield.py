@@ -10,8 +10,10 @@ Space highlights participants' active engagement and experimentation with sound
 and light, including complex direct and indirect behavior and relationships.
 
 """
+from mycell import MyCell
+from mygroup import MyGroup
 
-__appname__ = "myfieldelements.py"
+__appname__ = "myfield.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -26,11 +28,11 @@ from shared import config
 from shared import debug
 
 # local classes
-from windowelements import Window
-from pathelements import GridMap
+from window import Window
+from gridmap import GridMap
 from pathfinder import PathFinder
-from shared.fieldelements import Field
-from mydataelements import MyCell,MyConnector,MyGroup
+from shared.field import Field
+from myconnector import MyConnector
 
 # constants
 # removed to allow multiple simultaneous modes

@@ -166,20 +166,25 @@ from SocketServer import UDPServer, DatagramRequestHandler, ForkingMixIn, Thread
 from contextlib import closing
 
 global version
+# noinspection PyRedeclaration
 version = ("0.3","6", "$Rev: 6382 $"[6:-2])
 
 global FloatTypes
+# noinspection PyRedeclaration
 FloatTypes = [types.FloatType]
 
 global IntTypes
+# noinspection PyRedeclaration
 IntTypes = [types.IntType]
 
 global NTP_epoch
 from calendar import timegm
+# noinspection PyRedeclaration
 NTP_epoch = timegm((1900,1,1,0,0,0)) # NTP time started in 1 Jan 1900
 del timegm
 
 global NTP_units_per_second
+# noinspection PyRedeclaration
 NTP_units_per_second = 0x100000000 # about 232 picoseconds
 
 ##
@@ -1861,6 +1866,7 @@ class ThreadingOSCRequestHandler(OSCRequestHandler):
 # OSCServer classes
 #
 ######
+# noinspection PyMethodOverriding
 class OSCServer(UDPServer, OSCAddressSpace):
 	"""A Synchronous OSCServer
 	Serves one request at-a-time, until the OSCServer is closed.
@@ -2625,6 +2631,7 @@ opportunities:
 	- a dedicated timer is started for each message (requires timer resources)
 """
 
+# noinspection PyMethodOverriding,PyMethodOverriding
 class OSCStreamingServer(TCPServer):
 	""" A connection oriented (TCP/IP) OSC server.
 	""" 
@@ -2692,6 +2699,8 @@ class OSCStreamingServer(TCPServer):
 			result = result and client.sendOSC(oscData)
 		return result
 
+
+# noinspection PyStatementEffect
 class OSCStreamingServerThreading(ThreadingMixIn, OSCStreamingServer):
 	pass
 	""" Implements a server which spawns a separate thread for each incoming

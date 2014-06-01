@@ -11,7 +11,7 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-__appname__ = "visualsys.py"
+__appname__ = "main.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -21,8 +21,7 @@ __license__ = "GNU GPL 3.0 or later"
 import sys
 import warnings
 import logging
-from time import time,sleep
-
+from time import sleep
 
 # installed modules
 # noinspection PyUnresolvedReferences
@@ -35,8 +34,8 @@ from shared import config
 # local classes
 from shared import debug
 from myfieldelements import MyField
-from myoschandlers import MyOSCHandler
-from conductorelements import Conductor
+from myoschandler import MyOSCHandler
+from conductor import Conductor
 
 # constants
 LOGFILE = config.logfile
@@ -78,8 +77,6 @@ warnings.filterwarnings('ignore')
 
 
 def main():
-
-    from sys import stdout
 
     CYCLETIME = 1/25.0
 

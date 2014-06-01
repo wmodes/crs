@@ -2,23 +2,43 @@
 <project version="4">
   <component name="AnalysisUIOptions">
     <option name="GROUP_BY_SEVERITY" value="true" />
-    <option name="SCOPE_TYPE" value="3" />
     <option name="SHOW_STRUCTURE" value="true" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5b07d10-5965-4f05-b2e5-bd2b09b1854b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/changes.txt" afterPath="$PROJECT_DIR$/changes.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/attr.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/body.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/cell.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/visual/circle.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/connector.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/event.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/group.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/conductor/journal.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/leg.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/visual/mycell.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/conductor/myconnector.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/conductor/mygroup.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/visual/mygroup.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/wmodes.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/shared/dataelements.py" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/conductor/conductorelements.py" afterPath="$PROJECT_DIR$/conductor/conductor.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/conductor/mydataelements.py" afterPath="$PROJECT_DIR$/conductor/mycell.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/conductor/myoschandlers.py" afterPath="$PROJECT_DIR$/conductor/myoschandler.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/shared/fieldelements.py" afterPath="$PROJECT_DIR$/shared/field.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/shared/oschandlers.py" afterPath="$PROJECT_DIR$/shared/oschandler.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/graphelements.py" afterPath="$PROJECT_DIR$/visual/line.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/mydataelements.py" afterPath="$PROJECT_DIR$/visual/myconnector.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/myfieldelements.py" afterPath="$PROJECT_DIR$/visual/myfield.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/myoschandlers.py" afterPath="$PROJECT_DIR$/visual/myoschandler.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/pathelements.py" afterPath="$PROJECT_DIR$/visual/gridmap.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/windowelements.py" afterPath="$PROJECT_DIR$/visual/window.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/'" afterPath="$PROJECT_DIR$/visual/'" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OSC.py" afterPath="$PROJECT_DIR$/OSC.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/config.py" afterPath="$PROJECT_DIR$/shared/config.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/dataelements.py" afterPath="$PROJECT_DIR$/shared/dataelements.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/fieldelements.py" afterPath="$PROJECT_DIR$/shared/fieldelements.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conductor/mydataelements.py" afterPath="$PROJECT_DIR$/conductor/mydataelements.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/mydataelements.py" afterPath="$PROJECT_DIR$/visual/mydataelements.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conductor/main.py" afterPath="$PROJECT_DIR$/conductor/main.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/main.py" afterPath="$PROJECT_DIR$/visual/main.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conductor/myfieldelements.py" afterPath="$PROJECT_DIR$/conductor/myfieldelements.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/myfieldelements.py" afterPath="$PROJECT_DIR$/visual/myfieldelements.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conductor/myoschandlers.py" afterPath="$PROJECT_DIR$/conductor/myoschandlers.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/myoschandlers.py" afterPath="$PROJECT_DIR$/visual/myoschandlers.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/oschandlers.py" afterPath="$PROJECT_DIR$/shared/oschandlers.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/pathfinder.py" afterPath="$PROJECT_DIR$/visual/pathfinder.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="crs.iws" />
@@ -41,35 +61,7 @@
     <favorites_list name="crs" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="oschandlers.py" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/shared/oschandlers.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="16" selection-start="752" selection-end="752" vertical-scroll-proportion="0.3328841" vertical-offset="98" max-vertical-offset="8460">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="fieldelements.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/shared/fieldelements.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="153" column="76" selection-start="5478" selection-end="5495" vertical-scroll-proportion="0.0" vertical-offset="2033" max-vertical-offset="7035">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="dataelements.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/shared/dataelements.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="54" column="27" selection-start="1518" selection-end="1518" vertical-scroll-proportion="0.0" vertical-offset="563" max-vertical-offset="7665">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -82,11 +74,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/visual/bezier.py" />
-        <option value="$PROJECT_DIR$/conductor/oschandlers.py" />
-        <option value="$PROJECT_DIR$/visual/killme/field_orig.py" />
-        <option value="$PROJECT_DIR$/visual/debug.py" />
-        <option value="$PROJECT_DIR$/visual/killme/curves-n-lines.py" />
         <option value="$PROJECT_DIR$/visual/curves.py" />
         <option value="$PROJECT_DIR$/conductor/shared/dataelement_class.py" />
         <option value="$PROJECT_DIR$/conductor/shared/field_class.py" />
@@ -99,18 +86,45 @@
         <option value="$PROJECT_DIR$/visual/shared/dataelement_class.py" />
         <option value="$PROJECT_DIR$/visual/shared/field_class.py" />
         <option value="$PROJECT_DIR$/visual/shared/config.py" />
-        <option value="$PROJECT_DIR$/conductor/main.py" />
         <option value="$PROJECT_DIR$/conductor/myoschandlers.py" />
-        <option value="$PROJECT_DIR$/conductor/mydataelements.py" />
         <option value="$PROJECT_DIR$/conductor/conductorelements.py" />
-        <option value="$PROJECT_DIR$/visual/gridmap.py" />
-        <option value="$PROJECT_DIR$/visual/main.py" />
         <option value="$PROJECT_DIR$/visual/myfieldelements.py" />
         <option value="$PROJECT_DIR$/visual/myoschandlers.py" />
         <option value="$PROJECT_DIR$/visual/pathfinder.py" />
-        <option value="$PROJECT_DIR$/visual/graphelements.py" />
         <option value="$PROJECT_DIR$/shared/fieldelements.py" />
         <option value="$PROJECT_DIR$/shared/oschandlers.py" />
+        <option value="$PROJECT_DIR$/visual/mydataelements.py" />
+        <option value="$PROJECT_DIR$/visual/myconnector.py" />
+        <option value="$PROJECT_DIR$/visual/graphelements.py" />
+        <option value="$PROJECT_DIR$/shared/dataelements.py" />
+        <option value="$PROJECT_DIR$/shared/attr.py" />
+        <option value="$PROJECT_DIR$/shared/group.py" />
+        <option value="$PROJECT_DIR$/shared/leg.py" />
+        <option value="$PROJECT_DIR$/shared/connector.py" />
+        <option value="$PROJECT_DIR$/shared/body.py" />
+        <option value="$PROJECT_DIR$/shared/cell.py" />
+        <option value="$PROJECT_DIR$/shared/event.py" />
+        <option value="$PROJECT_DIR$/conductor/mydataelements.py" />
+        <option value="$PROJECT_DIR$/conductor/journal.py" />
+        <option value="$PROJECT_DIR$/conductor/mygroup.py" />
+        <option value="$PROJECT_DIR$/conductor/myconnector.py" />
+        <option value="$PROJECT_DIR$/conductor/conductor.py" />
+        <option value="$PROJECT_DIR$/conductor/main.py" />
+        <option value="$PROJECT_DIR$/conductor/mycell.py" />
+        <option value="$PROJECT_DIR$/conductor/myfieldelements.py" />
+        <option value="$PROJECT_DIR$/conductor/myoschandler.py" />
+        <option value="$PROJECT_DIR$/visual/circle.py" />
+        <option value="$PROJECT_DIR$/shared/oschandler.py" />
+        <option value="$PROJECT_DIR$/OSC.py" />
+        <option value="$PROJECT_DIR$/shared/config.py" />
+        <option value="$PROJECT_DIR$/shared/field.py" />
+        <option value="$PROJECT_DIR$/visual/line.py" />
+        <option value="$PROJECT_DIR$/visual/main.py" />
+        <option value="$PROJECT_DIR$/visual/mycell.py" />
+        <option value="$PROJECT_DIR$/visual/mygroup.py" />
+        <option value="$PROJECT_DIR$/visual/myoschandler.py" />
+        <option value="$PROJECT_DIR$/visual/gridmap.py" />
+        <option value="$PROJECT_DIR$/visual/myfield.py" />
       </list>
     </option>
   </component>
@@ -146,7 +160,7 @@
     <OptionsSetting value="true" id="Update" />
     <OptionsSetting value="true" id="Status" />
     <OptionsSetting value="true" id="Edit" />
-    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="2" id="Add" />
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectReloadState">
@@ -241,6 +255,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/shared" />
       <recent name="$PROJECT_DIR$/visual/shared" />
     </key>
   </component>
@@ -421,19 +436,19 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3294271" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3294271" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3294271" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32857144" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24945612" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2538071" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2538071" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3987013" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32857144" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3987013" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
   </component>
@@ -454,6 +469,27 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/shared/oschandler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="16" selection-start="752" selection-end="752" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="8460">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/field.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="153" column="76" selection-start="5478" selection-end="5495" vertical-scroll-proportion="0.0" vertical-offset="2295" max-vertical-offset="7050">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/cell.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="54" column="27" selection-start="1518" selection-end="1518" vertical-scroll-proportion="0.0" vertical-offset="563" max-vertical-offset="7665">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/visual/curves.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="175" column="5" selection-start="4996" selection-end="4996" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2985">
@@ -461,16 +497,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/graphelements.py">
+    <entry file="file://$PROJECT_DIR$/visual/circle.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="336" column="60" selection-start="15232" selection-end="15232" vertical-scroll-proportion="0.0" vertical-offset="5040" max-vertical-offset="5220">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/gridmap.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="20" selection-start="2430" selection-end="2430" vertical-scroll-proportion="0.0" vertical-offset="909" max-vertical-offset="3810">
           <folding />
         </state>
       </provider>
@@ -482,21 +511,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/mydataelements.py">
+    <entry file="file://$PROJECT_DIR$/visual/myconnector.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2325">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/myfieldelements.py">
+    <entry file="file://$PROJECT_DIR$/visual/myfield.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="30" column="14" selection-start="912" selection-end="912" vertical-scroll-proportion="0.0" vertical-offset="450" max-vertical-offset="7620">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/myoschandlers.py">
+    <entry file="file://$PROJECT_DIR$/visual/myoschandler.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="29" column="0" selection-start="910" selection-end="910" vertical-scroll-proportion="0.0" vertical-offset="181" max-vertical-offset="1455">
           <folding />
@@ -517,7 +546,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/windowelements.py">
+    <entry file="file://$PROJECT_DIR$/visual/window.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2205">
           <folding />
@@ -531,65 +560,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/shared/debug.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="8" selection-start="1007" selection-end="1007" vertical-scroll-proportion="0.0" vertical-offset="175" max-vertical-offset="585" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/shared/oschandlers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="715" selection-end="715" vertical-scroll-proportion="0.0" vertical-offset="200" max-vertical-offset="4950" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/shared/debug.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="8" selection-start="1019" selection-end="1019" vertical-scroll-proportion="0.6896552" vertical-offset="150" max-vertical-offset="585" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/shared/config.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="116" column="23" selection-start="2863" selection-end="2863" vertical-scroll-proportion="0.55172414" vertical-offset="1500" max-vertical-offset="1935" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/conductor/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="83" column="25" selection-start="2177" selection-end="2177" vertical-scroll-proportion="0.0" vertical-offset="790" max-vertical-offset="1530" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/conductor/myoschandlers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="0" selection-start="761" selection-end="761" vertical-scroll-proportion="0.3527027" vertical-offset="84" max-vertical-offset="1920" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/conductor/myfieldelements.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1425" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/conductor/mydataelements.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="52" column="62" selection-start="1411" selection-end="1411" vertical-scroll-proportion="0.4527027" vertical-offset="445" max-vertical-offset="1185" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/conductor/conductorelements.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="119" column="0" selection-start="4218" selection-end="4218" vertical-scroll-proportion="0.37297297" vertical-offset="1509" max-vertical-offset="2250" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/curves.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="175" column="5" selection-start="4996" selection-end="4996" vertical-scroll-proportion="0.0" vertical-offset="2245" max-vertical-offset="2985">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/myoschandlers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="0" selection-start="910" selection-end="910" vertical-scroll-proportion="0.0" vertical-offset="181" max-vertical-offset="1455">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/visual/pathfinder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="23" column="25" selection-start="748" selection-end="748" vertical-scroll-proportion="0.0" vertical-offset="106" max-vertical-offset="3510">
@@ -597,37 +567,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/graphelements.py">
+    <entry file="file://$PROJECT_DIR$/visual/myconnector.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="336" column="60" selection-start="15232" selection-end="15232" vertical-scroll-proportion="0.74965227" vertical-offset="4501" max-vertical-offset="5220">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/gridmap.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="20" selection-start="2430" selection-end="2430" vertical-scroll-proportion="0.33153638" vertical-offset="909" max-vertical-offset="3810">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="109" column="52" selection-start="2930" selection-end="2930" vertical-scroll-proportion="0.7169811" vertical-offset="1058" max-vertical-offset="1800">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/mydataelements.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2325">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/visual/myfieldelements.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="14" selection-start="850" selection-end="850" vertical-scroll-proportion="-0.020215634" vertical-offset="420" max-vertical-offset="7335">
+        <state line="0" column="0" selection-start="0" selection-end="1230" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1560">
           <folding />
         </state>
       </provider>
@@ -639,30 +581,222 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visual/windowelements.py">
+    <entry file="file://$PROJECT_DIR$/shared/debug.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-0.2425876" vertical-offset="180" max-vertical-offset="2205">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="742">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/shared/fieldelements.py">
+    <entry file="file://$PROJECT_DIR$/visual/curves.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="153" column="76" selection-start="5478" selection-end="5495" vertical-scroll-proportion="0.0" vertical-offset="2033" max-vertical-offset="7035">
+        <state line="175" column="5" selection-start="5018" selection-end="5018" vertical-scroll-proportion="0.74797845" vertical-offset="2070" max-vertical-offset="3000">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/shared/dataelements.py">
+    <entry file="file://$PROJECT_DIR$/shared/connector.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="27" selection-start="1518" selection-end="1518" vertical-scroll-proportion="0.0" vertical-offset="563" max-vertical-offset="7665">
+        <state line="14" column="36" selection-start="611" selection-end="611" vertical-scroll-proportion="0.1819407" vertical-offset="75" max-vertical-offset="1860">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/shared/oschandlers.py">
+    <entry file="file://$PROJECT_DIR$/shared/leg.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="16" selection-start="752" selection-end="752" vertical-scroll-proportion="0.3328841" vertical-offset="98" max-vertical-offset="8460">
+        <state line="5" column="32" selection-start="181" selection-end="181" vertical-scroll-proportion="0.10474861" vertical-offset="0" max-vertical-offset="1515">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/group.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="20" selection-start="567" selection-end="567" vertical-scroll-proportion="0.28301886" vertical-offset="0" max-vertical-offset="1680">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/event.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="9" column="25" selection-start="488" selection-end="488" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1185">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conductor/conductor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="434" column="13" selection-start="17268" selection-end="17268" vertical-scroll-proportion="8.712938" vertical-offset="0" max-vertical-offset="7905">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conductor/journal.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="26" column="0" selection-start="777" selection-end="801" vertical-scroll-proportion="0.52560645" vertical-offset="0" max-vertical-offset="855">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conductor/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="25" column="19" selection-start="829" selection-end="829" vertical-scroll-proportion="0.49382716" vertical-offset="15" max-vertical-offset="1845">
+          <folding>
+            <element signature="e#744#754#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conductor/mycell.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="54" column="34" selection-start="1576" selection-end="1576" vertical-scroll-proportion="0.5148248" vertical-offset="428" max-vertical-offset="1170">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conductor/myconnector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="14" selection-start="699" selection-end="699" vertical-scroll-proportion="0.3638814" vertical-offset="0" max-vertical-offset="742">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conductor/myfieldelements.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="3" selection-start="545" selection-end="545" vertical-scroll-proportion="0.22237197" vertical-offset="0" max-vertical-offset="1575">
+          <folding>
+            <element signature="e#726#751#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conductor/myoschandler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="17" selection-start="574" selection-end="574" vertical-scroll-proportion="0.17115903" vertical-offset="68" max-vertical-offset="3840">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conductor/mygroup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="14" selection-start="695" selection-end="695" vertical-scroll-proportion="0.3638814" vertical-offset="0" max-vertical-offset="742">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/attr.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="19" selection-start="92" selection-end="92" vertical-scroll-proportion="0.020215634" vertical-offset="45" max-vertical-offset="1005">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/body.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="19" selection-start="565" selection-end="565" vertical-scroll-proportion="0.20215634" vertical-offset="45" max-vertical-offset="1800">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/cell.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="8" selection-start="81" selection-end="81" vertical-scroll-proportion="0.0" vertical-offset="60" max-vertical-offset="3090">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/circle.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="73" column="67" selection-start="2109" selection-end="2109" vertical-scroll-proportion="0.0" vertical-offset="1020" max-vertical-offset="3240">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/oschandler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="550" column="5" selection-start="21380" selection-end="21380" vertical-scroll-proportion="0.0" vertical-offset="8055" max-vertical-offset="8490">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="153" column="1" selection-start="3280" selection-end="3280" vertical-scroll-proportion="0.0" vertical-offset="2150" max-vertical-offset="4425">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/field.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="266" column="46" selection-start="10693" selection-end="10693" vertical-scroll-proportion="0.0" vertical-offset="3635" max-vertical-offset="8820">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/gridmap.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="12" selection-start="708" selection-end="708" vertical-scroll-proportion="0.0" vertical-offset="163" max-vertical-offset="4170">
+          <folding>
+            <element signature="e#685#695#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/line.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="36" selection-start="668" selection-end="668" vertical-scroll-proportion="0.19689119" vertical-offset="164" max-vertical-offset="5415">
+          <folding>
+            <element signature="e#685#712#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="14" selection-start="745" selection-end="745" vertical-scroll-proportion="0.18957347" vertical-offset="205" max-vertical-offset="2070">
+          <folding>
+            <element signature="e#746#756#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/mycell.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="64" column="27" selection-start="1843" selection-end="1843" vertical-scroll-proportion="0.33333334" vertical-offset="815" max-vertical-offset="1410">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/myfield.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="436" column="21" selection-start="17042" selection-end="17042" vertical-scroll-proportion="0.31295845" vertical-offset="6397" max-vertical-offset="8430">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/window.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="116" column="19" selection-start="3898" selection-end="3909" vertical-scroll-proportion="0.31295845" vertical-offset="1582" max-vertical-offset="2160">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/mygroup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="31" column="24" selection-start="896" selection-end="896" vertical-scroll-proportion="0.37931034" vertical-offset="300" max-vertical-offset="1215">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/visual/myoschandler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="190" column="9" selection-start="7242" selection-end="7242" vertical-scroll-proportion="0.7287356" vertical-offset="2533" max-vertical-offset="4260">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OSC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="172" column="0" selection-start="7240" selection-end="7240" vertical-scroll-proportion="0.33175355" vertical-offset="2410" max-vertical-offset="43635">
           <folding />
         </state>
       </provider>

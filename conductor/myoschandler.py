@@ -11,8 +11,7 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-
-__appname__ = "oschandlers.py"
+__appname__ = "myoschandler.py"
 __author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
@@ -25,7 +24,7 @@ from OSC import OSCServer, OSCClient, OSCMessage
 from time import time
 
 # local modules
-from shared.oschandlers import OSCHandler
+from shared.oschandler import OSCHandler
 from shared import config
 from shared import debug
 

@@ -11,21 +11,18 @@ and light, including complex direct and indirect behavior and relationships.
 
 """
 
-__appname__ = "pathelements.py"
+__appname__ = "gridmap.py"
 __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
 import sys
-from math import copysign
-#from collections import defaultdict
 import numpy
 
 # installed modules
 
 # local modules
-from shared import config
 from shared import debug
 
 # local classes

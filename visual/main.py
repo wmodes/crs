@@ -21,8 +21,7 @@ __license__ = "GNU GPL 3.0 or later"
 import sys
 import warnings
 import logging
-from time import time,sleep
-from itertools import combinations
+from time import sleep
 
 # installed modules
 import pyglet
@@ -33,8 +32,8 @@ from shared import config
 
 # local classes
 from shared import debug
-from myfieldelements import MyField
-from myoschandlers import MyOSCHandler
+from myfield import MyField
+from myoschandler import MyOSCHandler
 
 # constants
 LOGFILE = config.logfile

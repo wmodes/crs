@@ -39,6 +39,8 @@ DEF_GUIDECOLOR = config.default_guidecolor
 DEF_BKGDCOLOR = config.default_bkgdcolor
 DRAW_BODIES = config.draw_bodies
 
+OSCPATH = config.oscpath
+
 # init debugging
 dbug = debug.Debug()
 

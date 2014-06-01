@@ -14,83 +14,153 @@ diam_padding = .25      # 1/4 meter
 group_distance = 100
 ungroup_distance = 150
 
-# conductor configuration
-#
+cell_avg_min = 0.01    # below this and we consider it zero
+cell_avg_triggers = {
+    # what avg value triggers the connection
+    # You can think of this as how much of the time do you expect them to be
+    # doing this?
+    # 0 = no avg triggers
+    'default': 0.8,
+    # cell values
+    'cell-dance': 0.8,
+    'cell-interactive': 0.25,
+    'cell-static': 0.6,
+    'cell-kinetic': 0.6,
+    'cell-fast': 0.8,
+    'cell-timein': 0.5,
+    'cell-spin': 0.8,
+    'cell-quantum': 0.8,
+    'cell-jacks': 0.8,
+    'cell-chosen': 0.8,
+}
+
+cell_memory_time = {
+    # Haw far back do we consider (in sec)
+    # 0 = no timed triggers
+    'default': 10,
+    # cell values
+    'cell-dance': 10,
+    'cell-interactive': 5*60,
+    'cell-static': 10,
+    'cell-kinetic': 10,
+    'cell-fast': 2,
+    'cell-timein': 120,
+    'cell-spin': 10,
+    'cell-quantum': 10,
+    'cell-jacks': 10,
+    'cell-chosen': 10,
+}
+
+cell_max_age = {
+    # as max age in secs
+    # 0 = immortal
+    'default': 10,
+    # cell values
+    'cell-dance': 10,
+    'cell-interactive': 10,
+    'cell-static': 10,
+    'cell-kinetic': 10,
+    'cell-fast': 10,
+    'cell-timein': 10,
+    'cell-spin': 10,
+    'cell-quantum': 10,
+    'cell-jacks': 10,
+    'cell-chosen': 10,
+}
+
+cell_physical_triggers = {
+    # in meters unless otherwise specified
+    'default': 2, # totally arbitrary since default dist is meaningless
+    # cell values
+    'cell-interactive': 3,
+    'cell-static': 4,  # m/s
+    'cell-kinetic': 4,  # m/s
+}
+
+cell_latitude = {
+    # all as percentage variance
+}
+
+
 connector_avg_min = 0.01    # below this and we consider it zero
 connector_avg_triggers = {
     # what avg value triggers the connection
     # 0 = no avg triggers
     'default': 0.8,
-    'grouped': 0.3,
-    'contact': 0.3,
-    'friends': 0.8,
-    'coord': 0.9,
-    'fof': 0,
-    'irlbuds': 0.8,
-    'leastconx': 0,
-    'nearby': 0,
-    'tag': 0,
-    'chosen': 0,
-    'fusion': 0,
-    'transfer': 0,
+    # connector values
+    'conx-conx-grouped': 0.3,
+    'conx-contact': 0.3,
+    'conx-friends': 0.8,
+    'conx-coord': 0.9,
+    'conx-fof': 0,
+    'conx-irlbuds': 0.8,
+    'conx-leastconx': 0,
+    'conx-nearby': 0,
+    'conx-tag': 0,
+    'conx-chosen': 0,
+    'conx-fusion': 0,
+    'conx-transfer': 0,
 }
 
 connector_memory_time = {
     # Haw far back do we consider (in sec)
     # 0 = no timed triggers
     'default': 10,
-    'grouped': 3,
-    'contact': 20,
-    'friends': 30,
-    'coord': 5,
-    'fof': 0,
-    'irlbuds': 5*60,
-    'leastconx': 0,
-    'nearby': 0,
-    'tag': 0,
-    'chosen': 0,
-    'facing': 20,
-    'fusion': 0,
-    'transfer': 0,
+    # connector values
+    'conx-grouped': 3,
+    'conx-contact': 20,
+    'conx-friends': 30,
+    'conx-coord': 5,
+    'conx-fof': 0,
+    'conx-irlbuds': 5*60,
+    'conx-leastconx': 0,
+    'conx-nearby': 0,
+    'conx-tag': 0,
+    'conx-chosen': 0,
+    'conx-facing': 20,
+    'conx-fusion': 0,
+    'conx-transfer': 0,
 }
 
 connector_max_age = {
     # as max age in secs
     # 0 = immortal
     'default': 10,
-    'grouped': 10,
-    'contact': 10,
-    'friends': 10,
-    'coord': 10,
-    'fof': 10,
-    'irlbuds': 30,
-    'leastconx': 20,
-    'mirror': 10,
-    'nearby': 5,
-    'strangers': 10,
-    'tag': 10,
-    'chosen': 20,
-    'facing': 20,
-    'fusion': 0,
-    'transfer': 0,
+    # connector values
+    'conx-grouped': 10,
+    'conx-contact': 10,
+    'conx-friends': 10,
+    'conx-coord': 10,
+    'conx-fof': 10,
+    'conx-irlbuds': 30,
+    'conx-leastconx': 20,
+    'conx-mirror': 10,
+    'conx-nearby': 5,
+    'conx-strangers': 10,
+    'conx-tag': 10,
+    'conx-chosen': 20,
+    'conx-facing': 20,
+    'conx-fusion': 0,
+    'conx-transfer': 0,
 }
 
-connector_distance_triggers = {
-    # all in meters
+connector_physical_triggers = {
+    # in meters, unless otherwise specified
     'default': 2, # totally arbitrary since default dist is meaningless
-    'friends': 10,
-    'coord': 20,
-    'contact': .33,
-    'facing': 30,   # degrees
-    'fusion_max': 1.5,
-    'fusion_min': .75,
-    'nearby_min': 3,
-    'nearby_max': 1.5,
+    # connector values
+    'conx-friends': 10,
+    'conx-coord': 20,   # m/s
+    'conx-contact': .33,
+    'conx-facing': 30,   # degrees
+    'conx-fusion_max': 1.5,
+    'conx-fusion_min': .75,
+    'conx-nearby_min': 3,
+    'conx-nearby_max': 1.5,
 }
 
 connector_latitude = {
     # all as percentage variance
-    'heading': 10,
+    'conx-heading': 10,
 }
 
 # visual configuration

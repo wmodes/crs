@@ -48,16 +48,21 @@ class Cell(object):
     Stores the following values:
         m_field: store a back ref to the field that called us
         m_id: the id of this cell (unique, but not enforced)
-        m_x, m_y: center of cell (coordinate tupple in cm)
-        m_body_diam: diam of the person within the cell (cm)
-        m_diam: diam of the cell surrounding the person (cm)
+        m_x, m_y: center of cell (coordinate tupple in m)
+        m_vx, m_vy: center of cell (coordinate tupple in m)
+        m_body_diam: diam of the person within the cell (m)
+        m_diam: diam of the cell surrounding the person (m)
         m_visible: is this cell displayed currently? (boolean)
         m_conx_dict: connectors attached to this cell (index by cid)
         m_attr_dict: dict of attrs applied to this cell (indexed by type)
         m_leglist: list of Leg objects
         m_body: Body object
         m_gid: GID of group this cell belongs to
-        m_timestamp: time that cell was created
+        m_createtime: time that cell was created
+        m_timestamp: time that cell was last updated
+        m_fromcenter: dist cell is from geo center of everyone
+        m_fromnearest: dist cell is from another person
+        m_fromexit: dist cell is from exit
 
     update: set center, readius, and attrs
     geoupdate: set geo data for cell

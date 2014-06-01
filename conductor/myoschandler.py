@@ -140,11 +140,11 @@ class MyOSCHandler(OSCHandler):
         if frame%REPORT_FREQ['rollcall'] == 0:
             self.send_rollcall()
         if frame%REPORT_FREQ['attrs'] == 0:
-            self.send_attrs()
+            self.send_cell_attrs()
         if frame%REPORT_FREQ['conxs'] == 0:
-            self.send_conxs()
+            self.send_conx_attr()
         if frame%REPORT_FREQ['gattrs'] == 0:
-            self.send_gattrs()
+            self.send_group_attrs()
         if frame%REPORT_FREQ['events'] == 0:
             self.send_events()
 
@@ -162,7 +162,7 @@ class MyOSCHandler(OSCHandler):
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_rollcall'],
                     [id, action, len(cell.m_conx_dict)])
 
-    def send_attrs(self):
+    def send_cell_attrs(self):
         """Sends the current attributes of visible cells.
         
         /conductor/attr ["type",uid,value,time]
@@ -174,7 +174,7 @@ class MyOSCHandler(OSCHandler):
                     self.m_field.m_osc.send_downstream(OSCPATH['conduct_attr'],
                             [type, uid, attr.m_value, duration])
 
-    def send_conxs(self):
+    def send_conx_attr(self):
         """Sends the current descriptions of connectors.
         
         /conductor/conx [cid,"type",uid0,uid1,value,time]
@@ -191,7 +191,7 @@ class MyOSCHandler(OSCHandler):
                             [subtype, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
                             attr.m_value, duration])
 
-    def send_gattrs(self):
+    def send_group_attrs(self):
         """Sends the current attributes of visible groups.
         
         /conductor/gattr ["type",gid,value,time]

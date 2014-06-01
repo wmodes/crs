@@ -95,8 +95,10 @@ def main():
 
         if field.m_frame != lastframe:
             # do conductor calculations and inferences
-            conductor.age_and_expire_connections()
-            conductor.update_all_connections()
+            #conductor.age_expire_cells()
+            #conductor.update_all_cells()
+            conductor.age_expire_conx()
+            conductor.update_all_conx()
 
             # send regular reports out
             osc.send_regular_reports()

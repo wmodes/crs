@@ -96,6 +96,7 @@ connector_avg_triggers = {
     'conx-irlbuds': 0.8,
     'conx-leastconx': 0,
     'conx-nearby': 0,
+    'conx-strangers': 0.8,
     'conx-tag': 0,
     'conx-chosen': 0,
     'conx-fusion': 0,
@@ -109,14 +110,15 @@ connector_memory_time = {
     # connector values
     'conx-grouped': 3,
     'conx-contact': 20,
-    'conx-friends': 30,
+    'conx-friends': 10,
     'conx-coord': 5,
     'conx-fof': 0,
     'conx-irlbuds': 5*60,
-    'conx-leastconx': 0,
-    'conx-nearby': 0,
-    'conx-tag': 0,
-    'conx-chosen': 0,
+    'conx-leastconx': 10,
+    'conx-nearby': 10,
+    'conx-strangers': 5*60,
+    'conx-tag': 10,
+    'conx-chosen': 10,
     'conx-facing': 20,
     'conx-fusion': 0,
     'conx-transfer': 0,
@@ -149,7 +151,8 @@ connector_physical_triggers = {
     'default': 2, # totally arbitrary since default dist is meaningless
     # connector values
     'conx-friends': 10,
-    'conx-coord': 20,   # m/s
+    'conx-coord-min-vel': 4,   # m/s
+    'conx-coord-max-vdiff': 4,   # m/s
     'conx-contact': .33,
     'conx-facing': 30,   # degrees
     'conx-fusion_max': 1.5,

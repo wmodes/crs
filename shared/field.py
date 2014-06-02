@@ -416,7 +416,7 @@ class Field(object):
                 del self.m_suspect_cells[id]
 
     def update_cell(self, id, x=None, y=None, vx=None, vy=None, major=None, 
-                    minor=None, gid=None, gsize=None, visible=None):
+                    minor=None, gid=None, gsize=None, visible=None, frame=None):
         """ Update a cells information."""
         if dbug.LEV & dbug.MORE: print "Field:update_cell:Cell",id
         self.check_for_missing_cell(id)
@@ -435,7 +435,7 @@ class Field(object):
                     print "Field:update_cell:Cell",id,"added to group", \
                             self.m_cell_dict[id].m_gid
         self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize,
-                                    visible=visible)
+                                    visible=visible, frame=frame)
 
     def update_geo(self, id, fromcenter=None, fromnearest=None, fromexit=None):
         """Update geo info for cell."""
@@ -583,4 +583,10 @@ class Field(object):
                 self.del_connector(cid)
                 if dbug.LEV & dbug.FIELD: 
                     print "Field:del_conx_attr:del_conx:",cid
-            
+
+    def check_for_abandoned_cells(self):
+        """Check to see if any cells have been abandoned."""
+        for uid,cell in self.m_cell_dict.iteritems():
+            if cell.m_frame < self.m_frame - 1:
+                if not cell.m_id in self.m_suspect_cells:
+                    self.suspect_cell(uid)

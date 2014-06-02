@@ -69,12 +69,13 @@ class MyCell(Cell):
                                      gid, gsize)
 
     def update(self, x=None, y=None, vx=None, vy=None, major=None,
-               minor=None, gid=None, gsize=None, color=None, visible=None):
+               minor=None, gid=None, gsize=None, color=None, visible=None,
+               frame=None):
         """Store basic info and create a DataElement object"""
         if color is not None:
             self.m_color = color
         super(MyCell, self).update(x, y, vx, vy, major, minor, gid, gsize,
-                                   visible)
+                                   visible=visible, frame=frame)
 
     def draw(self):
         if self.m_x is not None and self.m_y is not None:

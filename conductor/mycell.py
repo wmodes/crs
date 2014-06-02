@@ -44,10 +44,12 @@ class MyCell(Cell):
 
     """
     def __init__(self, field, id, x=None, y=None, vx=None, vy=None, 
-                 major=None, minor=None, gid=None, gsize=None):
+                 major=None, minor=None, gid=None, gsize=None, visible=None,
+                 frame=None):
         self.m_history = []
         super(MyCell, self).__init__(field, id, x, y, vx, vy, major, 
-                                     minor, gid, gsize)
+                                     minor, gid, gsize, visible=visible,
+                                     frame=frame)
 
     def record_history(self, type, uid1, value, time):
         self.m_history.append(Journal(type, self.m_id, uid1, value, time))

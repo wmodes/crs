@@ -58,11 +58,12 @@ class Cell(object):
         m_leglist: list of Leg objects
         m_body: Body object
         m_gid: GID of group this cell belongs to
-        m_createtime: time that cell was created
-        m_timestamp: time that cell was last updated
         m_fromcenter: dist cell is from geo center of everyone
         m_fromnearest: dist cell is from another person
         m_fromexit: dist cell is from exit
+        m_createtime: time that cell was created
+        m_timestamp: time that cell was last updated
+        m_frame: last frame in which we were updated
 
     update: set center, readius, and attrs
     geoupdate: set geo data for cell
@@ -73,7 +74,7 @@ class Cell(object):
     """
 
     def __init__(self, field, id, x=None, y=None, vx=None, vy=None, major=None, 
-                    minor=None, gid=None, gsize=None, visible=None):
+                    minor=None, gid=None, gsize=None, visible=None, frame=None):
         # passed params
         self.m_field=field
         self.m_id = id
@@ -110,9 +111,11 @@ class Cell(object):
         self.m_fromexit = 0
         self.m_createtime = time()
         self.m_timestamp = time()
+        self.m_frame = frame
 
     def update(self, x=None, y=None, vx=None, vy=None, major=None, 
-                    minor=None, gid=None, gsize=None, visible=None):
+                    minor=None, gid=None, gsize=None, visible=None,     
+                    frame=None):
         """Store basic info and create a DataElement object"""
         if x is not None:
             self.m_x = x
@@ -134,6 +137,8 @@ class Cell(object):
             self.m_gsize = gsize
         if visible is not None:
             self.m_visible = visible
+        if frame is not None:
+            self.m_frame = frame
 
     def geoupdate(self, fromcenter=None, fromnearest=None, fromexit=None):
         """Store geo data for cell."""

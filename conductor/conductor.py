@@ -68,6 +68,23 @@ class Conductor(object):
 
     send_rollcall: send the current rollcall to concerned systems
 
+    Every algorithm that calculates an attribute, starts with a score which is
+    clculated in a weighted running average, using a decay rate configured for
+    that attribute. The current running average is returned.  Whether that 
+    returned value triggers the attribute or not depends on whether it meets 
+    the configurable trigger set in the config.
+
+    Thus, every attribute has five critical aspects about it, four of them 
+    configurable:
+
+        1. The algorithm that determines the score in this moment.
+        2. The "physical_trigger" that may specify distance, velocity, or 
+            degrees for the algorithm
+        3. The "memory_time" or how far back we are averaging
+        4. The "avg_trigger" that when the running average is greater than 
+            triggers the attribute
+        5. The "max_age" or how long the attribute stays around once 
+            triggered (it diminishes to 0 in this time)
     """
 
     def __init__(self, field):
@@ -95,7 +112,7 @@ class Conductor(object):
             'conx-irlbuds': self.test_conx_irlbuds,
             #'conx-leastconx': self.test_conx_leastconx,
             #'conx-nearby': self.test_conx_nearby,
-            #'conx-strangers': self.test_conx_strangers,
+            'conx-strangers': self.test_conx_strangers,
             #'conx-tag': self.test_conx_tag,
             #'conx-chosen': self.test_conx_chosen,
             'conx-facing': self.test_conx_facing,
@@ -302,7 +319,7 @@ class Conductor(object):
                     if dbug.LEV & dbug.COND: 
                         if running_avg and avg_trigger:
                         #if avg_trigger:
-                            print "Conduct:update_conx:results:id:", \
+                            print "Conduct:update_conx:post_test:id:", \
                                     "%s-%s %.2f"%(cid,type,running_avg), \
                                     "(trigger:%.2f)"%avg_trigger
                     # if running_avg is above trigger
@@ -453,6 +470,7 @@ class Conductor(object):
         Evaluates the folllowing criteria
             1. whether two people are in a group
             2: how long they've been grouped
+            Score = 0.0 not in group, 1.0 if in group
         Returns:
             The exponentially decaying weighted moving average
         """
@@ -471,6 +489,7 @@ class Conductor(object):
         Evaluates the folllowing criteria
             1. distance between people
             2. length of time they've been close
+            score = max(0, 1 - float(dist) / max_dist)
         Returns:
             The exponentially decaying weighted moving average
         """
@@ -494,6 +513,8 @@ class Conductor(object):
         Evaluates the folllowing criteria
             1. Is distance between cells < contact_dist
             2: how long they've been grouped
+            score = 1.0 if dist is within physical threshold
+                  = 0.0 if dist is greater than phsical threshold
         Returns:
             The exponentially decaying weighted moving average
         """
@@ -514,19 +535,30 @@ class Conductor(object):
             1. similarity of velocities of two cells
                 Note: Empirically  10m/s is highest vel
                     so 20m/s is the largest likely diff
-            2. length of time they've been synchronized
+            2. The similar velocities can't be near zero
+            3. length of time they've been synchronized
+            score = max(0, 1 - float(dist_of_velocities) / max_dist)
         Returns:
             The exponentially decaying weighted moving average
         """
         # we calculate a score
         # score = 1 if the values are exactly the same
         # score = 0 if the values are very different
-        vdist = sqrt((cell0.m_vx-cell1.m_vx)**2+(cell0.m_vy-cell1.m_vy)**2)
-        if type in CONX_PHYS:
-            max_dist = CONX_PHYS[type]
+        if 'conx-coord-min-vel' in CONX_PHYS:
+            min_spd = CONX_PHYS['conx-coord-min-vel']
         else:
-            max_dist = CONX_PHYS[DEFAULT]
-        score = max(0, 1 - float(vdist) / max_dist)
+            min_spd = CONX_PHYS[DEFAULT]
+        spd0 = sqrt(cell0.m_vx**2+cell0.m_vy**2)
+        spd1 = sqrt(cell1.m_vx**2+cell1.m_vy**2)
+        if spd0 < min_spd or spd1 < min_spd:
+            score = 0.0
+        else:
+            if 'conx-coord-max-vdiff' in CONX_PHYS:
+                max_vdiff = CONX_PHYS['conx-coord-max-vdiff']
+            else:
+                max_vdiff = CONX_PHYS[DEFAULT]
+            vdiff = sqrt((cell0.m_vx-cell1.m_vx)**2+(cell0.m_vy-cell1.m_vy)**2)
+            score = max(0, 1 - float(vdiff) / max_vdiff)
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
 
@@ -547,6 +579,7 @@ class Conductor(object):
         Evaluates the folllowing criteria
             1. distance between people
             2. length of time they've been close
+            score = max(0, 1 - float(dist) / max_dist)
         Returns:
             The exponentially decaying weighted moving average
         """
@@ -614,21 +647,32 @@ class Conductor(object):
     def test_conx_strangers(self, cid, type, cell0, cell1):
         """Are these cells unconnected? Have they never been connected?
 
-        Note: This requires something to be saved over time.
-        Meets the following conditions:
-            1. Both cells been in space for some_time
-            2. They have no connection in their history
+        Evaluates the folllowing criteria
+            1. Both cells have been in the space for a while
+            2. These two cells are not in a group
+            Score = 0.0 in space for less than min time
+                  = 1.0 if they are not in group together
+                  = 0.0 if they are in group together
         Returns:
-            value: 1.0 if connected, 0 if no
+            The exponentially decaying weighted moving average
         """
-        # If cells been in space for some_time
-        #if cell0.age < COND_TIMES['some_time'] or \
-            #cell1.age < COND_TIMES['some_time']:
-            #return 0
-        # They have no connection in their history
-        if self.m_field.have_history(cell0.m_id,cell1.m_id):
-            return 0
-        return 1.0
+        # we calculate a score
+        # If the gid is not-zero and cell->m_gid the same for each cell
+        age0 = time() - cell0.m_createtime 
+        age1 = time() - cell1.m_createtime 
+        if type in CONX_TIME:
+            min_age = CONX_TIME[type]
+        else:
+            min_age = CONX_TIME[DEFAULT]
+        if age0 < min_age or age1 < min_age:
+            score = 0.0
+        else:
+            if cell0.m_gid != cell1.m_gid:
+                score = 1.0
+            else:
+                score = 0.0
+        # we record our score in our running avg table
+        return self.record_conx_avg(cid, type, score)
 
     def test_conx_tag(self, cid, type, cell0, cell1):
         """Did one of these individuals tag the other?
@@ -657,6 +701,8 @@ class Conductor(object):
         Evaluates the folllowing criteria
             1. are facing each other
             2. are not in a group together
+            score = 1 - float(abs(180-abs(d0-d1)))/180
+            TODO: use Brent's suggestion
         Returns:
             The exponentially decaying weighted moving average
         """
@@ -686,7 +732,8 @@ class Conductor(object):
             2. Are they not in a group together already? Are cell's m_gid different?
             3. Is distance between fusion_min and fusion_max?
         Returns:
-            value: 1.0 if connected, 0 if no
+            1.0 - ((cell_dist-CONX_PHYS['fusion_min']) /
+                      (CONX_PHYS['fusion_max']-CONX_PHYS['fusion_min']))
         """
         # if they are not in a group together
         if cell0.m_gid and cell0.m_gid == cell1.m_gid:

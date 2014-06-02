@@ -235,7 +235,7 @@ class OSCHandler(object):
             no args
 
         """
-        #samp = args[0]
+        #frame = args[0]
         if dbug.LEV & dbug.MSGS: print "OSC:event_track_start"
 
     def event_tracking_set(self, path, tags, args, source):
@@ -295,8 +295,8 @@ class OSCHandler(object):
 
         Sent before first /pf/update message for that target
         args:
-            samp - sample number
-            t - time of sample (elapsed time in seconds since
+            frame - frame number
+            t - time of frame (elapsed time in seconds since
             beginning of run)
             target - UID of target
             channel - channel number assigned
@@ -304,7 +304,7 @@ class OSCHandler(object):
         """
         #print "OSC:event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
-        samp = args[0]
+        frame = args[0]
         time = args[1]
         id = args[2]
         if dbug.LEV & dbug.MSGS: print "OSC:event_track_entry:cell:",id
@@ -314,13 +314,13 @@ class OSCHandler(object):
         """Event when person exits field.
 
         args:
-             samp - sample number
-             t - time of sample (elapsed time in seconds since beginning of run)
+             frame - frame number
+             t - time of frame (elapsed time in seconds since beginning of run)
              target - UID of target
 
         """
         #print "OSC:event_track_exit:",path,args,source
-        samp = args[0]
+        frame = args[0]
         time = args[1]
         id = args[2]
         if dbug.LEV & dbug.MSGS: print "OSC:event_track_exit:cell:",id
@@ -335,7 +335,7 @@ class OSCHandler(object):
 
         Update position of target.
         args:
-            samp - sample number 
+            frame - frame number 
             target - UID of target
             x,y - position of person within field in m
             ex,ey - standard error of measurement (SEM) of position, in meters 
@@ -353,7 +353,7 @@ class OSCHandler(object):
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = None
-        samp = args[0]
+        frame = args[0]
         id = args[1]
         x = args[2]       # comes in meters
         y = args[3]
@@ -373,7 +373,7 @@ class OSCHandler(object):
         vis = args[17]
         if id not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: print "OSC:event_track_body:no uid",id,"in registered cell list"
-        if samp%REPORT_FREQ['debug'] == 0:
+        if frame%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
                 print "    OSC:event_track_body:id:",id,"pos:", (x, y), "data:", \
                         ex, ey, spd, espd, facing, efacing, diam, sigmadiam, \
@@ -386,7 +386,7 @@ class OSCHandler(object):
 
         Update position of leg.
         args:
-            samp - sample number 
+            frame - frame number 
             id - UID of target
             leg - leg number (0..nlegs-1)
             nlegs - number of legs target is modeled with 
@@ -399,7 +399,7 @@ class OSCHandler(object):
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = None
-        samp = args[0]
+        frame = args[0]
         id = args[1]
         leg = args[2]
         nlegs = args[3]
@@ -414,7 +414,7 @@ class OSCHandler(object):
         vis = args[12]
         if id not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: print "OSC:event_track_leg:no uid",id,"in registered cell list"
-        if samp%REPORT_FREQ['debug'] == 0:
+        if frame%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
                 print "    OSC:event_track_leg:id:", id, "leg:", leg, "pos:", (x,y), \
                 "data:", ex, ey, spd, espd, heading, eheading, vis
@@ -426,9 +426,9 @@ class OSCHandler(object):
 
         Update position of target.
         args:
-            /pf/update samp t target x y vx vy major minor groupid groupsize channel
-                samp - sample number
-                t - time of sample (elapsed time in seconds)
+            /pf/update frame t target x y vx vy major minor groupid groupsize channel
+                frame - frame number
+                t - time of frame (elapsed time in seconds)
                 target - UID of target, always increments
                 x,y - position within field in meters
                 vx,vy - estimate of velocity in m/s
@@ -440,7 +440,7 @@ class OSCHandler(object):
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = None
-        samp = args[0]
+        frame = args[0]
         time = args[1]
         id = args[2]
         if id not in self.m_field.m_cell_dict:
@@ -455,20 +455,21 @@ class OSCHandler(object):
         gsize = args[10]
         channel = args[11]
         #print "OSC:event_track_update:",path,args,source
-        if samp%REPORT_FREQ['debug'] == 0:
+        if frame%REPORT_FREQ['debug'] == 0:
             #print "OSC:event_track_update:",path,args,source
             if dbug.LEV & dbug.MSGS: 
                 print " OSC:event_track_update:id:",id,"pos:", (x, y), "data:", \
                         vx, vy, major, minor, gid, gsize
-        self.m_field.update_cell(id, x, y, vx, vy, major, minor, gid, gsize)
+        self.m_field.update_cell(id, x, y, vx, vy, major, minor, gid, gsize, 
+                                 frame=frame)
 
     def event_tracking_group(self, path, tags, args, source):
         """Information about people's movement within field.
 
         Update info about group
-        /pf/group samp gid gsize duration centroidX centroidY diameter
+        /pf/group frame gid gsize duration centroidX centroidY diameter
         args:
-            samp - sample number
+            frame - frame number
             gid - group ID 
             gsize - number of people in group
             duration - time since first formed in seconds
@@ -478,7 +479,7 @@ class OSCHandler(object):
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = None
-        samp = args[0]
+        frame = args[0]
         gid = args[1]
         gsize = args[2]       # comes in meters
         duration = args[3]
@@ -487,7 +488,7 @@ class OSCHandler(object):
         diam = args[6]
         if gid not in self.m_field.m_group_dict:
             if dbug.LEV & dbug.MSGS: print "OSC:event_track_group:no gid",gid,"in group list"
-        if samp%REPORT_FREQ['debug'] == 0:
+        if frame%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
                 print "    OSC:event_track_group:gid:",gid, "pos:", (x, y), "data:", \
                         gsize, duration, diam
@@ -497,9 +498,9 @@ class OSCHandler(object):
         """Information about people's movement within field.
 
         Update info about group
-        /pf/geo samp target fromcenter fromothers fromexit
+        /pf/geo frame target fromcenter fromothers fromexit
         args:
-            samp - sample number 
+            frame - frame number 
             uid - UID of target
             fromcenter -target's distance from geographic center of everyone
             fromnearest - target's distance from the nearest other person (-1 if nobody else)
@@ -508,7 +509,7 @@ class OSCHandler(object):
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = None
-        samp = args[0]
+        frame = args[0]
         uid = args[1]
         fromcenter = args[2]       # comes in meters
         fromnearest = args[3]
@@ -516,7 +517,7 @@ class OSCHandler(object):
         if uid not in self.m_field.m_cell_dict:
             if dbug.LEV & dbug.MSGS: 
                 print "OSC:event_track_geo:no uid",uid,"in registered cell list"
-        if samp%REPORT_FREQ['debug'] == 0:
+        if frame%REPORT_FREQ['debug'] == 0:
             if dbug.LEV & dbug.MSGS: 
                 print "    OSC:event_track_geo:uid:",uid, "data:", \
                         fromcenter, fromnearest, fromexit
@@ -526,14 +527,14 @@ class OSCHandler(object):
         """New frame event.
 
         args:
-            samp - sample number
+            frame - frame number
         """
         #print "OSC:event_track_frame:",path,args,source
-        samp = args[0]
-        self.m_field.update(frame=samp)
-        if samp%REPORT_FREQ['debug'] == 0:
-            #print "OSC:event_track_update:",samp
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_track_frame::",samp
+        frame = args[0]
+        self.m_field.update(frame=frame)
+        if frame%REPORT_FREQ['debug'] == 0:
+            #print "OSC:event_track_update:",frame
+            if dbug.LEV & dbug.MSGS: print "    OSC:event_track_frame::",frame
         return None
 
     def event_tracking_stop(self, path, tags, args, source):

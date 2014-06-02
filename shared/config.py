@@ -88,18 +88,19 @@ connector_avg_triggers = {
     # 0 = no avg triggers
     'default': 0.8,
     # connector values
-    'conx-conx-grouped': 0.3,
-    'conx-contact': 0.3,
-    'conx-friends': 0.8,
-    'conx-coord': 0.9,
+    'conx-grouped': 0.3,    # implemented
+    'conx-contact': 0.3,    # implemented
+    'conx-friends': 0.8,    # implemented; tested
+    'conx-coord': 0.9,      # implemented
+    'conx-mirror': 0,
     'conx-fof': 0,
-    'conx-irlbuds': 0.8,
+    'conx-irlbuds': 0.8,    # implemented
     'conx-leastconx': 0,
     'conx-nearby': 0,
-    'conx-strangers': 0.8,
+    'conx-strangers': 0.8,  # implemented
     'conx-tag': 0,
     'conx-chosen': 0,
-    'conx-fusion': 0,
+    'conx-fusion': 0,   # implemented
     'conx-transfer': 0,
 }
 
@@ -148,17 +149,18 @@ connector_max_age = {
 
 connector_physical_triggers = {
     # in meters, unless otherwise specified
-    'default': 2, # totally arbitrary since default dist is meaningless
+    'default-min': 1, # totally arbitrary since default dist is meaningless
+    'default-max': 3, # totally arbitrary since default dist is meaningless
     # connector values
     'conx-friends': 10,
     'conx-coord-min-vel': 4,   # m/s
     'conx-coord-max-vdiff': 4,   # m/s
     'conx-contact': .33,
     'conx-facing': 30,   # degrees
-    'conx-fusion_max': 1.5,
-    'conx-fusion_min': .75,
-    'conx-nearby_min': 3,
-    'conx-nearby_max': 1.5,
+    'conx-fusion-max': 1.5,
+    'conx-fusion-min': .75,
+    'conx-nearby-min': 3,
+    'conx-nearby-max': 1.5,
 }
 
 connector_latitude = {

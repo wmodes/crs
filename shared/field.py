@@ -59,7 +59,7 @@ class Field(object):
         m_group_dict: dictionary of all groups we have
         m_event_dict: dictionary of all events we have
         m_suspect_cells: list of cells we suspect are dead
-        m_suspect_conx: list of connectors we suspect are dead
+        m_suspect_conxs: list of connectors we suspect are dead
         m_suspect_groups: list of groups we suspect are dead
         m_frame: which frame is the tracker reporting
         m_scene: the current scene we are performing
@@ -218,183 +218,6 @@ class Field(object):
         # update leg info
         self.m_cell_dict[id].update_leg(leg, nlegs, x, y, ex, ey, spd, espd, 
                                    heading, eheading, vis)
-
-    # Checks and housekeeping
-
-    def check_for_missing_group(self, gid):
-        """Check for missing or suspect group, handle it.
-
-        Possibilities:
-            * Group does not exist:
-                create it, remove from suspect list, update it, increment count
-            * Group exists, but is on the suspect list
-                remove from suspect list, increment count
-            * Group exists in master list and is not suspect:
-                update its info; count unchanged
-        """
-        # if the gid is a real group (non-zero)
-        if gid:
-            # and if group does not already exist
-            if gid not in self.m_group_dict:
-                self.create_group(gid)
-                # create_group already does this.
-                # remove from suspect list
-                #if gid in self.m_suspect_groups:
-                    #del self.m_suspect_groups[gid]
-                if dbug.LEV & dbug.FIELD: print "Field:group_check:Group",gid,\
-                            "was lost and has been recreated"
-            # if group exists, but is on suspect list
-            elif gid in self.m_suspect_groups:
-                # remove from suspect list
-                del self.m_suspect_groups[gid]
-                if dbug.LEV & dbug.FIELD: print "Field:group_check:Group",gid,\
-                            "was suspected lost but is now above suspicion"
-
-    def check_for_new_group(self, id, gid):
-        """If this is a new group, disconnect the old one."""
-        # find the old group id
-        former_gid = self.m_cell_dict[id].m_gid
-        # if the group has changed, remove the cell from former group list
-        if gid != former_gid:
-            # if the old group is not zero (no group) and not None (undef)
-            if former_gid:
-                # find the actual group we're referring to
-                if former_gid in self.m_group_dict:
-                    former_group =  self.m_group_dict[former_gid]
-                    # now delete the cell ref in the group's cell list
-                    if id in former_group.m_cell_dict:
-                        del former_group.m_cell_dict[id]
-                    # if the length of this list is zero, we can nix the group
-                    if not len(former_group.m_cell_dict):
-                        self.del_group(former_gid)
-        #TODO: When do we send the osc notice?
-
-    def check_for_missing_cell(self, id):
-        """Check for missing or suspect cell, handle it.
-
-        Possibilities:
-            * Cell does not exist:
-                create it, remove from suspect list, update it, increment
-                count, and refresh any connectors that point to it
-            * Cell exists, but is on the suspect list
-                remove from suspect list, increment count
-            * Cell exists in master list and is not suspect:
-                update its info; count unchanged
-        """
-        # if cell does not exist:
-        if not id in self.m_cell_dict:
-            # create it and increment count
-            self.create_cell(id)
-            # remove from suspect list
-            if id in self.m_suspect_cells:
-                del self.m_suspect_cells[id]
-            if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
-                        "was lost and has been recreated"
-        # if cell exists, but is on suspect list
-        elif id in self.m_suspect_cells:
-            # remove from suspect list
-            del self.m_suspect_cells[id]
-            # increment count
-            self.m_our_cell_count += 1
-            if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
-                        "was suspected lost but is now above suspicion"
-
-    def check_for_missing_conx(self, cid, uid0, uid1):
-        """Check for missing or suspect conx, handle it.
-
-        Possibilities:
-            * Conx does not exist:
-                create it, remove from suspect list, update it, increment
-                count, and refresh any connectors that point to it
-            * Conx exists, but is on the suspect list
-                remove from suspect list, increment count
-            * Conx exists in master list and is not suspect:
-                update its info; count unchanged
-        """
-        # if conx does not exist:
-        if not cid in self.m_conx_dict:
-            # create it and increment count
-            self.create_connector(
-                    self.m_cell_dict[uid0], self.m_cell_dict[uid1])
-            # remove from suspect list
-            if cid in self.m_suspect_conxs:
-                del self.m_suspect_conxs[cid]
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:conx_check:Cell",cid, "was lost and has been recreated"
-        # if conx exists, but is on suspect list
-        elif cid in self.m_suspect_conxs:
-            # remove from suspect list
-            del self.m_suspect_conxs[cid]
-            # increment count
-            self.m_our_conx_count += 1
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:conx_check:Conx",cid,\
-                        "was suspected lost but is now above suspicion"
-
-    def is_cell_good_to_go(self, id):
-        """Test if cell is good to be rendered.
-        Returns True if cell is on master list and not suspect.
-        """
-        if not id in self.m_cell_dict:
-            return False
-        if id in self.m_suspect_cells:
-            return False
-        cell = self.m_cell_dict[id]
-        if not cell.m_visible or cell.m_x is None or cell.m_y is None:
-            return False
-        return True
-
-    def is_conx_good_to_go(self, id):
-        """Test if conx is good to be rendered.
-        Returns True if cell is on master list and not suspect.
-        """
-        if not id in self.m_conx_dict:
-            return False
-        connector = self.m_conx_dict[id]
-        if not connector.m_visible:
-            return False
-        if not self.is_cell_good_to_go(connector.m_cell0.m_id) or \
-           not self.is_cell_good_to_go(connector.m_cell1.m_id):
-            return False
-        if connector.m_cell0.m_gid and \
-           (connector.m_cell0.m_gid == connector.m_cell1.m_gid):
-            return False
-        #TODO: Is this the right place for this?
-        if id in self.m_suspect_conxs:
-            del self.m_suspect_conxs[id]
-        return True
-
-    def is_group_good_to_go(self, id):
-        """Test if group is good to be rendered.
-        Returns True if group is on master list and not suspect.
-        """
-        if id not in self.m_group_dict:
-            return False
-        if id in self.m_suspect_groups:
-            return False
-        if self.m_group_dict[id].m_x is None or self.m_group_dict[id].m_y is None:
-            return False
-        return True
-
-    def check_for_lost_cell(self, cell):
-        if dbug.LEV & dbug.FIELD: 
-            print "Field:renderCell:Cell",cell.m_id,"is suspected lost for",\
-                  self.m_suspect_cells[cell.m_id],"frames"
-        if self.m_suspect_cells[cell.m_id] > MAX_LOST_PATIENCE:
-            self.del_cell(cell.m_id)
-        else:
-            self.m_suspect_cells[cell.m_id] += 1
-
-    def check_for_lost_conx(self, connector):
-        if dbug.LEV & dbug.FIELD: 
-            print "Field:renderConnector:Conx",connector.m_id,"between",\
-                  connector.m_cell0.m_id,"and",connector.m_cell1.m_id,\
-                  "is suspected lost"
-        if self.m_suspect_conxs[connector.m_id] > MAX_LOST_PATIENCE:
-            self.del_connector(connector.m_id)
-        else:
-            self.m_suspect_conxs[connector.m_id] += 1
-
     # Cells
 
     def create_cell(self, id):
@@ -534,15 +357,16 @@ class Field(object):
             # Note1: Connector class takes care of storing the cells as well as
             #   telling each of the two cells that they now have a connector
             # Note2: we pass self since we want a back reference to field instance
-            connector = self.connectorClass(self, cid, cell0, cell1)
+            connector = self.connectorClass(self, cid, cell0, cell1,
+                                            frame=self.m_frame)
             self.m_conx_dict[cid] = connector
         return connector
 
-    def update_connector(self, id):
+    def update_connector(self, id, frame=None):
         """ Update a connector's information."""
         if dbug.LEV & dbug.MORE: print "Field:update_conx:Cell",id
         if id in self.m_conx_dict:
-            self.m_conx_dict[id].update()
+            self.m_conx_dict[id].update(frame=self.m_frame)
 
     def del_connector(self, cid):
         if cid in self.m_conx_dict:
@@ -584,9 +408,208 @@ class Field(object):
                 if dbug.LEV & dbug.FIELD: 
                     print "Field:del_conx_attr:del_conx:",cid
 
+    def suspect_conx(self, id):
+        """Hide a cell.
+        We don't delete cells unless we have to.
+        Instead we add them to a suspect list (actually a count of how
+        suspicous they are)
+        """
+        self.m_suspect_conxs[id] = 1
+        #self.m_our_conx_count -= 1
+        #if dbug.LEV & dbug.FIELD: 
+            #print "Field:suspect_conx:count:",self.m_our_conx_count
+
+    # Checks and housekeeping
+
+    def check_for_missing_group(self, gid):
+        """Check for missing or suspect group, handle it.
+
+        Possibilities:
+            * Group does not exist:
+                create it, remove from suspect list, update it, increment count
+            * Group exists, but is on the suspect list
+                remove from suspect list, increment count
+            * Group exists in master list and is not suspect:
+                update its info; count unchanged
+        """
+        # if the gid is a real group (non-zero)
+        if gid:
+            # and if group does not already exist
+            if gid not in self.m_group_dict:
+                self.create_group(gid)
+                # create_group already does this.
+                # remove from suspect list
+                #if gid in self.m_suspect_groups:
+                    #del self.m_suspect_groups[gid]
+                if dbug.LEV & dbug.FIELD: print "Field:group_check:Group",gid,\
+                            "was lost and has been recreated"
+            # if group exists, but is on suspect list
+            elif gid in self.m_suspect_groups:
+                # remove from suspect list
+                del self.m_suspect_groups[gid]
+                if dbug.LEV & dbug.FIELD: print "Field:group_check:Group",gid,\
+                            "was suspected lost but is now above suspicion"
+
+    def check_for_new_group(self, id, gid):
+        """If this is a new group, disconnect the old one."""
+        # find the old group id
+        former_gid = self.m_cell_dict[id].m_gid
+        # if the group has changed, remove the cell from former group list
+        if gid != former_gid:
+            # if the old group is not zero (no group) and not None (undef)
+            if former_gid:
+                # find the actual group we're referring to
+                if former_gid in self.m_group_dict:
+                    former_group =  self.m_group_dict[former_gid]
+                    # now delete the cell ref in the group's cell list
+                    if id in former_group.m_cell_dict:
+                        del former_group.m_cell_dict[id]
+                    # if the length of this list is zero, we can nix the group
+                    if not len(former_group.m_cell_dict):
+                        self.del_group(former_gid)
+        #TODO: When do we send the osc notice?
+
+    def check_for_missing_cell(self, id):
+        """Check for missing or suspect cell, handle it.
+
+        Possibilities:
+            * Cell does not exist:
+                create it, remove from suspect list, update it, increment
+                count, and refresh any connectors that point to it
+            * Cell exists, but is on the suspect list
+                remove from suspect list, increment count
+            * Cell exists in master list and is not suspect:
+                update its info; count unchanged
+        """
+        # if cell does not exist:
+        if not id in self.m_cell_dict:
+            # create it and increment count
+            self.create_cell(id)
+            # remove from suspect list
+            if id in self.m_suspect_cells:
+                del self.m_suspect_cells[id]
+            if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
+                        "was lost and has been recreated"
+        # if cell exists, but is on suspect list
+        elif id in self.m_suspect_cells:
+            # remove from suspect list
+            del self.m_suspect_cells[id]
+            # increment count
+            self.m_our_cell_count += 1
+            if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
+                        "was suspected lost but is now above suspicion"
+
+    def check_for_missing_conx(self, cid, uid0, uid1):
+        """Check for missing or suspect conx, handle it.
+
+        Possibilities:
+            * Conx does not exist:
+                create it, remove from suspect list, update it, increment
+                count, and refresh any connectors that point to it
+            * Conx exists, but is on the suspect list
+                remove from suspect list, increment count
+            * Conx exists in master list and is not suspect:
+                update its info; count unchanged
+        """
+        # if conx does not exist:
+        if not cid in self.m_conx_dict:
+            # create it and increment count
+            self.create_connector(self.m_cell_dict[uid0], self.m_cell_dict[uid1])
+            # remove from suspect list
+            if cid in self.m_suspect_conxs:
+                del self.m_suspect_conxs[cid]
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:conx_check:Cell",cid, "was lost and has been recreated"
+        # if conx exists, but is on suspect list
+        elif cid in self.m_suspect_conxs:
+            # remove from suspect list
+            del self.m_suspect_conxs[cid]
+            # increment count
+            #self.m_our_conx_count += 1
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:conx_check:Conx",cid,\
+                        "was suspected lost but is now above suspicion"
+
+    def is_cell_good_to_go(self, id):
+        """Test if cell is good to be rendered.
+        Returns True if cell is on master list and not suspect.
+        """
+        if not id in self.m_cell_dict:
+            return False
+        if id in self.m_suspect_cells:
+            return False
+        cell = self.m_cell_dict[id]
+        if not cell.m_visible or cell.m_x is None or cell.m_y is None:
+            return False
+        return True
+
+    def is_conx_good_to_go(self, id):
+        """Test if conx is good to be rendered.
+        Returns True if cell is on master list and not suspect.
+        """
+        if not id in self.m_conx_dict:
+            return False
+        connector = self.m_conx_dict[id]
+        if not connector.m_visible:
+            return False
+        if not self.is_cell_good_to_go(connector.m_cell0.m_id) or \
+           not self.is_cell_good_to_go(connector.m_cell1.m_id):
+            return False
+        if connector.m_cell0.m_gid and \
+           (connector.m_cell0.m_gid == connector.m_cell1.m_gid):
+            return False
+        #TODO: Is this the right place for this?
+        if id in self.m_suspect_conxs:
+            del self.m_suspect_conxs[id]
+        return True
+
+    def is_group_good_to_go(self, id):
+        """Test if group is good to be rendered.
+        Returns True if group is on master list and not suspect.
+        """
+        if id not in self.m_group_dict:
+            return False
+        if id in self.m_suspect_groups:
+            return False
+        if self.m_group_dict[id].m_x is None or self.m_group_dict[id].m_y is None:
+            return False
+        return True
+
+    def check_for_lost_cell(self, cell):
+        if dbug.LEV & dbug.FIELD: 
+            print "Field:renderCell:Cell",cell.m_id,"is suspected lost for",\
+                  self.m_suspect_cells[cell.m_id],"frames"
+        if self.m_suspect_cells[cell.m_id] > MAX_LOST_PATIENCE:
+            self.del_cell(cell.m_id)
+        else:
+            self.m_suspect_cells[cell.m_id] += 1
+
+    def check_for_lost_conx(self, connector):
+        if dbug.LEV & dbug.FIELD: 
+            print "Field:renderConnector:Conx",connector.m_id,"between",\
+                  connector.m_cell0.m_id,"and",connector.m_cell1.m_id,\
+                  "is suspected lost"
+        if self.m_suspect_conxs[connector.m_id] > MAX_LOST_PATIENCE:
+            self.del_connector(connector.m_id)
+        else:
+            self.m_suspect_conxs[connector.m_id] += 1
+
     def check_for_abandoned_cells(self):
         """Check to see if any cells have been abandoned."""
-        for uid,cell in self.m_cell_dict.iteritems():
-            if cell.m_frame < self.m_frame - 1:
-                if not cell.m_id in self.m_suspect_cells:
-                    self.suspect_cell(uid)
+        # we make a copy because we can't iterate over the dict if we are
+        # deleting stuff from it!
+        new_cell_dict = self.m_cell_dict.copy()
+        for uid,cell in new_cell_dict.iteritems():
+            if uid in self.m_suspect_cells:
+                self.check_for_lost_cell(cell)
+            elif cell.m_frame is not None and \
+                    self.m_frame - cell.m_frame > MAX_LOST_PATIENCE:
+                self.suspect_cell(uid)
+
+    def check_for_abandoned_conxs(self):
+        """Check to see if any conx have been abandoned."""
+        for cid,conx in self.m_conx_dict.iteritems():
+            if cid in self.m_suspect_conxs:
+                self.check_for_lost_conx(conx)
+            elif self.m_frame - conx.m_frame > MAX_LOST_PATIENCE:
+                self.suspect_conx(cid)

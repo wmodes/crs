@@ -59,7 +59,7 @@ class MyConnector(Connector):
 
     """
 
-    def __init__(self, field, id, cell0, cell1, color=None):
+    def __init__(self, field, id, cell0, cell1, color=None, frame=None):
         """Store basic info and create a DataElement object"""
         # process passed params
         if color is None:
@@ -70,15 +70,15 @@ class MyConnector(Connector):
         self.m_shape = Line()
         self.m_path = None
         self.m_dist = 0
-        super(MyConnector,self).__init__(field,id,cell0,cell1)
+        super(MyConnector,self).__init__(field,id,cell0,cell1,frame=frame)
 
-    def update(self, color=None, dist=None):
+    def update(self, color=None, dist=None, frame=None):
         """Store basic info and create a DataElement object"""
         if color is not None:
             self.m_color = color
         if dist is not None:
             self.m_dist = dist
-        super(MyConnector, self).update()
+        super(MyConnector, self).update(frame=frame)
 
     def add_path(self,path):
         """Record the path of this connector."""

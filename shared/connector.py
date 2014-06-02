@@ -49,13 +49,14 @@ class Connector(object):
         m_cell0, m_cell1: the two cells connected by this connector
         m_attr_dict: dict of attrs applied to this conx (indexed by type)
         m_visible: is this cell displayed currently? (boolean)
+        m_frame: last frame in which we were updated
 
     add_atts: add attrs to the attrs list
     conx_disconnect_thyself: Disconnect cells this connector refs
 
     """
 
-    def __init__(self, field, id, cell0, cell1):
+    def __init__(self, field, id, cell0, cell1, frame=None):
         # process passed params
         self.m_field=field
         self.m_id = id
@@ -69,8 +70,9 @@ class Connector(object):
         # tell the cells themselves that they now own a connector
         cell0.add_connector(self)
         cell1.add_connector(self)
+        self.m_frame = frame
 
-    def update(self, visible=None):
+    def update(self, visible=None, frame=None):
         """Update attr, create it if needed."""
         # refresh the cells that the connector points to
         uid0 = self.m_cell0.m_id
@@ -87,6 +89,8 @@ class Connector(object):
                 self.m_cell1 = self.m_field.m_cell_dict[uid1]
         if visible is not None:
             self.m_visible = visible
+        if frame is not None:
+            self.m_frame = frame
 
     def update_attr(self, type, value):
         """Update attr, create it if needed."""

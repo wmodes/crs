@@ -39,6 +39,8 @@ OSCPATH = config.oscpath
 FRAMERATE = config.framerate
 
 DEFAULT = 'default'
+DEFAULT_MIN = 'default-min'
+DEFAULT_MAX = 'default-max'
 
 CELL_MIN = config.cell_avg_min
 CELL_AVG = config.cell_avg_triggers
@@ -116,7 +118,7 @@ class Conductor(object):
             #'conx-tag': self.test_conx_tag,
             #'conx-chosen': self.test_conx_chosen,
             'conx-facing': self.test_conx_facing,
-            #'conx-fusion': self.test_conx_fusion,
+            'conx-fusion': self.test_conx_fusion,
             #'conx-transfer': self.test_conx_transfer,
         }
         self.m_avg_table = {}
@@ -317,11 +319,11 @@ class Conductor(object):
                     else:
                         avg_trigger = CONX_AVG[DEFAULT]
                     if dbug.LEV & dbug.COND: 
-                        if running_avg and avg_trigger:
+                        #if running_avg and avg_trigger:
                         #if avg_trigger:
-                            print "Conduct:update_conx:post_test:id:", \
-                                    "%s-%s %.2f"%(cid,type,running_avg), \
-                                    "(trigger:%.2f)"%avg_trigger
+                        print "Conduct:update_conx:post_test:id:", \
+                                "%s-%s %.2f"%(cid,type,running_avg), \
+                                "(trigger:%.2f)"%avg_trigger
                     # if running_avg is above trigger
                     if running_avg > avg_trigger:
                         #if dbug.LEV & dbug.MORE: 
@@ -502,7 +504,7 @@ class Conductor(object):
         if type in CONX_PHYS:
             max_dist = CONX_PHYS[type]
         else:
-            max_dist = CONX_PHYS[DEFAULT]
+            max_dist = CONX_PHYS[DEFAULT_MAX]
         score = max(0, 1 - float(dist) / max_dist)
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
@@ -547,16 +549,16 @@ class Conductor(object):
         if 'conx-coord-min-vel' in CONX_PHYS:
             min_spd = CONX_PHYS['conx-coord-min-vel']
         else:
-            min_spd = CONX_PHYS[DEFAULT]
+            min_spd = CONX_PHYS[DEFAULT_MIN]
         spd0 = sqrt(cell0.m_vx**2+cell0.m_vy**2)
         spd1 = sqrt(cell1.m_vx**2+cell1.m_vy**2)
         if spd0 < min_spd or spd1 < min_spd:
-            score = 0.0
+            score = 0.01
         else:
             if 'conx-coord-max-vdiff' in CONX_PHYS:
                 max_vdiff = CONX_PHYS['conx-coord-max-vdiff']
             else:
-                max_vdiff = CONX_PHYS[DEFAULT]
+                max_vdiff = CONX_PHYS[DEFAULT_MAX]
             vdiff = sqrt((cell0.m_vx-cell1.m_vx)**2+(cell0.m_vy-cell1.m_vy)**2)
             score = max(0, 1 - float(vdiff) / max_vdiff)
         # we record our score in our running avg table
@@ -592,7 +594,7 @@ class Conductor(object):
         if type in CONX_PHYS:
             max_dist = CONX_PHYS[type]
         else:
-            max_dist = CONX_PHYS[DEFAULT]
+            max_dist = CONX_PHYS[DEFAULT_MAX]
         score = max(0, 1 - float(dist) / max_dist)
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
@@ -637,12 +639,18 @@ class Conductor(object):
             return 0
         # If dist of cells are < nearby_dist
         cell_dist = self.dist(cell0, cell1)
-        mindist = CONX_PHYS['nearby_min']
-        maxdist = CONX_PHYS['nearby_max']
-        if cell_dist < mindist or cell_dist > maxdist:
+        if 'conx-nearby-min' in CONX_PHYS:
+            min_dist = CONX_PHYS['conx-nearby-min']
+        else:
+            min_dist = CONX_PHYS[DEFAULT_MIN]
+        if 'conx-nearby-max' in CONX_PHYS:
+            max_dist = CONX_PHYS['conx-nearby-max']
+        else:
+            max_dist = CONX_PHYS[DEFAULT_MAX]
+        if cell_dist < min_dist or cell_dist > max_dist:
             return 0
         # nearby_max = 0; nearby_min = 1.0
-        return 1.0 - ((cell_dist-mindist) / (maxdist-mindist))
+        return 1.0 - ((cell_dist-min_dist) / (max_dist-min_dist))
 
     def test_conx_strangers(self, cid, type, cell0, cell1):
         """Are these cells unconnected? Have they never been connected?
@@ -665,7 +673,7 @@ class Conductor(object):
         else:
             min_age = CONX_TIME[DEFAULT]
         if age0 < min_age or age1 < min_age:
-            score = 0.0
+            score = 0.01
         else:
             if cell0.m_gid != cell1.m_gid:
                 score = 1.0
@@ -699,14 +707,18 @@ class Conductor(object):
         """Are cells facing each other over some time?
 
         Evaluates the folllowing criteria
-            1. are facing each other
-            2. are not in a group together
+            1. are not in a group together
+            2. are facing each other
+                a. find the angle from cell0 to cell1
+                b. find the angle cell0 is facing
+                c. find difference between them, and scale to unit scale
+                d. repeat for cell1
+                e. multiply two scores
             score = 1 - float(abs(180-abs(d0-d1)))/180
             TODO: use Brent's suggestion
         Returns:
             The exponentially decaying weighted moving average
         """
-        # we calculate a score
         # score = 1 if their facing value is 180 degrees
         # score = 0 if they are facing in the same direction
         # score not added if they are in a cell together
@@ -732,19 +744,27 @@ class Conductor(object):
             2. Are they not in a group together already? Are cell's m_gid different?
             3. Is distance between fusion_min and fusion_max?
         Returns:
-            1.0 - ((cell_dist-CONX_PHYS['fusion_min']) /
-                      (CONX_PHYS['fusion_max']-CONX_PHYS['fusion_min']))
+            1.0 - ((cell_dist-min_dist) /
+                      (max_dist-min_dist))
         """
         # if they are not in a group together
         if cell0.m_gid and cell0.m_gid == cell1.m_gid:
             return 0
         cell_dist = self.dist(cell0, cell1)
         # Is distance between fusion_min and fusion_max?
-        if cell_dist > CONX_PHYS['fusion_max'] or \
-           cell_dist < CONX_PHYS['fusion_min']:
+        if 'conx-fusion-min' in CONX_PHYS:
+            min_dist = CONX_PHYS['conx-fusion-min']
+        else:
+            min_dist = CONX_PHYS[DEFAULT_MIN]
+        if 'conx-fusion-max' in CONX_PHYS:
+            max_dist = CONX_PHYS['conx-fusion-max']
+        else:
+            max_dist = CONX_PHYS[DEFAULT_MAX]
+        if cell_dist > max_dist or \
+           cell_dist < min_dist:
             return 0
-        return 1.0 - ((cell_dist-CONX_PHYS['fusion_min']) /
-                      (CONX_PHYS['fusion_max']-CONX_PHYS['fusion_min']))
+        return 1.0 - ((cell_dist-min_dist) /
+                      (max_dist-min_dist))
 
     def test_conx_transfer(self, cid, type, cell0, cell1):
         """Is a transfer of highlight happening between these cells?

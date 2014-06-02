@@ -98,6 +98,7 @@ def main():
             #conductor.age_expire_cells()
             #conductor.update_all_cells()
             field.check_for_abandoned_cells()
+            field.check_for_abandoned_conxs()
             conductor.age_expire_conx()
             conductor.update_all_conx()
 

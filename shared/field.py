@@ -23,6 +23,7 @@ __license__ = "GNU GPL 3.0 or later"
 # local modules
 from shared import config
 from shared import debug
+from time import time
 
 # local classes
 from shared.cell import Cell
@@ -59,7 +60,6 @@ class Field(object):
         m_group_dict: dictionary of all groups we have
         m_event_dict: dictionary of all events we have
         m_suspect_cells: list of cells we suspect are dead
-        m_suspect_conxs: list of connectors we suspect are dead
         m_suspect_groups: list of groups we suspect are dead
         m_frame: which frame is the tracker reporting
         m_scene: the current scene we are performing
@@ -84,8 +84,6 @@ class Field(object):
         self.m_event_dict = {}
         # a dict of missing cells, indexed by cid
         self.m_suspect_cells = {}
-        # a dict of missing connectors, indexed by id
-        self.m_suspect_conxs = {}
         # a dict of missing groups, indexed by gid
         self.m_suspect_groups = {}
         #self.allpaths = []
@@ -408,17 +406,6 @@ class Field(object):
                 if dbug.LEV & dbug.FIELD: 
                     print "Field:del_conx_attr:del_conx:",cid
 
-    def suspect_conx(self, id):
-        """Hide a cell.
-        We don't delete cells unless we have to.
-        Instead we add them to a suspect list (actually a count of how
-        suspicous they are)
-        """
-        self.m_suspect_conxs[id] = 1
-        #self.m_our_conx_count -= 1
-        #if dbug.LEV & dbug.FIELD: 
-            #print "Field:suspect_conx:count:",self.m_our_conx_count
-
     # Checks and housekeeping
 
     def check_for_missing_group(self, gid):
@@ -515,20 +502,6 @@ class Field(object):
         if not cid in self.m_conx_dict:
             # create it and increment count
             self.create_connector(self.m_cell_dict[uid0], self.m_cell_dict[uid1])
-            # remove from suspect list
-            if cid in self.m_suspect_conxs:
-                del self.m_suspect_conxs[cid]
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:conx_check:Cell",cid, "was lost and has been recreated"
-        # if conx exists, but is on suspect list
-        elif cid in self.m_suspect_conxs:
-            # remove from suspect list
-            del self.m_suspect_conxs[cid]
-            # increment count
-            #self.m_our_conx_count += 1
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:conx_check:Conx",cid,\
-                        "was suspected lost but is now above suspicion"
 
     def is_cell_good_to_go(self, id):
         """Test if cell is good to be rendered.
@@ -558,9 +531,6 @@ class Field(object):
         if connector.m_cell0.m_gid and \
            (connector.m_cell0.m_gid == connector.m_cell1.m_gid):
             return False
-        #TODO: Is this the right place for this?
-        if id in self.m_suspect_conxs:
-            del self.m_suspect_conxs[id]
         return True
 
     def is_group_good_to_go(self, id):
@@ -575,24 +545,14 @@ class Field(object):
             return False
         return True
 
-    def check_for_lost_cell(self, cell):
-        if dbug.LEV & dbug.FIELD: 
-            print "Field:renderCell:Cell",cell.m_id,"is suspected lost for",\
-                  self.m_suspect_cells[cell.m_id],"frames"
-        if self.m_suspect_cells[cell.m_id] > MAX_LOST_PATIENCE:
-            self.del_cell(cell.m_id)
-        else:
-            self.m_suspect_cells[cell.m_id] += 1
-
-    def check_for_lost_conx(self, connector):
-        if dbug.LEV & dbug.FIELD: 
-            print "Field:renderConnector:Conx",connector.m_id,"between",\
-                  connector.m_cell0.m_id,"and",connector.m_cell1.m_id,\
-                  "is suspected lost"
-        if self.m_suspect_conxs[connector.m_id] > MAX_LOST_PATIENCE:
-            self.del_connector(connector.m_id)
-        else:
-            self.m_suspect_conxs[connector.m_id] += 1
+    def check_for_lost_cell(self, uid):
+        time_since_last_update = time() - self.m_cell_dict[uid].m_updatetime
+        if time_since_last_update > MAX_LOST_PATIENCE:
+            if dbug.LEV & dbug.FIELD: 
+                print "Field:renderCell:Cell",\
+                    "%d is suspected lost for %.2f sec"%\
+                    (uid,time_since_last_update)
+            self.del_cell(uid)
 
     def check_for_abandoned_cells(self):
         """Check to see if any cells have been abandoned."""
@@ -600,16 +560,4 @@ class Field(object):
         # deleting stuff from it!
         new_cell_dict = self.m_cell_dict.copy()
         for uid,cell in new_cell_dict.iteritems():
-            if uid in self.m_suspect_cells:
-                self.check_for_lost_cell(cell)
-            elif cell.m_frame is not None and \
-                    self.m_frame - cell.m_frame > MAX_LOST_PATIENCE:
-                self.suspect_cell(uid)
-
-    def check_for_abandoned_conxs(self):
-        """Check to see if any conx have been abandoned."""
-        for cid,conx in self.m_conx_dict.iteritems():
-            if cid in self.m_suspect_conxs:
-                self.check_for_lost_conx(conx)
-            elif self.m_frame - conx.m_frame > MAX_LOST_PATIENCE:
-                self.suspect_conx(cid)
+            self.check_for_lost_cell(uid)

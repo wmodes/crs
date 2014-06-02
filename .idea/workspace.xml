@@ -6,40 +6,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5b07d10-5965-4f05-b2e5-bd2b09b1854b" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/attr.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/body.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/cell.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/visual/circle.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/connector.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/event.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/group.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/conductor/journal.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/shared/leg.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/visual/mycell.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/conductor/myconnector.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/conductor/mygroup.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/visual/mygroup.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/wmodes.xml" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/shared/dataelements.py" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/conductor/conductorelements.py" afterPath="$PROJECT_DIR$/conductor/conductor.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/conductor/mydataelements.py" afterPath="$PROJECT_DIR$/conductor/mycell.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/conductor/myoschandlers.py" afterPath="$PROJECT_DIR$/conductor/myoschandler.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/shared/fieldelements.py" afterPath="$PROJECT_DIR$/shared/field.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/shared/oschandlers.py" afterPath="$PROJECT_DIR$/shared/oschandler.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/graphelements.py" afterPath="$PROJECT_DIR$/visual/line.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/mydataelements.py" afterPath="$PROJECT_DIR$/visual/myconnector.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/myfieldelements.py" afterPath="$PROJECT_DIR$/visual/myfield.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/myoschandlers.py" afterPath="$PROJECT_DIR$/visual/myoschandler.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/pathelements.py" afterPath="$PROJECT_DIR$/visual/gridmap.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/visual/windowelements.py" afterPath="$PROJECT_DIR$/visual/window.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/'" afterPath="$PROJECT_DIR$/visual/'" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OSC.py" afterPath="$PROJECT_DIR$/OSC.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/config.py" afterPath="$PROJECT_DIR$/shared/config.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/cell.py" afterPath="$PROJECT_DIR$/shared/cell.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shared/field.py" afterPath="$PROJECT_DIR$/shared/field.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conductor/main.py" afterPath="$PROJECT_DIR$/conductor/main.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/main.py" afterPath="$PROJECT_DIR$/visual/main.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conductor/myfieldelements.py" afterPath="$PROJECT_DIR$/conductor/myfieldelements.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/visual/pathfinder.py" afterPath="$PROJECT_DIR$/visual/pathfinder.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conductor/mycell.py" afterPath="$PROJECT_DIR$/conductor/mycell.py" />
     </list>
     <ignored path="crs.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -61,7 +32,26 @@
     <favorites_list name="crs" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="cell.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/shared/cell.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="151" column="34" selection-start="5131" selection-end="5131" vertical-scroll-proportion="0.0" vertical-offset="2340" max-vertical-offset="3270">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="connector.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/shared/connector.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="14" column="36" selection-start="611" selection-end="611" vertical-scroll-proportion="-1.6091954" vertical-offset="910" max-vertical-offset="1935">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -102,7 +92,6 @@
         <option value="$PROJECT_DIR$/shared/leg.py" />
         <option value="$PROJECT_DIR$/shared/connector.py" />
         <option value="$PROJECT_DIR$/shared/body.py" />
-        <option value="$PROJECT_DIR$/shared/cell.py" />
         <option value="$PROJECT_DIR$/shared/event.py" />
         <option value="$PROJECT_DIR$/conductor/mydataelements.py" />
         <option value="$PROJECT_DIR$/conductor/journal.py" />
@@ -125,6 +114,7 @@
         <option value="$PROJECT_DIR$/visual/myoschandler.py" />
         <option value="$PROJECT_DIR$/visual/gridmap.py" />
         <option value="$PROJECT_DIR$/visual/myfield.py" />
+        <option value="$PROJECT_DIR$/shared/cell.py" />
       </list>
     </option>
   </component>
@@ -431,14 +421,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="20" y="29" width="1400" height="860" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3294271" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3294271" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3294271" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32857144" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24945612" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2538071" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2538071" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3987013" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -595,13 +585,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/shared/connector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="36" selection-start="611" selection-end="611" vertical-scroll-proportion="0.1819407" vertical-offset="75" max-vertical-offset="1860">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/shared/leg.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="5" column="32" selection-start="181" selection-end="181" vertical-scroll-proportion="0.10474861" vertical-offset="0" max-vertical-offset="1515">
@@ -693,13 +676,6 @@
     <entry file="file://$PROJECT_DIR$/shared/body.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="19" selection-start="565" selection-end="565" vertical-scroll-proportion="0.20215634" vertical-offset="45" max-vertical-offset="1800">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/shared/cell.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="8" selection-start="81" selection-end="81" vertical-scroll-proportion="0.0" vertical-offset="60" max-vertical-offset="3090">
           <folding />
         </state>
       </provider>
@@ -797,6 +773,20 @@
     <entry file="file://$PROJECT_DIR$/OSC.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="172" column="0" selection-start="7240" selection-end="7240" vertical-scroll-proportion="0.33175355" vertical-offset="2410" max-vertical-offset="43635">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/cell.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="151" column="34" selection-start="5131" selection-end="5131" vertical-scroll-proportion="0.0" vertical-offset="2340" max-vertical-offset="3270">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shared/connector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="36" selection-start="611" selection-end="611" vertical-scroll-proportion="-1.6091954" vertical-offset="910" max-vertical-offset="1935">
           <folding />
         </state>
       </provider>

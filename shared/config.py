@@ -253,7 +253,7 @@ debug_level = 2 + 4 + 64    # data (2), field (4), osc(16), conduct(64)
 #debug_level = 2 + 4 + 8    # data (2), field (4), graph (8)
 #debug_level = 255    # everything
 
-max_lost_patience = 25 * 5
+max_lost_patience = 2   # (sec)
 
 # OSC configuration
 

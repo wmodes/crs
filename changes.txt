@@ -163,3 +163,11 @@ was resized
 * (Visual) Added response to all conductor messages
 * Fixed prob where conductor used timestamp rather than createtime to report age
 * Refactoring: Moved all classes to their own modules
+
+6/1/2014
+* Implemented many cell attrs
+* Refined conx attr algorithms and params
+
+6/2/2014
+* Added routine to scrape cells and determine which ones are abandoned
+

@@ -69,6 +69,6 @@ class MyCell(Cell):
 
     def age(self, uid):
         """Returns the age of a cell in seconds."""
-        return time() - self.m_timestamp
+        return time() - self.m_updatetime
 
 

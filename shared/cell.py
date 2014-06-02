@@ -62,7 +62,7 @@ class Cell(object):
         m_fromnearest: dist cell is from another person
         m_fromexit: dist cell is from exit
         m_createtime: time that cell was created
-        m_timestamp: time that cell was last updated
+        m_updatetime: time that cell was last updated
         m_frame: last frame in which we were updated
 
     update: set center, readius, and attrs
@@ -110,7 +110,7 @@ class Cell(object):
         self.m_fromnearest = 0
         self.m_fromexit = 0
         self.m_createtime = time()
-        self.m_timestamp = time()
+        self.m_updatetime = time()
         self.m_frame = frame
 
     def update(self, x=None, y=None, vx=None, vy=None, major=None, 
@@ -139,6 +139,7 @@ class Cell(object):
             self.m_visible = visible
         if frame is not None:
             self.m_frame = frame
+        self.m_updatetime = time()
 
     def geoupdate(self, fromcenter=None, fromnearest=None, fromexit=None):
         """Store geo data for cell."""
@@ -148,6 +149,7 @@ class Cell(object):
             self.m_fromnearest = fromnearest
         if fromexit is not None:
             self.m_fromexit = fromexit
+        self.m_updatetime = time()
 
     def update_body(self, x=None, y=None, ex=None, ey=None, 
                  spd=None, espd=None, facing=None, efacing=None, 

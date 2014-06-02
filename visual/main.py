@@ -101,7 +101,6 @@ def main():
             #CHANGE: incorporated into draw
             #field.render_all()
             field.check_for_abandoned_cells()
-            field.check_for_abandoned_conxs()
             field.draw_all()
             window.dispatch_event('on_draw')
             #window.clear()

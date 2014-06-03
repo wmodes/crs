@@ -50,13 +50,14 @@ class Attr(object):
         self.m_origvalue = value
         self.m_value = value
         self.m_createtime = time()
-        self.m_timestamp = time()
+        self.m_updatetime = time()
 
     def update(self, value=None):
         if value is not None:
             self.m_value = value
-        self.m_timestamp = time()
+        self.m_updatetime = time()
 
     def decay_value(self, value=None):
+        """Essentially update without updating the tiemstamp."""
         if value is not None:
             self.m_value = value

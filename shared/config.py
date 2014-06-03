@@ -68,7 +68,7 @@ cell_max_age = {
     'cell-chosen': 10,
 }
 
-cell_physical_triggers = {
+cell_qualifying_triggers = {
     # in meters unless otherwise specified
     'default': 2, # totally arbitrary since default dist is meaningless
     # cell values
@@ -88,8 +88,8 @@ connector_avg_triggers = {
     # 0 = no avg triggers
     'default': 0.8,
     # connector values
-    'conx-grouped': 0.3,    # implemented
-    'conx-contact': 0.3,    # implemented
+    'conx-grouped': 0.3,    # implemented; tested
+    'conx-contact': 0.3,    # implemented; tested
     'conx-friends': 0.8,    # implemented; tested
     'conx-coord': 0.9,      # implemented
     'conx-mirror': 0,
@@ -139,7 +139,7 @@ connector_max_age = {
     'conx-leastconx': 20,
     'conx-mirror': 10,
     'conx-nearby': 5,
-    'conx-strangers': 10,
+    'conx-strangers': 30,
     'conx-tag': 10,
     'conx-chosen': 20,
     'conx-facing': 20,
@@ -147,7 +147,7 @@ connector_max_age = {
     'conx-transfer': 0,
 }
 
-connector_physical_triggers = {
+connector_qualifying_triggers = {
     # in meters, unless otherwise specified
     'default-min': 1, # totally arbitrary since default dist is meaningless
     'default-max': 3, # totally arbitrary since default dist is meaningless
@@ -161,6 +161,7 @@ connector_physical_triggers = {
     'conx-fusion-min': .75,
     'conx-nearby-min': 3,
     'conx-nearby-max': 1.5,
+    'conx-strangers-min': 5,
 }
 
 connector_latitude = {

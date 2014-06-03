@@ -276,9 +276,11 @@ class Field(object):
         restored, its connectors were still referencing the previous cell.
         Therefore, when we iterate through the conxs, they are still taking
         their location from the former cell.  
-        Solution 1: Delete the conx along with the cell
-        Solution 2: When a cell reappears, refresh the connectors to point to
-        the new cell.
+            Solution 1: Delete the conx along with the cell
+            Solution 2: When a cell reappears, refresh the connectors to 
+                point to the new cell.
+        We did Solution 2 for a while with the result being some ghost
+        connections, now we will try Solution 1.
 
         """
         #cell = self.m_cell_dict[id]
@@ -294,6 +296,10 @@ class Field(object):
             # delete from the cell master list of cells
             if dbug.LEV & dbug.FIELD: 
                 print "Field:del_cell:deleting",id
+            # Solution 1: Delete the conx along with the cell
+            new_conx_dict = self.m_cell_dict[id].m_conx_dict.copy()
+            for cid,conx in new_conx_dict.iteritems():
+                self.del_connector(cid)
             # Note that this only deletes the cell from the master list, but
             # doesn't destroy the instance, which may still be refd elsewhere.
             del self.m_cell_dict[id]

@@ -21,7 +21,7 @@ __license__ = "GNU GPL 3.0 or later"
 import sys
 import warnings
 import logging
-from time import sleep
+from time import time,sleep
 
 # installed modules
 # noinspection PyUnresolvedReferences
@@ -93,7 +93,8 @@ def main():
         # call user script
         osc.each_frame()
 
-        if field.m_frame != lastframe:
+        if field.m_frame != lastframe or \
+            time() - lasttime > 1:
             # do conductor calculations and inferences
             #conductor.age_expire_cells()
             #conductor.update_all_cells()
@@ -104,6 +105,7 @@ def main():
             # send regular reports out
             osc.send_regular_reports()
             lastframe = field.m_frame
+            lasttime = time()
         else:
             # Still on the same frame, sleep for a fraction of the frame time to not hog CPU
             #field.m_osc.send_laser('/conductor/sleep',[field.m_frame])    # Useful for debugging -- can see in OSC stream when this process was sleeping

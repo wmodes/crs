@@ -170,4 +170,11 @@ was resized
 
 6/2/2014
 * Added routine to scrape cells and determine which ones are abandoned
+* Resolved problem of ghost cells connectors (added routine to see if 
+    a cell hadn't gotten an update in a while and was abandoned)
+* Resolved problem of ghost connectors (this was actually intention in
+    case a cell came back to life, but really just caused probs)
+* Verified and tested: conx-grouped
+* Verified and tested: conx-contact
+* Verified and tested: conx-friends
 

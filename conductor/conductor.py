@@ -45,14 +45,14 @@ DEFAULT_MAX = 'default-max'
 CELL_MIN = config.cell_avg_min
 CELL_AVG = config.cell_avg_triggers
 CELL_TIME = config.cell_memory_time
-CELL_PHYS = config.cell_physical_triggers
+CELL_QUAL = config.cell_qualifying_triggers
 CELL_AGE = config.cell_max_age
 CELL_LAT = config.cell_latitude
 
 CONX_MIN = config.connector_avg_min
 CONX_AVG = config.connector_avg_triggers
 CONX_TIME = config.connector_memory_time
-CONX_PHYS = config.connector_physical_triggers
+CONX_QUAL = config.connector_qualifying_triggers
 CONX_AGE = config.connector_max_age
 CONX_LAT = config.connector_latitude
 
@@ -80,7 +80,7 @@ class Conductor(object):
     configurable:
 
         1. The algorithm that determines the score in this moment.
-        2. The "physical_trigger" that may specify distance, velocity, or 
+        2. The "qualifying_trigger" that may specify distance, velocity, or 
             degrees for the algorithm
         3. The "memory_time" or how far back we are averaging
         4. The "avg_trigger" that when the running average is greater than 
@@ -183,7 +183,6 @@ class Conductor(object):
                             max_age = CELL_AGE[type]
                         else:
                             max_age = CELL_AGE[DEFAULT]
-                        #print "KILLME:Attr not triggered:",cid,type,max_age
                         #   AND decay time is zero, kill it
                         if not max_age:
                             # send "del cell" osc msg
@@ -239,9 +238,8 @@ class Conductor(object):
                         record the new value
 
         """
-        if dbug.LEV & dbug.MORE: 
+        if dbug.LEV & dbug.COND: 
             print "Conduct:age_and_expire_cell"
-        #print "KILLME:",self.m_field.m_cell_dict
         new_cell_dict = copy(self.m_field.m_cell_dict)
         # iterate over every connector
         for cid,connector in new_cell_dict.iteritems():
@@ -264,21 +262,22 @@ class Conductor(object):
                         if index in self.m_avg_table:
                             del self.m_avg_table[index]
                         if dbug.LEV & dbug.COND: 
-                            print "Conduct:age_and_expire_cell:Expired:",cid,type
+                            print "    Expired:",cid,type,\
+                                  "(faded away to nothin')"
                     # if attr still has a non-zero value
                     else:
                         # calc new value based on time and decay rate
-                        since_last = time() - attr.m_timestamp
+                        last_update = time() - attr.m_updatetime
                         age = time() - attr.m_createtime
-                        newvalue = attr.m_origvalue - (since_last/max_age)
+                        # the following only works because value and 
+                        # age/max_age are both unit values (0-1.0)
+                        newvalue = attr.m_origvalue - (age/max_age)
                         if dbug.LEV & dbug.COND: 
-                            print "Conduct:age_and_expire_cell:",cid,type,\
-                                "age:",age, "since_last:",since_last,\
+                            print "    Aging:&s-%s"%cid,type,\
+                                "age:",age, \
                                 "orig:",attr.m_origvalue, "newvalue:",newvalue
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:
-                            if dbug.LEV & dbug.COND: 
-                                print "Conduct:age_and_expire_cell:Expired:",cid,type
                             newvalue = 0
                         # record the new value
                         attr.decay_value(newvalue)
@@ -348,7 +347,6 @@ class Conductor(object):
                             max_age = CONX_AGE[type]
                         else:
                             max_age = CONX_AGE[DEFAULT]
-                        #print "KILLME:Attr not triggered:",cid,type,max_age
                         #   AND decay time is zero, kill it
                         if not max_age:
                             # send "del conx" osc msg
@@ -404,10 +402,9 @@ class Conductor(object):
                         record the new value
 
         """
-        if dbug.LEV & dbug.MORE: 
-            print "Conduct:age_and_expire_conx"
-        #print "KILLME:",self.m_field.m_conx_dict
         new_conx_dict = copy(self.m_field.m_conx_dict)
+        if len(new_conx_dict) and (dbug.LEV & dbug.COND): 
+            print "Conduct:age_and_expire_conx"
         # iterate over every connector
         for cid,connector in new_conx_dict.iteritems():
             new_attr_dict = copy(connector.m_attr_dict)
@@ -429,24 +426,28 @@ class Conductor(object):
                         if index in self.m_avg_table:
                             del self.m_avg_table[index]
                         if dbug.LEV & dbug.COND: 
-                            print "Conduct:age_and_expire_conx:Expired:",cid,type
+                            print "    Expired:%s-%s"%(cid,type),\
+                                  "(faded away to nothin')"
                     # if attr still has a non-zero value
                     else:
                         # calc new value based on time and decay rate
-                        since_last = time() - attr.m_timestamp
                         age = time() - attr.m_createtime
-                        newvalue = attr.m_origvalue - (since_last/max_age)
-                        if dbug.LEV & dbug.COND: 
-                            print "Conduct:age_and_expire_conx:",cid,type,\
-                                "age:",age, "since_last:",since_last,\
-                                "orig:",attr.m_origvalue, "newvalue:",newvalue
+                        since_update = time() - attr.m_updatetime
+                        # The following only works because value and
+                        # age/max_age are on the same scale, that is, they are
+                        # both unit values (0-1.0)
+                        newvalue = attr.m_origvalue - (since_update/max_age)
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:
-                            if dbug.LEV & dbug.COND: 
-                                print "Conduct:age_and_expire_conx:Expired:",cid,type
                             newvalue = 0
                         # record the new value
                         attr.decay_value(newvalue)
+                        if dbug.LEV & dbug.COND: 
+                            print "    Aging:%s-%s"%(cid,type),\
+                                  "age:%.2f"%age,\
+                                  "since_update:%.2f"%since_update,\
+                                  "orig_value:%.2f"%attr.m_origvalue,\
+                                  "new_value:%.2f"%attr.m_value
 
     # Gather or calculate whether conditions are met for connection
 
@@ -501,10 +502,10 @@ class Conductor(object):
         # we normalize this dist where 
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
-        if type in CONX_PHYS:
-            max_dist = CONX_PHYS[type]
+        if type in CONX_QUAL:
+            max_dist = CONX_QUAL[type]
         else:
-            max_dist = CONX_PHYS[DEFAULT_MAX]
+            max_dist = CONX_QUAL[DEFAULT_MAX]
         score = max(0, 1 - float(dist) / max_dist)
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
@@ -523,7 +524,7 @@ class Conductor(object):
         # we calculate a score
         # we get the distance between cells
         dist = self.m_dist_table[cid]
-        if dist < CONX_PHYS[type]:
+        if dist < CONX_QUAL[type]:
             score = 1.0
         else:
             score = 0
@@ -546,19 +547,19 @@ class Conductor(object):
         # we calculate a score
         # score = 1 if the values are exactly the same
         # score = 0 if the values are very different
-        if 'conx-coord-min-vel' in CONX_PHYS:
-            min_spd = CONX_PHYS['conx-coord-min-vel']
+        if 'conx-coord-min-vel' in CONX_QUAL:
+            min_spd = CONX_QUAL['conx-coord-min-vel']
         else:
-            min_spd = CONX_PHYS[DEFAULT_MIN]
+            min_spd = CONX_QUAL[DEFAULT_MIN]
         spd0 = sqrt(cell0.m_vx**2+cell0.m_vy**2)
         spd1 = sqrt(cell1.m_vx**2+cell1.m_vy**2)
         if spd0 < min_spd or spd1 < min_spd:
             score = 0.01
         else:
-            if 'conx-coord-max-vdiff' in CONX_PHYS:
-                max_vdiff = CONX_PHYS['conx-coord-max-vdiff']
+            if 'conx-coord-max-vdiff' in CONX_QUAL:
+                max_vdiff = CONX_QUAL['conx-coord-max-vdiff']
             else:
-                max_vdiff = CONX_PHYS[DEFAULT_MAX]
+                max_vdiff = CONX_QUAL[DEFAULT_MAX]
             vdiff = sqrt((cell0.m_vx-cell1.m_vx)**2+(cell0.m_vy-cell1.m_vy)**2)
             score = max(0, 1 - float(vdiff) / max_vdiff)
         # we record our score in our running avg table
@@ -591,10 +592,10 @@ class Conductor(object):
         # we normalize this dist where 
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
-        if type in CONX_PHYS:
-            max_dist = CONX_PHYS[type]
+        if type in CONX_QUAL:
+            max_dist = CONX_QUAL[type]
         else:
-            max_dist = CONX_PHYS[DEFAULT_MAX]
+            max_dist = CONX_QUAL[DEFAULT_MAX]
         score = max(0, 1 - float(dist) / max_dist)
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
@@ -639,14 +640,14 @@ class Conductor(object):
             return 0
         # If dist of cells are < nearby_dist
         cell_dist = self.dist(cell0, cell1)
-        if 'conx-nearby-min' in CONX_PHYS:
-            min_dist = CONX_PHYS['conx-nearby-min']
+        if 'conx-nearby-min' in CONX_QUAL:
+            min_dist = CONX_QUAL['conx-nearby-min']
         else:
-            min_dist = CONX_PHYS[DEFAULT_MIN]
-        if 'conx-nearby-max' in CONX_PHYS:
-            max_dist = CONX_PHYS['conx-nearby-max']
+            min_dist = CONX_QUAL[DEFAULT_MIN]
+        if 'conx-nearby-max' in CONX_QUAL:
+            max_dist = CONX_QUAL['conx-nearby-max']
         else:
-            max_dist = CONX_PHYS[DEFAULT_MAX]
+            max_dist = CONX_QUAL[DEFAULT_MAX]
         if cell_dist < min_dist or cell_dist > max_dist:
             return 0
         # nearby_max = 0; nearby_min = 1.0
@@ -668,10 +669,10 @@ class Conductor(object):
         # If the gid is not-zero and cell->m_gid the same for each cell
         age0 = time() - cell0.m_createtime 
         age1 = time() - cell1.m_createtime 
-        if type in CONX_TIME:
-            min_age = CONX_TIME[type]
+        if 'conx_strangers_min' in CONX_QUAL:
+            min_age = CONX_QUAL['conx_strangers_min']
         else:
-            min_age = CONX_TIME[DEFAULT]
+            min_age = CONX_QUAL[DEFAULT_MIN]
         if age0 < min_age or age1 < min_age:
             score = 0.01
         else:
@@ -752,14 +753,14 @@ class Conductor(object):
             return 0
         cell_dist = self.dist(cell0, cell1)
         # Is distance between fusion_min and fusion_max?
-        if 'conx-fusion-min' in CONX_PHYS:
-            min_dist = CONX_PHYS['conx-fusion-min']
+        if 'conx-fusion-min' in CONX_QUAL:
+            min_dist = CONX_QUAL['conx-fusion-min']
         else:
-            min_dist = CONX_PHYS[DEFAULT_MIN]
-        if 'conx-fusion-max' in CONX_PHYS:
-            max_dist = CONX_PHYS['conx-fusion-max']
+            min_dist = CONX_QUAL[DEFAULT_MIN]
+        if 'conx-fusion-max' in CONX_QUAL:
+            max_dist = CONX_QUAL['conx-fusion-max']
         else:
-            max_dist = CONX_PHYS[DEFAULT_MAX]
+            max_dist = CONX_QUAL[DEFAULT_MAX]
         if cell_dist > max_dist or \
            cell_dist < min_dist:
             return 0
@@ -804,10 +805,10 @@ class Conductor(object):
         # we calculate a score
         cell = self.m_field.m_cell_dict[uid]
         # how close is this person to others?
-        if type in CELL_PHYS:
-            max_dist = CELL_PHYS[type]
+        if type in CELL_QUAL:
+            max_dist = CELL_QUAL[type]
         else:
-            max_dist = CELL_PHYS[DEFAULT]
+            max_dist = CELL_QUAL[DEFAULT]
         score = max(0, 1 - float(cell.m_fromnearest) / max_dist)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
@@ -822,10 +823,10 @@ class Conductor(object):
         """
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if type in CELL_PHYS:
-            max_vel = CELL_PHYS[type]
+        if type in CELL_QUAL:
+            max_vel = CELL_QUAL[type]
         else:
-            max_vel = CELL_PHYS[DEFAULT]
+            max_vel = CELL_QUAL[DEFAULT]
         score = max(0, 1 - float(spd) / max_vel)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
@@ -840,10 +841,10 @@ class Conductor(object):
         """
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if type in CELL_PHYS:
-            max_vel = CELL_PHYS[type]
+        if type in CELL_QUAL:
+            max_vel = CELL_QUAL[type]
         else:
-            max_vel = CELL_PHYS[DEFAULT]
+            max_vel = CELL_QUAL[DEFAULT]
         score = min(1, float(spd) / max_vel)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
@@ -858,10 +859,10 @@ class Conductor(object):
         """
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if type in CELL_PHYS:
-            max_vel = CELL_PHYS[type]
+        if type in CELL_QUAL:
+            max_vel = CELL_QUAL[type]
         else:
-            max_vel = CELL_PHYS[DEFAULT]
+            max_vel = CELL_QUAL[DEFAULT]
         score = min(1, float(spd) / max_vel)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)

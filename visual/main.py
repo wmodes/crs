@@ -21,7 +21,7 @@ __license__ = "GNU GPL 3.0 or later"
 import sys
 import warnings
 import logging
-from time import sleep
+from time import time,sleep
 
 # installed modules
 import pyglet
@@ -97,7 +97,8 @@ def main():
         window.switch_to()
         window.dispatch_events()
 
-        if field.m_frame!=lastframe:
+        if field.m_frame != lastframe or \
+                time() - lasttime > 1:
             #CHANGE: incorporated into draw
             #field.render_all()
             field.check_for_abandoned_cells()
@@ -109,13 +110,12 @@ def main():
             #TODO: Move this somewhere sensible
             if GRAPHMODES & GRAPHOPTS['osc']:
                 if dbug.LEV & dbug.GRAPH: 
-                    print "Main:OSC to laser:", OSCPATH['graph_update'],", frame=",field.m_frame
+                    print "Main:OSC to laser:", OSCPATH['graph_update'],\
+                        ", frame=",field.m_frame
                 field.m_osc.send_laser(OSCPATH['graph_update'],[field.m_frame])
 
-            #for (cell0,cell1) in list(combinations(field.m_cell_dict.values(), 2)):
-                #field.update_conx_attr(cell0, cell1, 'friends', 1.0)
-
             lastframe=field.m_frame
+            lasttime = time()
         else:
             # Still on the same frame, sleep for a fraction of the frame time to not hog CPU
             #field.m_osc.send_laser('/laser/sleep',[field.m_frame])    # Useful for debugging -- can see in OSC stream when this process was sleeping

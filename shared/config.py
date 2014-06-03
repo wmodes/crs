@@ -155,13 +155,13 @@ connector_qualifying_triggers = {
     'conx-friends': 10,
     'conx-coord-min-vel': 4,   # m/s
     'conx-coord-max-vdiff': 4,   # m/s
-    'conx-contact': .33,
-    'conx-facing': 30,   # degrees
-    'conx-fusion-max': 1.5,
-    'conx-fusion-min': .75,
-    'conx-nearby-min': 3,
-    'conx-nearby-max': 1.5,
-    'conx-strangers-min': 5,
+    'conx-contact': .33,    # m
+    'conx-facing': 45,   # degrees
+    'conx-fusion-max': 1.5, # m
+    'conx-fusion-min': .75, # m
+    'conx-nearby-min': 3,   # m
+    'conx-nearby-max': 1.5, # m
+    'conx-strangers-min': 5, # sec
 }
 
 connector_latitude = {

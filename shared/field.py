@@ -258,6 +258,21 @@ class Field(object):
         self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize,
                                     visible=visible, frame=frame)
 
+    def check_for_cell_attr(self, uid0, uid1, type):
+        connector = self.get_connector(self.get_cid(uid0, uid1))
+        if not connector:
+            return False
+        if type not in connector.m_attr_dict:
+            return False
+        return True
+
+    def update_cell_attr(self, uid, type, value):
+        """Update an attribute to a cell, creating it if it doesn't exist."""
+        self.check_for_missing_cell(uid)
+        if dbug.LEV & dbug.MORE: 
+            print "Field:update_cell_attr:",uid, type, value
+        self.m_cell_dict[uid].update_attr(type, value)
+
     def update_geo(self, id, fromcenter=None, fromnearest=None, fromexit=None):
         """Update geo info for cell."""
         self.check_for_missing_cell(id)
@@ -338,11 +353,11 @@ class Field(object):
 
     # Connectors
 
-    def get_cid(self, cell0, cell1):
-        if cell0.m_id < cell1.m_id:
-            cid = str(cell0.m_id) + "-" + str(cell1.m_id)
+    def get_cid(self, uid0, uid1):
+        if uid0 < uid1:
+            cid = str(uid0) + "-" + str(uid1)
         else:
-            cid = str(cell1.m_id) + "-" + str(cell0.m_id)
+            cid = str(uid1) + "-" + str(uid0)
         return cid
 
     def get_connector(self, cid):
@@ -350,9 +365,11 @@ class Field(object):
             return self.m_conx_dict[cid]
         return None
 
-    def create_connector(self, cell0, cell1):
+    def create_connector(self, uid0, uid1):
         """Create connector and assign id."""
-        cid = self.get_cid(cell0, cell1)
+        cid = self.get_cid(uid0, uid1)
+        cell0 = self.m_cell_dict[uid0]
+        cell1 = self.m_cell_dict[uid1]
         # if a connector doesn't already exist between cells
         if cid in self.m_conx_dict:
             connector = self.m_conx_dict[cid]
@@ -380,8 +397,8 @@ class Field(object):
             # remove from the connector list
             del self.m_conx_dict[cid]
 
-    def check_for_conx_attr(self, cell0, cell1, type):
-        connector = self.get_connector(self.get_cid(cell0, cell1))
+    def check_for_conx_attr(self, uid0, uid1, type):
+        connector = self.get_connector(self.get_cid(uid0, uid1))
         if not connector:
             return False
         if type not in connector.m_attr_dict:
@@ -507,7 +524,7 @@ class Field(object):
         # if conx does not exist:
         if not cid in self.m_conx_dict:
             # create it and increment count
-            self.create_connector(self.m_cell_dict[uid0], self.m_cell_dict[uid1])
+            self.create_connector(uid0, uid1)
 
     def is_cell_good_to_go(self, id):
         """Test if cell is good to be rendered.

@@ -167,6 +167,12 @@ class Cell(object):
     def add_attr(self, type, value):
         self.m_attr_dict[type] = Attr(type, self.m_id, value)
 
+    def update_attr(self, type, value):
+        if type not in self.m_conx_dict:
+            self.m_attr_dict[type] = Attr(type, self.m_id, value)
+        else:
+            self.m_attr_dict[type].update(value)
+
     def del_attr(self, type):
         if type in self.m_attr_dict:
             del self.m_attr_dict[type]

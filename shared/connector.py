@@ -99,6 +99,11 @@ class Connector(object):
         else:
             self.m_attr_dict[type] = Attr(type, self.m_id, value)
 
+    def check_for_attr(self, type):
+        if type in self.m_attr_dict:
+            return True
+        return False
+
     def del_attr(self, type):
         if type in self.m_attr_dict:
             del self.m_attr_dict[type]

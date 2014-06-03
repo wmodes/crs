@@ -177,4 +177,8 @@ was resized
 * Verified and tested: conx-grouped
 * Verified and tested: conx-contact
 * Verified and tested: conx-friends
+* Changes params for many (most?) def in field so they were passing 
+    uids instead of cell refs
+* Added checks to see if cell and conx attrs existed before issuing
+    stops for them
 

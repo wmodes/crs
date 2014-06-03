@@ -23,11 +23,11 @@ cell_avg_triggers = {
     'default': 0.8,
     # cell values
     'dance': 0.8,
-    'interactive': 0.25,
-    'static': 0.6,
-    'kinetic': 0.6,
-    'fast': 0.8,
-    'timein': 0.5,
+    'interactive': 0.25,    # implemented
+    'static': 0.6,  # implemented
+    'kinetic': 0.6, # implemented
+    'fast': 0.8,    # implemented
+    'timein': 0.5,  # implemented
     'spin': 0.8,
     'quantum': 0.8,
     'jacks': 0.8,
@@ -41,7 +41,7 @@ cell_memory_time = {
     # cell values
     'dance': 10,
     'interactive': 5*60,
-    'static': 10,
+    'static': 20,
     'kinetic': 10,
     'fast': 2,
     'timein': 120,
@@ -75,6 +75,7 @@ cell_qualifying_triggers = {
     'interactive': 3,
     'static': 4,  # m/s
     'kinetic': 4,  # m/s
+    'timein': 60,   # sec
 }
 
 cell_latitude = {
@@ -100,7 +101,7 @@ connector_avg_triggers = {
     'strangers': 0.8,  # implemented
     'tag': 0,
     'chosen': 0,
-    'fusion': 0,   # implemented
+    'fusion': 0,   # implemented; tested
     'transfer': 0,
 }
 

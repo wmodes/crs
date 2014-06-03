@@ -145,12 +145,10 @@ class Conductor(object):
 
         if dbug.LEV & dbug.MORE: 
             print "Conduct:update_all_cells"
-        for cell in self.m_field.m_cell_dict.values():
-            if self.m_field.is_cell_good_to_go(cell.m_id):
-                # get uid
-                uid = cell.m_id
+        for uid,cell in self.m_field.m_cell_dict.iteritems():
+            if self.m_field.is_cell_good_to_go(uid):
                 for type, cell_test in self.cell_tests.iteritems():
-                    running_avg = cell_test(uid, cell)
+                    running_avg = cell_test(uid, type)
                     if type in CELL_AVG:
                         avg_trigger = CELL_AVG[type]
                     else:
@@ -159,7 +157,7 @@ class Conductor(object):
                         if running_avg and avg_trigger:
                         #if avg_trigger:
                             print "Conduct:update_cells:results:id:", \
-                                    "%s-%s %.2f"%(cid,type,running_avg), \
+                                    "%s-%s %.2f"%(uid,type,running_avg), \
                                     "(trigger:%.2f)"%avg_trigger
                     # if running_avg is above trigger
                     if running_avg > avg_trigger:
@@ -170,7 +168,7 @@ class Conductor(object):
                         #if not self.m_field.check_for_cell_attr(uid0, uid1, type):
                         if dbug.LEV & dbug.COND: 
                             print "Conduct:update_cell:triggered:id:", \
-                                    "%s-%s %.2f"%(cid,type,running_avg), \
+                                    "%s-%s %.2f"%(uid,type,running_avg), \
                                     "(trigger:%.2f)"%avg_trigger
                         # update or create one
                         self.m_field.update_cell_attr(uid, type, running_avg)
@@ -188,7 +186,7 @@ class Conductor(object):
                             #TODO: is uid avail here? XXX
                             if self.m_field.check_for_cell_attr(uid, type):
                                 # send "del cell" osc msg
-                                self.m_field.m_osc.nix_cattr(cid, type)
+                                self.m_field.m_osc.nix_cell_attr(cid, type)
                                 # delete attr and maybe cell
                                 self.m_field.del_cell_attr(cid, type)
                                 index = str(cid)+'-'+str(type)
@@ -241,11 +239,11 @@ class Conductor(object):
                         record the new value
 
         """
-        if dbug.LEV & dbug.COND: 
-            print "Conduct:age_and_expire_cell"
         new_cell_dict = copy(self.m_field.m_cell_dict)
+        if len(new_cell_dict) and (dbug.LEV & dbug.COND): 
+            print "Conduct:age_and_expire_cell"
         # iterate over every connector
-        for cid,connector in new_cell_dict.iteritems():
+        for uid,connector in new_cell_dict.iteritems():
             new_attr_dict = copy(connector.m_attr_dict)
             # iterate over ever attr
             for type,attr in new_attr_dict.iteritems():
@@ -253,38 +251,40 @@ class Conductor(object):
                     max_age = CELL_AGE[type]
                 else:
                     max_age = CELL_AGE[DEFAULT]
-                # if decay time of type is not zero (no decay)
-                #if max_age:
-                # if value of attr is zero or less
-                if attr.m_value <= CELL_MIN:
+                # if value of attr is greater than zero
+                if attr.m_value > CELL_MIN:
+                    # if decay time of type is not zero (no decay)
+                    if max_age:
+                        # HERE is where we calc the decay
+                        # calc new value based on time and decay rate
+                        age = time() - attr.m_createtime
+                        since_update = time() - attr.m_updatetime
+                        # the following only works because value and 
+                        # age/max_age are both unit values (0-1.0)
+                        newvalue = attr.m_origvalue - (since_update/max_age)
+                        # if new value is < 0, we'll set it to 0
+                        if newvalue <= 0:
+                            newvalue = 0
+                        # record the new value
+                        attr.decay_value(newvalue)
+                        if dbug.LEV & dbug.COND: 
+                            print "    Aging:&s-%s"%uid,type,\
+                                  "age:%.2f"%age,\
+                                  "since_update:%.2f"%since_update,\
+                                  "orig_value:%.2f"%attr.m_origvalue,\
+                                  "new_value:%.2f"%attr.m_value
+                # the value of attr is zero, ie, it has decayed to nothin
+                else:
                     # send "del cell" osc msg
-                    self.m_field.m_osc.nix_cattr(cid, type)
+                    self.m_field.m_osc.nix_cell_attr(uid, type)
                     # delete attr and maybe cell
-                    self.m_field.del_cell_attr(cid, type)
-                    index = str(cid)+'-'+str(type)
+                    self.m_field.del_cell_attr(uid, type)
                     # actually we want to keep the avg
                     #if index in self.m_avg_table:
                         #del self.m_avg_table[index]
                     if dbug.LEV & dbug.COND: 
-                        print "    Expired:",cid,type,\
+                        print "    Expired:%s-%s"%(uid,type),\
                               "(faded away to nothin')"
-                # if attr still has a non-zero value
-                else:
-                    # calc new value based on time and decay rate
-                    last_update = time() - attr.m_updatetime
-                    age = time() - attr.m_createtime
-                    # the following only works because value and 
-                    # age/max_age are both unit values (0-1.0)
-                    newvalue = attr.m_origvalue - (age/max_age)
-                    if dbug.LEV & dbug.COND: 
-                        print "    Aging:&s-%s"%cid,type,\
-                            "age:",age, \
-                            "orig:",attr.m_origvalue, "newvalue:",newvalue
-                    # if new value is < 0, we'll set it to 0
-                    if newvalue <= 0:
-                        newvalue = 0
-                    # record the new value
-                    attr.decay_value(newvalue)
 
     #
     # Connection housekeeping
@@ -323,7 +323,7 @@ class Conductor(object):
                         avg_trigger = CONX_AVG[type]
                     else:
                         avg_trigger = CONX_AVG[DEFAULT]
-                    if dbug.LEV & dbug.COND: 
+                    if dbug.LEV & dbug.MORE: 
                         #if running_avg and avg_trigger:
                         #if avg_trigger:
                         print "Conduct:update_conx:post_test:id:", \
@@ -336,7 +336,7 @@ class Conductor(object):
                                     #(cell0.m_id, cell1.m_id, type, running_avg)
                         # if a connection/attr does not already exist already
                         #if not self.m_field.check_for_conx_attr(uid0, uid1, type):
-                        if dbug.LEV & dbug.COND: 
+                        if dbug.LEV & dbug.MORE: 
                             print "Conduct:update_conx:triggered:id:", \
                                     "%s-%s %.2f"%(cid,type,running_avg), \
                                     "(trigger:%.2f)"%avg_trigger
@@ -356,7 +356,7 @@ class Conductor(object):
                         if not max_age:
                             if self.m_field.check_for_conx_attr(uid0, uid1, type):
                                 # send "del conx" osc msg
-                                self.m_field.m_osc.nix_cattr(cid, type)
+                                self.m_field.m_osc.nix_conx_attr(cid, type)
                                 # delete attr and maybe conx
                                 self.m_field.del_conx_attr(cid, type)
                                 index = str(cid)+'-'+str(type)
@@ -447,7 +447,7 @@ class Conductor(object):
                 # the value of attr is zero, ie, it has decayed to nothin
                 else:
                     # send "del conx" osc msg
-                    self.m_field.m_osc.nix_cattr(cid, type)
+                    self.m_field.m_osc.nix_conx_attr(cid, type)
                     # delete attr and maybe conx
                     self.m_field.del_conx_attr(cid, type)
                     index = str(cid)+'-'+str(type)
@@ -749,19 +749,29 @@ class Conductor(object):
             # get diff btwn the angle of cell0 and the angle to cell1
             diff0 = abs(phi0 - angle0)
             if diff0 > 180:
-                diff0 = 360 - diff0
+                diff0 = diff0 - 360
+            elif diff0 < -180:
+                diff0 = diff0 + 360
+            diff0 = abs(diff0)
             score0 = 1.0-min(diff0, min_angle)/min_angle
             # reverse phi to get angle from cell1 to cell0
             phi1 = (phi0 + 180) % 360
             # get diff btwn the angle of cell1 and the angle to cell0
             diff1 = abs(phi1 - angle1)
             if diff1 > 180:
-                diff1 = 360-diff1
+                diff1 = diff1 - 360
+            if diff1 < -180:
+                diff1 = diff1 + 360
+            diff1 = abs(diff1)
             score1 = 1.0-min(diff1, min_angle)/min_angle
-            #print "KILLME:angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%\
-                  #(angle0,phi0,diff0,score0)
-            #print "       angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%\
-                  #(angle1,phi1,diff1,score1)
+            if score0 * score1:
+                print "FACING:Frame:",self.m_field.m_frame,"HOLY SHIT, NOT ZERO"
+            else:
+                print "FACING:Frame:",self.m_field.m_frame
+            print "    angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%\
+                  (angle0,phi0,diff0,score0)
+            print "    angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%\
+                  (angle1,phi1,diff1,score1)
             score = score0 * score1
             self.record_conx_avg(cid, type, score)
         # we record our score in our running avg table
@@ -827,7 +837,7 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, type, score)
 
     def test_cell_interactive(self, uid, type):
         """Does this cell have a history of being interactive?
@@ -837,8 +847,8 @@ class Conductor(object):
         Returns:
             The exponentially decaying weighted moving average
         """
-        # we calculate a score
         cell = self.m_field.m_cell_dict[uid]
+        # we calculate a score
         # how close is this person to others?
         if type in CELL_QUAL:
             max_dist = CELL_QUAL[type]
@@ -856,6 +866,7 @@ class Conductor(object):
         Returns:
             The exponentially decaying weighted moving average
         """
+        cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
         if type in CELL_QUAL:
@@ -874,6 +885,7 @@ class Conductor(object):
         Returns:
             The exponentially decaying weighted moving average
         """
+        cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
         if type in CELL_QUAL:
@@ -892,6 +904,7 @@ class Conductor(object):
         Returns:
             The exponentially decaying weighted moving average
         """
+        cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
         if type in CELL_QUAL:
@@ -910,12 +923,13 @@ class Conductor(object):
         Returns:
             The exponentially decaying weighted moving average
         """
+        cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         age = time() - cell.m_createtime 
-        if type in CELL_TIME:
-            min_age = CELL_TIME[type]
+        if type in CELL_QUAL:
+            min_age = CELL_QUAL[type]
         else:
-            min_age = CELL_TIME[DEFAULT]
+            min_age = CELL_QUAL[DEFAULT]
         score = max(0, min(1, (float(age) / min_age)-1))
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
@@ -931,7 +945,7 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, type, score)
 
     def test_cell_quantum(self, uid, type):
         """Does this cell have a history of xxx?
@@ -944,7 +958,7 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, type, score)
 
     def test_cell_jacks(self, uid, type):
         """Does this cell have a history of xxx?
@@ -957,7 +971,7 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, type, score)
 
     def test_cell_chosen(self, uid, type):
         """Does this cell have a history of xxx?
@@ -970,7 +984,7 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, type, score)
 
 
     # Create connections

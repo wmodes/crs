@@ -215,10 +215,22 @@ class MyOSCHandler(OSCHandler):
 
     # On-Call Messages
 
-    def nix_cattr(self, cid, type):
+    def nix_cell_attr(self, uid, type):
+        """Sends OSC messages to announce the removal of cell attr.
+        
+        /conductor/attr ["type",uid,0.0,time]"""
+        if uid in self.m_field.m_cell_dict:
+            cell = self.m_field.m_cell_dict[uid]
+            if type in cell.m_attr_dict:
+                attr = cell.m_attr_dict[type]
+                duration = time() - attr.m_createtime
+                self.m_field.m_osc.send_downstream(OSCPATH['conduct_attr'],
+                        [type, uid, 0.0, duration])
+
+    def nix_conx_attr(self, cid, type):
         """Sends OSC messages to announce the removal of connection attr.
         
-        /conductor/conx [cid,"type",uid0,uid1,0.0,time]"""
+        /conductor/conx ["type","subtype",cid,uid0,uid1,0.0,time]"""
         if cid in self.m_field.m_conx_dict:
             conx = self.m_field.m_conx_dict[cid]
             if type in conx.m_attr_dict:

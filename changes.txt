@@ -174,12 +174,17 @@ was resized
     a cell hadn't gotten an update in a while and was abandoned)
 * Resolved problem of ghost connectors (this was actually intention in
     case a cell came back to life, but really just caused probs)
-* Verified and tested: conx-grouped
-* Verified and tested: conx-contact
-* Verified and tested: conx-friends
+* Verified and tested conx attr: grouped
+* Verified and tested conx attr: contact
+* Verified and tested conx attr: friends
 * Changes params for many (most?) def in field so they were passing 
     uids instead of cell refs
 * Added checks to see if cell and conx attrs existed before issuing
     stops for them
-* Verified and tested: conx-fusion
-
+* Verified and tested conx attr: fusion
+* Implemented cell attr interactive
+* Implemented cell attr static
+* Implemented cell attr kinetic
+* Implemented cell attr fast
+* Implemented cell attr timein
+* Worked out some bugs in the conductor update_all_cells routine

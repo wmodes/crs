@@ -181,4 +181,5 @@ was resized
     uids instead of cell refs
 * Added checks to see if cell and conx attrs existed before issuing
     stops for them
+* Verified and tested: conx-fusion
 

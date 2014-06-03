@@ -93,34 +93,34 @@ class Conductor(object):
     def __init__(self, field):
         self.m_field = field
         self.cell_tests = {
-            'cell-dance': self.test_cell_dance,
-            'cell-interactive': self.test_cell_interactive,
-            'cell-static': self.test_cell_static,
-            'cell-kinetic': self.test_cell_kinetic,
-            'cell-fast': self.test_cell_fast,
-            'cell-timein': self.test_cell_timein,
-            'cell-spin': self.test_cell_spin,
-            'cell-quantum': self.test_cell_quantum,
-            'cell-jacks': self.test_cell_jacks,
-            'cell-chosen': self.test_cell_chosen,
+            'dance': self.test_cell_dance,
+            'interactive': self.test_cell_interactive,
+            'static': self.test_cell_static,
+            'kinetic': self.test_cell_kinetic,
+            'fast': self.test_cell_fast,
+            'timein': self.test_cell_timein,
+            'spin': self.test_cell_spin,
+            'quantum': self.test_cell_quantum,
+            'jacks': self.test_cell_jacks,
+            'chosen': self.test_cell_chosen,
         }
 
         self.conx_tests = {
-            'conx-grouped': self.test_conx_grouped,
-            'conx-contact': self.test_conx_contact,
-            'conx-friends': self.test_conx_friends,
-            'conx-coord': self.test_conx_coord,
-            #'conx-mirror': self.test_conx_mirror,
-            #'conx-fof': self.test_conx_fof,
-            'conx-irlbuds': self.test_conx_irlbuds,
-            #'conx-leastconx': self.test_conx_leastconx,
-            #'conx-nearby': self.test_conx_nearby,
-            'conx-strangers': self.test_conx_strangers,
-            #'conx-tag': self.test_conx_tag,
-            #'conx-chosen': self.test_conx_chosen,
-            'conx-facing': self.test_conx_facing,
-            'conx-fusion': self.test_conx_fusion,
-            #'conx-transfer': self.test_conx_transfer,
+            'grouped': self.test_conx_grouped,
+            'contact': self.test_conx_contact,
+            'friends': self.test_conx_friends,
+            'coord': self.test_conx_coord,
+            #'mirror': self.test_conx_mirror,
+            #'fof': self.test_conx_fof,
+            'irlbuds': self.test_conx_irlbuds,
+            #'leastconx': self.test_conx_leastconx,
+            #'nearby': self.test_conx_nearby,
+            'strangers': self.test_conx_strangers,
+            #'tag': self.test_conx_tag,
+            #'chosen': self.test_conx_chosen,
+            'facing': self.test_conx_facing,
+            'fusion': self.test_conx_fusion,
+            #'transfer': self.test_conx_transfer,
         }
         self.m_avg_table = {}
         self.m_dist_table = {}
@@ -169,10 +169,9 @@ class Conductor(object):
                         # if a connection/attr does not already exist already
                         #if not self.m_field.check_for_cell_attr(uid0, uid1, type):
                         if dbug.LEV & dbug.COND: 
-                            if avg_trigger:
-                                print "Conduct:update_cell:triggered:id:", \
-                                        "%s-%s %.2f"%(cid,type,running_avg), \
-                                        "(trigger:%.2f)"%avg_trigger
+                            print "Conduct:update_cell:triggered:id:", \
+                                    "%s-%s %.2f"%(cid,type,running_avg), \
+                                    "(trigger:%.2f)"%avg_trigger
                         # update or create one
                         self.m_field.update_cell_attr(uid, type, running_avg)
                         #else:
@@ -338,10 +337,9 @@ class Conductor(object):
                         # if a connection/attr does not already exist already
                         #if not self.m_field.check_for_conx_attr(uid0, uid1, type):
                         if dbug.LEV & dbug.COND: 
-                            if avg_trigger:
-                                print "Conduct:update_conx:triggered:id:", \
-                                        "%s-%s %.2f"%(cid,type,running_avg), \
-                                        "(trigger:%.2f)"%avg_trigger
+                            print "Conduct:update_conx:triggered:id:", \
+                                    "%s-%s %.2f"%(cid,type,running_avg), \
+                                    "(trigger:%.2f)"%avg_trigger
                         # create one
                         self.m_field.update_conx_attr(cid, uid0, uid1, 
                                                     type, running_avg)
@@ -558,8 +556,8 @@ class Conductor(object):
         # we calculate a score
         # score = 1 if the values are exactly the same
         # score = 0 if the values are very different
-        if 'conx-coord-min-vel' in CONX_QUAL:
-            min_spd = CONX_QUAL['conx-coord-min-vel']
+        if 'coord-min-vel' in CONX_QUAL:
+            min_spd = CONX_QUAL['coord-min-vel']
         else:
             min_spd = CONX_QUAL[DEFAULT_MIN]
         spd0 = sqrt(cell0.m_vx**2+cell0.m_vy**2)
@@ -567,8 +565,8 @@ class Conductor(object):
         if spd0 < min_spd or spd1 < min_spd:
             score = 0.01
         else:
-            if 'conx-coord-max-vdiff' in CONX_QUAL:
-                max_vdiff = CONX_QUAL['conx-coord-max-vdiff']
+            if 'coord-max-vdiff' in CONX_QUAL:
+                max_vdiff = CONX_QUAL['coord-max-vdiff']
             else:
                 max_vdiff = CONX_QUAL[DEFAULT_MAX]
             vdiff = sqrt((cell0.m_vx-cell1.m_vx)**2+(cell0.m_vy-cell1.m_vy)**2)
@@ -651,12 +649,12 @@ class Conductor(object):
             return 0
         # If dist of cells are < nearby_dist
         cell_dist = self.dist(cell0, cell1)
-        if 'conx-nearby-min' in CONX_QUAL:
-            min_dist = CONX_QUAL['conx-nearby-min']
+        if 'nearby-min' in CONX_QUAL:
+            min_dist = CONX_QUAL['nearby-min']
         else:
             min_dist = CONX_QUAL[DEFAULT_MIN]
-        if 'conx-nearby-max' in CONX_QUAL:
-            max_dist = CONX_QUAL['conx-nearby-max']
+        if 'nearby-max' in CONX_QUAL:
+            max_dist = CONX_QUAL['nearby-max']
         else:
             max_dist = CONX_QUAL[DEFAULT_MAX]
         if cell_dist < min_dist or cell_dist > max_dist:
@@ -786,20 +784,20 @@ class Conductor(object):
                       (max_dist-min_dist))
         """
         # if they are not in a group together
-        if cell0.m_gid and cell0.m_gid == cell1.m_gid:
-            return 0
+        #if cell0.m_gid and cell0.m_gid == cell1.m_gid:
+            #return 0
         cell_dist = self.dist(cell0, cell1)
         # Is distance between fusion_min and fusion_max?
-        if 'conx-fusion-min' in CONX_QUAL:
-            min_dist = CONX_QUAL['conx-fusion-min']
+        if 'fusion-min' in CONX_QUAL:
+            min_dist = CONX_QUAL['fusion-min']
         else:
             min_dist = CONX_QUAL[DEFAULT_MIN]
-        if 'conx-fusion-max' in CONX_QUAL:
-            max_dist = CONX_QUAL['conx-fusion-max']
+        if 'fusion-max' in CONX_QUAL:
+            max_dist = CONX_QUAL['fusion-max']
         else:
             max_dist = CONX_QUAL[DEFAULT_MAX]
         if cell_dist > max_dist or \
-           cell_dist < min_dist:
+               cell_dist < min_dist:
             return 0
         return 1.0 - ((cell_dist-min_dist) /
                       (max_dist-min_dist))

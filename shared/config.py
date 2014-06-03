@@ -22,16 +22,16 @@ cell_avg_triggers = {
     # 0 = no avg triggers
     'default': 0.8,
     # cell values
-    'cell-dance': 0.8,
-    'cell-interactive': 0.25,
-    'cell-static': 0.6,
-    'cell-kinetic': 0.6,
-    'cell-fast': 0.8,
-    'cell-timein': 0.5,
-    'cell-spin': 0.8,
-    'cell-quantum': 0.8,
-    'cell-jacks': 0.8,
-    'cell-chosen': 0.8,
+    'dance': 0.8,
+    'interactive': 0.25,
+    'static': 0.6,
+    'kinetic': 0.6,
+    'fast': 0.8,
+    'timein': 0.5,
+    'spin': 0.8,
+    'quantum': 0.8,
+    'jacks': 0.8,
+    'chosen': 0.8,
 }
 
 cell_memory_time = {
@@ -39,16 +39,16 @@ cell_memory_time = {
     # 0 = no timed triggers
     'default': 10,
     # cell values
-    'cell-dance': 10,
-    'cell-interactive': 5*60,
-    'cell-static': 10,
-    'cell-kinetic': 10,
-    'cell-fast': 2,
-    'cell-timein': 120,
-    'cell-spin': 10,
-    'cell-quantum': 10,
-    'cell-jacks': 10,
-    'cell-chosen': 10,
+    'dance': 10,
+    'interactive': 5*60,
+    'static': 10,
+    'kinetic': 10,
+    'fast': 2,
+    'timein': 120,
+    'spin': 10,
+    'quantum': 10,
+    'jacks': 10,
+    'chosen': 10,
 }
 
 cell_max_age = {
@@ -56,25 +56,25 @@ cell_max_age = {
     # 0 = immortal
     'default': 10,
     # cell values
-    'cell-dance': 10,
-    'cell-interactive': 10,
-    'cell-static': 10,
-    'cell-kinetic': 10,
-    'cell-fast': 10,
-    'cell-timein': 10,
-    'cell-spin': 10,
-    'cell-quantum': 10,
-    'cell-jacks': 10,
-    'cell-chosen': 10,
+    'dance': 10,
+    'interactive': 10,
+    'static': 10,
+    'kinetic': 10,
+    'fast': 10,
+    'timein': 10,
+    'spin': 10,
+    'quantum': 10,
+    'jacks': 10,
+    'chosen': 10,
 }
 
 cell_qualifying_triggers = {
     # in meters unless otherwise specified
     'default': 2, # totally arbitrary since default dist is meaningless
     # cell values
-    'cell-interactive': 3,
-    'cell-static': 4,  # m/s
-    'cell-kinetic': 4,  # m/s
+    'interactive': 3,
+    'static': 4,  # m/s
+    'kinetic': 4,  # m/s
 }
 
 cell_latitude = {
@@ -88,20 +88,20 @@ connector_avg_triggers = {
     # 0 = no avg triggers
     'default': 0.8,
     # connector values
-    'conx-grouped': 0.3,    # implemented; tested
-    'conx-contact': 0.3,    # implemented; tested
-    'conx-friends': 0.8,    # implemented; tested
-    'conx-coord': 0.9,      # implemented
-    'conx-mirror': 0,
-    'conx-fof': 0,
-    'conx-irlbuds': 0.8,    # implemented
-    'conx-leastconx': 0,
-    'conx-nearby': 0,
-    'conx-strangers': 0.8,  # implemented
-    'conx-tag': 0,
-    'conx-chosen': 0,
-    'conx-fusion': 0,   # implemented
-    'conx-transfer': 0,
+    'grouped': 0.3,    # implemented; tested
+    'contact': 0.3,    # implemented; tested
+    'friends': 0.8,    # implemented; tested
+    'coord': 0.9,      # implemented
+    'mirror': 0,
+    'fof': 0,
+    'irlbuds': 0.8,    # implemented
+    'leastconx': 0,
+    'nearby': 0,
+    'strangers': 0.8,  # implemented
+    'tag': 0,
+    'chosen': 0,
+    'fusion': 0,   # implemented
+    'transfer': 0,
 }
 
 connector_memory_time = {
@@ -109,20 +109,20 @@ connector_memory_time = {
     # 0 = no timed triggers
     'default': 10,
     # connector values
-    'conx-grouped': 3,
-    'conx-contact': 20,
-    'conx-friends': 10,
-    'conx-coord': 5,
-    'conx-fof': 0,
-    'conx-irlbuds': 5*60,
-    'conx-leastconx': 10,
-    'conx-nearby': 10,
-    'conx-strangers': 5*60,
-    'conx-tag': 10,
-    'conx-chosen': 10,
-    'conx-facing': 20,
-    'conx-fusion': 0,
-    'conx-transfer': 0,
+    'grouped': 3,
+    'contact': 20,
+    'friends': 10,
+    'coord': 5,
+    'fof': 0,
+    'irlbuds': 5*60,
+    'leastconx': 10,
+    'nearby': 10,
+    'strangers': 5*60,
+    'tag': 10,
+    'chosen': 10,
+    'facing': 20,
+    'fusion': 0,
+    'transfer': 0,
 }
 
 connector_max_age = {
@@ -130,21 +130,21 @@ connector_max_age = {
     # 0 = immortal
     'default': 10,
     # connector values
-    'conx-grouped': 10,
-    'conx-contact': 10,
-    'conx-friends': 10,
-    'conx-coord': 10,
-    'conx-fof': 10,
-    'conx-irlbuds': 30,
-    'conx-leastconx': 20,
-    'conx-mirror': 10,
-    'conx-nearby': 5,
-    'conx-strangers': 30,
-    'conx-tag': 10,
-    'conx-chosen': 20,
-    'conx-facing': 20,
-    'conx-fusion': 0,
-    'conx-transfer': 0,
+    'grouped': 10,
+    'contact': 10,
+    'friends': 10,
+    'coord': 10,
+    'fof': 10,
+    'irlbuds': 30,
+    'leastconx': 20,
+    'mirror': 10,
+    'nearby': 5,
+    'strangers': 30,
+    'tag': 10,
+    'chosen': 20,
+    'facing': 20,
+    'fusion': 0,
+    'transfer': 0,
 }
 
 connector_qualifying_triggers = {
@@ -152,21 +152,21 @@ connector_qualifying_triggers = {
     'default-min': 1, # totally arbitrary since default dist is meaningless
     'default-max': 3, # totally arbitrary since default dist is meaningless
     # connector values
-    'conx-friends': 10,
-    'conx-coord-min-vel': 4,   # m/s
-    'conx-coord-max-vdiff': 4,   # m/s
-    'conx-contact': .33,    # m
-    'conx-facing': 45,   # degrees
-    'conx-fusion-max': 1.5, # m
-    'conx-fusion-min': .75, # m
-    'conx-nearby-min': 3,   # m
-    'conx-nearby-max': 1.5, # m
-    'conx-strangers-min': 5, # sec
+    'friends': 10,
+    'coord-min-vel': 4,   # m/s
+    'coord-max-vdiff': 4,   # m/s
+    'contact': .33,    # m
+    'facing': 45,   # degrees
+    'fusion-min': .75, # m
+    'fusion-max': 1.5, # m
+    'nearby-min': 3,   # m
+    'nearby-max': 1.5, # m
+    'strangers-min': 5, # sec
 }
 
 connector_latitude = {
     # all as percentage variance
-    'conx-heading': 10,
+    'heading': 10,
 }
 
 # visual configuration

@@ -26,7 +26,7 @@ cell_avg_triggers = {
     'interactive': 0.25,    # implemented
     'static': 0.6,  # implemented
     'kinetic': 0.6, # implemented
-    'fast': 0.8,    # implemented
+    'fast': 0.8,    # implemented; tested
     'timein': 0.5,  # implemented
     'spin': 0.8,
     'quantum': 0.8,
@@ -95,12 +95,13 @@ connector_avg_triggers = {
     'coord': 0.9,      # implemented
     'mirror': 0,
     'fof': 0,
-    'irlbuds': 0.8,    # implemented
+    'irlbuds': 0.66,    # implemented
     'leastconx': 0,
-    'nearby': 0,
+    'nearby': 0.8,
     'strangers': 0.8,  # implemented
     'tag': 0,
     'chosen': 0,
+    'facing': 0.5,
     'fusion': 0,   # implemented; tested
     'transfer': 0,
 }
@@ -115,13 +116,13 @@ connector_memory_time = {
     'friends': 10,
     'coord': 5,
     'fof': 0,
-    'irlbuds': 5*60,
+    'irlbuds': 2*60,
     'leastconx': 10,
-    'nearby': 10,
-    'strangers': 5*60,
+    'nearby': 5,
+    'strangers': 2*60,
     'tag': 10,
     'chosen': 10,
-    'facing': 20,
+    'facing': 10,
     'fusion': 0,
     'transfer': 0,
 }
@@ -157,10 +158,10 @@ connector_qualifying_triggers = {
     'coord-min-vel': 4,   # m/s
     'coord-max-vdiff': 4,   # m/s
     'contact': .33,    # m
-    'facing': 45,   # degrees
-    'fusion-min': .75, # m
+    'facing': 90,   # degrees
+    'fusion-min': .5, # m
     'fusion-max': 1.5, # m
-    'nearby-min': 3,   # m
+    'nearby-min': 4,   # m
     'nearby-max': 1.5, # m
     'strangers-min': 5, # sec
 }

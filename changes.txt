@@ -188,3 +188,16 @@ was resized
 * Implemented cell attr fast
 * Implemented cell attr timein
 * Worked out some bugs in the conductor update_all_cells routine
+
+6/3/2014
+* Created a script that would scrape my conductor sources and summarize the
+    status of all the attributes: implemented, tested, etc, including params
+* Fixed facing with a 180 degree FIXME
+* Adjusted the params on many attributes
+* Created a del_cell_attr routine which was mysterious absent
+* Verified and tested cell attr: static
+* Verified and tested cell attr: kinetic
+* Verified and tested cell attr: fast
+* Verified and tested conx attr: irlbuds
+* Verified and tested conx attr: facing
+

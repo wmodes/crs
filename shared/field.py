@@ -273,6 +273,15 @@ class Field(object):
             print "Field:update_cell_attr:",uid, type, value
         self.m_cell_dict[uid].update_attr(type, value)
 
+    def del_cell_attr(self, uid, type):
+        """Delete an attribute to a cell."""
+        if uid in self.m_cell_dict:
+            cell = self.m_cell_dict[uid]
+            if type in cell.m_attr_dict:
+                cell.del_attr(type)
+                if dbug.LEV & dbug.FIELD: 
+                    print "Field:del_cell_attr:del_attr:",uid,type
+
     def update_geo(self, id, fromcenter=None, fromnearest=None, fromexit=None):
         """Update geo info for cell."""
         self.check_for_missing_cell(id)

@@ -114,7 +114,7 @@ class Conductor(object):
             #'fof': self.test_conx_fof,
             'irlbuds': self.test_conx_irlbuds,
             #'leastconx': self.test_conx_leastconx,
-            #'nearby': self.test_conx_nearby,
+            'nearby': self.test_conx_nearby,
             'strangers': self.test_conx_strangers,
             #'tag': self.test_conx_tag,
             #'chosen': self.test_conx_chosen,
@@ -124,6 +124,178 @@ class Conductor(object):
         }
         self.m_avg_table = {}
         self.m_dist_table = {}
+    #
+    # Connection housekeeping
+    #   Yes, I know this shoud be refactored so that cell and conx are the same
+    #   code, but time is critical #techdebt
+    #
+
+    def update_all_conx(self):
+        """Test for and create new connections.
+
+        iterate over all the pair combos in the cell dictionary:
+          do each test and save the result
+          if the avg is above the trigger
+              if a connection does not exist already
+                  create a connection
+              else
+                  update the value?
+        anything else? they should be picked up when the conductor does its
+        regular reports
+        """
+
+        if dbug.LEV & dbug.MORE: 
+            print "Conduct:update_all_conx"
+        for (cell0,cell1) in list(combinations(self.m_field.m_cell_dict.values(), 2)):
+            uid0 = cell0.m_id
+            uid1 = cell1.m_id
+            if self.m_field.is_cell_good_to_go(cell0.m_id) and \
+                    self.m_field.is_cell_good_to_go(cell1.m_id):
+                # get cid
+                cid = self.m_field.get_cid(uid0, uid1)
+                # calc distance once
+                self.m_dist_table[cid] = self.dist(cell0, cell1)
+                for type,conx_test in self.conx_tests.iteritems():
+                    running_avg = conx_test(cid, type, cell0, cell1)
+                    if type in CONX_AVG:
+                        avg_trigger = CONX_AVG[type]
+                    else:
+                        avg_trigger = CONX_AVG[DEFAULT]
+                    if dbug.LEV & dbug.COND: 
+                        #if running_avg and avg_trigger:
+                        #if avg_trigger:
+                        print "Conduct:update_conx:post_test:id:", \
+                                "%s-%s %.2f"%(cid,type,running_avg), \
+                                "(trigger:%.2f)"%avg_trigger
+                    # if running_avg is above trigger
+                    if running_avg > avg_trigger:
+                        #if dbug.LEV & dbug.MORE: 
+                            #print "Conduct:update_conx:results:%s-%s,%s,%s"% \
+                                    #(cell0.m_id, cell1.m_id, type, running_avg)
+                        # if a connection/attr does not already exist already
+                        #if not self.m_field.check_for_conx_attr(uid0, uid1, type):
+                        if dbug.LEV & dbug.MORE: 
+                            print "Conduct:update_conx:triggered:id:", \
+                                    "%s-%s %.2f"%(cid,type,running_avg), \
+                                    "(trigger:%.2f)"%avg_trigger
+                        # create one
+                        self.m_field.update_conx_attr(cid, uid0, uid1, 
+                                                    type, running_avg)
+                        #else:
+                            #if dbug.LEV & dbug.MORE: 
+                                #print "Conduct:update_conx:already there, bro"
+                    # if running_avg is under trigger value 
+                    else:
+                        if type in CONX_AGE:
+                            max_age = CONX_AGE[type]
+                        else:
+                            max_age = CONX_AGE[DEFAULT]
+                        #   AND decay time is zero, kill it
+                        if not max_age:
+                            if self.m_field.check_for_conx_attr(uid0, uid1, type):
+                                # send "del conx" osc msg
+                                self.m_field.m_osc.nix_conx_attr(cid, type)
+                                # delete attr and maybe conx
+                                self.m_field.del_conx_attr(cid, type)
+                                index = str(cid)+'-'+str(type)
+                                # actually we want to keep the avg
+                                #if index in self.m_avg_table:
+                                    #del self.m_avg_table[index]
+                                if dbug.LEV & dbug.COND: 
+                                    print "Conduct:update_conx:delete happening:",cid,type
+
+    def record_conx_avg(self, id, type, sample):
+        """Track Exponentially decaying weighted moving averages (ema) in an 
+        indexed dict."""
+        index = str(id)+'-'+str(type)
+        if type in CONX_TIME:
+            time = CONX_TIME[type]
+        else:
+            time = CONX_TIME[DEFAULT]
+        k = 1 - 1/(FRAMERATE*float(time))
+        if index in self.m_avg_table:
+            old_avg = self.m_avg_table[index]
+        else:
+            old_avg = 0
+        self.m_avg_table[index] = k*old_avg + (1-k)*sample
+        return self.m_avg_table[index]
+
+    def get_conx_avg(self, id, type):
+        """Retreive Exponentially decaying weighted moving averages (ema) in an 
+        indexed dict."""
+        index = str(id)+'-'+str(type)
+        if index in self.m_avg_table:
+            return self.m_avg_table[index]
+        self.m_avg_table[index] = 0
+        return 0
+
+    def age_expire_conx(self):
+        """Age and expire connectors.
+        
+        Note that we should do this before we discover and create new
+        connections. That way they are not prematurly aged.
+
+        iterate over every connector
+            iterate over ever attr
+                if decay time of type is not zero (no decay)
+                    if value of attr is zero or less
+                        delete atrr and maybe conx
+                    else
+                        calculate new value based on time and decay rate
+                        if new value is < 0
+                            we'll set it to 0
+                        record the new value
+
+        """
+        new_conx_dict = copy(self.m_field.m_conx_dict)
+        if len(new_conx_dict) and (dbug.LEV & dbug.COND): 
+            print "Conduct:age_and_expire_conx"
+        # iterate over every connector
+        for cid,connector in new_conx_dict.iteritems():
+            new_attr_dict = copy(connector.m_attr_dict)
+            # iterate over ever attr
+            for type,attr in new_attr_dict.iteritems():
+                if type in CONX_AGE:
+                    max_age = CONX_AGE[type]
+                else:
+                    max_age = CONX_AGE[DEFAULT]
+                # if value of attr is greater than zero
+                if attr.m_value > CONX_MIN:
+                    # if decay time of type is not zero (no decay)
+                    if max_age:
+                        # HERE is where we calc the decay 
+                        # calc new value based on time and decay rate
+                        age = time() - attr.m_createtime
+                        since_update = time() - attr.m_updatetime
+                        # The following only works because value and
+                        # age/max_age are on the same scale, that is, they are
+                        # both unit values (0-1.0)
+                        newvalue = attr.m_origvalue - (since_update/max_age)
+                        # if new value is < 0, we'll set it to 0
+                        if newvalue <= 0:
+                            newvalue = 0
+                        # record the new value
+                        attr.decay_value(newvalue)
+                        if dbug.LEV & dbug.COND: 
+                            print "    Aging:%s-%s"%(cid,type),\
+                                  "age:%.2f"%age,\
+                                  "since_update:%.2f"%since_update,\
+                                  "orig_value:%.2f"%attr.m_origvalue,\
+                                  "new_value:%.2f"%attr.m_value
+                # the value of attr is zero, ie, it has decayed to nothin
+                else:
+                    # send "del conx" osc msg
+                    self.m_field.m_osc.nix_conx_attr(cid, type)
+                    # delete attr and maybe conx
+                    self.m_field.del_conx_attr(cid, type)
+                    index = str(cid)+'-'+str(type)
+                    # actually we want to keep the avg
+                    #if index in self.m_avg_table:
+                        #del self.m_avg_table[index]
+                    if dbug.LEV & dbug.COND: 
+                        print "    Expired:%s-%s"%(cid,type),\
+                              "(faded away to nothin')"
+
 
     #
     # Cell housekeeping
@@ -286,178 +458,6 @@ class Conductor(object):
                         print "    Expired:%s-%s"%(uid,type),\
                               "(faded away to nothin')"
 
-    #
-    # Connection housekeeping
-    #   Yes, I know this shoud be refactored so that cell and conx are the same
-    #   code, but time is critical #techdebt
-    #
-
-    def update_all_conx(self):
-        """Test for and create new connections.
-
-        iterate over all the pair combos in the cell dictionary:
-          do each test and save the result
-          if the avg is above the trigger
-              if a connection does not exist already
-                  create a connection
-              else
-                  update the value?
-        anything else? they should be picked up when the conductor does its
-        regular reports
-        """
-
-        if dbug.LEV & dbug.MORE: 
-            print "Conduct:update_all_conx"
-        for (cell0,cell1) in list(combinations(self.m_field.m_cell_dict.values(), 2)):
-            uid0 = cell0.m_id
-            uid1 = cell1.m_id
-            if self.m_field.is_cell_good_to_go(cell0.m_id) and \
-                    self.m_field.is_cell_good_to_go(cell1.m_id):
-                # get cid
-                cid = self.m_field.get_cid(uid0, uid1)
-                # calc distance once
-                self.m_dist_table[cid] = self.dist(cell0, cell1)
-                for type,conx_test in self.conx_tests.iteritems():
-                    running_avg = conx_test(cid, type, cell0, cell1)
-                    if type in CONX_AVG:
-                        avg_trigger = CONX_AVG[type]
-                    else:
-                        avg_trigger = CONX_AVG[DEFAULT]
-                    if dbug.LEV & dbug.MORE: 
-                        #if running_avg and avg_trigger:
-                        #if avg_trigger:
-                        print "Conduct:update_conx:post_test:id:", \
-                                "%s-%s %.2f"%(cid,type,running_avg), \
-                                "(trigger:%.2f)"%avg_trigger
-                    # if running_avg is above trigger
-                    if running_avg > avg_trigger:
-                        #if dbug.LEV & dbug.MORE: 
-                            #print "Conduct:update_conx:results:%s-%s,%s,%s"% \
-                                    #(cell0.m_id, cell1.m_id, type, running_avg)
-                        # if a connection/attr does not already exist already
-                        #if not self.m_field.check_for_conx_attr(uid0, uid1, type):
-                        if dbug.LEV & dbug.MORE: 
-                            print "Conduct:update_conx:triggered:id:", \
-                                    "%s-%s %.2f"%(cid,type,running_avg), \
-                                    "(trigger:%.2f)"%avg_trigger
-                        # create one
-                        self.m_field.update_conx_attr(cid, uid0, uid1, 
-                                                    type, running_avg)
-                        #else:
-                            #if dbug.LEV & dbug.MORE: 
-                                #print "Conduct:update_conx:already there, bro"
-                    # if running_avg is under trigger value 
-                    else:
-                        if type in CONX_AGE:
-                            max_age = CONX_AGE[type]
-                        else:
-                            max_age = CONX_AGE[DEFAULT]
-                        #   AND decay time is zero, kill it
-                        if not max_age:
-                            if self.m_field.check_for_conx_attr(uid0, uid1, type):
-                                # send "del conx" osc msg
-                                self.m_field.m_osc.nix_conx_attr(cid, type)
-                                # delete attr and maybe conx
-                                self.m_field.del_conx_attr(cid, type)
-                                index = str(cid)+'-'+str(type)
-                                # actually we want to keep the avg
-                                #if index in self.m_avg_table:
-                                    #del self.m_avg_table[index]
-                                if dbug.LEV & dbug.COND: 
-                                    print "Conduct:update_conx:delete happening:",cid,type
-
-    def record_conx_avg(self, id, type, sample):
-        """Track Exponentially decaying weighted moving averages (ema) in an 
-        indexed dict."""
-        index = str(id)+'-'+str(type)
-        if type in CONX_TIME:
-            time = CONX_TIME[type]
-        else:
-            time = CONX_TIME[DEFAULT]
-        k = 1 - 1/(FRAMERATE*float(time))
-        if index in self.m_avg_table:
-            old_avg = self.m_avg_table[index]
-        else:
-            old_avg = 0
-        self.m_avg_table[index] = k*old_avg + (1-k)*sample
-        return self.m_avg_table[index]
-
-    def get_conx_avg(self, id, type):
-        """Retreive Exponentially decaying weighted moving averages (ema) in an 
-        indexed dict."""
-        index = str(id)+'-'+str(type)
-        if index in self.m_avg_table:
-            return self.m_avg_table[index]
-        self.m_avg_table[index] = 0
-        return 0
-
-    def age_expire_conx(self):
-        """Age and expire connectors.
-        
-        Note that we should do this before we discover and create new
-        connections. That way they are not prematurly aged.
-
-        iterate over every connector
-            iterate over ever attr
-                if decay time of type is not zero (no decay)
-                    if value of attr is zero or less
-                        delete atrr and maybe conx
-                    else
-                        calculate new value based on time and decay rate
-                        if new value is < 0
-                            we'll set it to 0
-                        record the new value
-
-        """
-        new_conx_dict = copy(self.m_field.m_conx_dict)
-        if len(new_conx_dict) and (dbug.LEV & dbug.COND): 
-            print "Conduct:age_and_expire_conx"
-        # iterate over every connector
-        for cid,connector in new_conx_dict.iteritems():
-            new_attr_dict = copy(connector.m_attr_dict)
-            # iterate over ever attr
-            for type,attr in new_attr_dict.iteritems():
-                if type in CONX_AGE:
-                    max_age = CONX_AGE[type]
-                else:
-                    max_age = CONX_AGE[DEFAULT]
-                # if value of attr is greater than zero
-                if attr.m_value > CONX_MIN:
-                    # if decay time of type is not zero (no decay)
-                    if max_age:
-                        # HERE is where we calc the decay 
-                        # calc new value based on time and decay rate
-                        age = time() - attr.m_createtime
-                        since_update = time() - attr.m_updatetime
-                        # The following only works because value and
-                        # age/max_age are on the same scale, that is, they are
-                        # both unit values (0-1.0)
-                        newvalue = attr.m_origvalue - (since_update/max_age)
-                        # if new value is < 0, we'll set it to 0
-                        if newvalue <= 0:
-                            newvalue = 0
-                        # record the new value
-                        attr.decay_value(newvalue)
-                        if dbug.LEV & dbug.COND: 
-                            print "    Aging:%s-%s"%(cid,type),\
-                                  "age:%.2f"%age,\
-                                  "since_update:%.2f"%since_update,\
-                                  "orig_value:%.2f"%attr.m_origvalue,\
-                                  "new_value:%.2f"%attr.m_value
-                # the value of attr is zero, ie, it has decayed to nothin
-                else:
-                    # send "del conx" osc msg
-                    self.m_field.m_osc.nix_conx_attr(cid, type)
-                    # delete attr and maybe conx
-                    self.m_field.del_conx_attr(cid, type)
-                    index = str(cid)+'-'+str(type)
-                    # actually we want to keep the avg
-                    #if index in self.m_avg_table:
-                        #del self.m_avg_table[index]
-                    if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s"%(cid,type),\
-                              "(faded away to nothin')"
-
     # Gather or calculate whether conditions are met for connection
 
     def calc_all_distances(self):
@@ -479,6 +479,8 @@ class Conductor(object):
     def test_conx_grouped(self, cid, type, cell0, cell1):
         """Are cells currently grouped?
         
+        **Implemented & Successfully Tested
+
         Evaluates the folllowing criteria
             1. whether two people are in a group
             2: how long they've been grouped
@@ -497,6 +499,8 @@ class Conductor(object):
 
     def test_conx_friends(self, cid, type, cell0, cell1):
         """Are cells in proximity for some time? Pref facing each other?
+
+        **Implemented & Successfully Tested
 
         Evaluates the folllowing criteria
             1. distance between people
@@ -522,6 +526,8 @@ class Conductor(object):
     def test_conx_contact(self, cid, type, cell0, cell1):
         """Are cells in contact with each other?
 
+        **Implemented & Successfully Tested
+
         Evaluates the folllowing criteria
             1. Is distance between cells < contact_dist
             2: how long they've been grouped
@@ -542,6 +548,8 @@ class Conductor(object):
 
     def test_conx_coord(self, cid, type, cell0, cell1):
         """Are individuals moving in a coordinated way.
+
+        **Implemented & Not Tested
 
         Evaluates the folllowing criteria
             1. similarity of velocities of two cells
@@ -576,6 +584,8 @@ class Conductor(object):
 
     def test_conx_fof(self, cid, type, cell0, cell1):
         """Are these cells connected through a third person?
+        
+        **Not Yes Implemented
 
         Meets the following conditions:
             1. 
@@ -587,6 +597,8 @@ class Conductor(object):
     def test_conx_irlbuds(self, cid, type, cell0, cell1):
         """Did these people come in together? Have they spent most of their
         time together?
+
+        **Implemented & Successfully Tested
 
         Evaluates the folllowing criteria
             1. distance between people
@@ -612,6 +624,8 @@ class Conductor(object):
     def test_conx_leastconx(self, cid, type, cell0, cell1):
         """Are these individuals among the least connected in the field?
 
+        **Not Yes Implemented
+
         Meets the following conditions:
             1.
         Returns:
@@ -622,6 +636,8 @@ class Conductor(object):
     def test_conx_mirror(self, cid, type, cell0, cell1):
         """Are individuals moving in a mirrorwise way?
 
+        **Not Yes Implemented
+
         Meets the following conditions:
             1.
         Returns:
@@ -631,6 +647,8 @@ class Conductor(object):
 
     def test_conx_nearby(self, cid, type, cell0, cell1):
         """Are cells near each other but not otherwise connected?
+
+        **Implemented & Not Tested
 
         Meets the following conditions:
             1. If cells do not share a connections
@@ -665,6 +683,8 @@ class Conductor(object):
     def test_conx_strangers(self, cid, type, cell0, cell1):
         """Are these cells unconnected? Have they never been connected?
 
+        **Implemented & Not Tested
+
         Evaluates the folllowing criteria
             1. Both cells have been in the space for a while
             2. These two cells are not in a group
@@ -695,6 +715,8 @@ class Conductor(object):
     def test_conx_tag(self, cid, type, cell0, cell1):
         """Did one of these individuals tag the other?
 
+        **Not Yes Implemented
+
         Note: This requires something to be saved over time.
         Meets the following conditions:
             1.
@@ -706,6 +728,8 @@ class Conductor(object):
     def test_conx_chosen(self, cid, type, cell0, cell1):
         """Did the conductor choose these people to be connected?
 
+        **Not Yes Implemented
+
         Meets the following conditions:
             1.
         Returns:
@@ -715,6 +739,8 @@ class Conductor(object):
 
     def test_conx_facing(self, cid, type, cell0, cell1):
         """Are cells facing each other over some time?
+
+        **Implemented & Successfully Tested
 
         Evaluates the folllowing criteria
             1. are not in a group together
@@ -733,8 +759,10 @@ class Conductor(object):
         # score = 0 if they are facing in the same direction
         # score not added if they are in a cell together
         # if they are not in a group together
-        if True:
-        #if cell0.m_gid != cell1.m_gid:
+
+        #TODO: Only if cells not in a group - Done
+        #if True:
+        if cell0.m_gid != cell1.m_gid:
             # get the facing angles of the two cells
             angle0 = cell0.m_body.m_facing%360
             angle1 = cell1.m_body.m_facing%360
@@ -744,8 +772,10 @@ class Conductor(object):
             else:
                 min_angle = CONX_QUAL[DEFAULT]
             # calculate the angle from cell0 to cell1
-            phi0=phase(complex(cell1.m_x-cell0.m_x, 
-                                cell1.m_y-cell0.m_y)) *180/pi-90
+            # FIXME: Tracker is sending the "facing away" angle rather than
+            # facing -- later when it is fixed, we can remove "+ 180"
+            phi0=phase(complex(cell1.m_x-cell0.m_x,
+                                cell1.m_y-cell0.m_y)) *180/pi + 180
             # get diff btwn the angle of cell0 and the angle to cell1
             diff0 = abs(phi0 - angle0)
             if diff0 > 180:
@@ -764,14 +794,16 @@ class Conductor(object):
                 diff1 = diff1 + 360
             diff1 = abs(diff1)
             score1 = 1.0-min(diff1, min_angle)/min_angle
-            if score0 * score1:
-                print "FACING:Frame:",self.m_field.m_frame,"HOLY SHIT, NOT ZERO"
-            else:
-                print "FACING:Frame:",self.m_field.m_frame
-            print "    angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%\
-                  (angle0,phi0,diff0,score0)
-            print "    angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%\
-                  (angle1,phi1,diff1,score1)
+            if dbug.LEV & dbug.MORE: 
+                if score0 * score1:
+                    print "facing:Frame:",self.m_field.m_frame,"HOLY SHIT, NOT ZERO"
+                else:
+                    print "facing:Frame:",self.m_field.m_frame
+                print "    facing angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%\
+                      (angle0,phi0,diff0,score0)
+                print "    facing angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%\
+                      (angle1,phi1,diff1,score1)
+                print "    facing total score=%.2f"%(score0*score1)
             score = score0 * score1
             self.record_conx_avg(cid, type, score)
         # we record our score in our running avg table
@@ -783,7 +815,9 @@ class Conductor(object):
 
     def test_conx_fusion(self, cid, type, cell0, cell1):
         """Are cells currently fusing/fisioning?
-        
+
+        **Implemented & Successfully Tested
+
         Meets the following conditions:
             [1. Is it even possible? check if geo->fromnearest for both cells is 
                 between fusion_min and fusion_max - UNNECESSARY]
@@ -815,6 +849,8 @@ class Conductor(object):
     def test_conx_transfer(self, cid, type, cell0, cell1):
         """Is a transfer of highlight happening between these cells?
 
+        **Not Yes Implemented
+
         Meets the following conditions:
             1.
         Returns:
@@ -829,6 +865,8 @@ class Conductor(object):
     def test_cell_dance(self, uid, type):
         """Does this cell have a history of behavior that looks like dancing?
 
+        **Not Yes Implemented
+
         Evaluates the folllowing criteria:
             1. xxx
         Returns:
@@ -841,6 +879,8 @@ class Conductor(object):
 
     def test_cell_interactive(self, uid, type):
         """Does this cell have a history of being interactive?
+
+        **Implemented & Not Tested
 
         Evaluates the folllowing criteria:
             2. Is this person near others under a dist threshold?
@@ -861,6 +901,8 @@ class Conductor(object):
     def test_cell_static(self, uid, type):
         """Does this cell have a history of being immobile?
 
+        **Implemented & Successfully Tested
+
         Evaluates the folllowing criteria:
             1. How close is this person's velocity to zero over time?
         Returns:
@@ -879,6 +921,8 @@ class Conductor(object):
 
     def test_cell_kinetic(self, uid, type):
         """Does this cell have a long history of going fast?
+
+        **Implemented & Successfully Tested
 
         Evaluates the folllowing criteria:
             1. How close is this person's veolcity to the max over time?
@@ -899,6 +943,8 @@ class Conductor(object):
     def test_cell_fast(self, uid, type):
         """Does this cell have a short history of moving fast?
 
+        **Implemented & Successfully Tested
+
         Evaluates the folllowing criteria:
             1. How close is this person's velocity to the max over short time?
         Returns:
@@ -917,6 +963,8 @@ class Conductor(object):
 
     def test_cell_timein(self, uid, type):
         """Does this cell have a history in the space?
+
+        **Implemented & Not Tested
 
         Evaluates the folllowing criteria:
             1. Have they been in the space for a long time?
@@ -937,6 +985,8 @@ class Conductor(object):
     def test_cell_spin(self, uid, type):
         """Does this cell have a history of xxx?
 
+        **Not Yes Implemented
+
         Evaluates the folllowing criteria:
             1. xxx
         Returns:
@@ -949,6 +999,8 @@ class Conductor(object):
 
     def test_cell_quantum(self, uid, type):
         """Does this cell have a history of xxx?
+
+        **Not Yes Implemented
 
         Evaluates the folllowing criteria:
             1. xxx
@@ -963,6 +1015,8 @@ class Conductor(object):
     def test_cell_jacks(self, uid, type):
         """Does this cell have a history of xxx?
 
+        **Not Yes Implemented
+
         Evaluates the folllowing criteria:
             1. xxx
         Returns:
@@ -975,6 +1029,8 @@ class Conductor(object):
 
     def test_cell_chosen(self, uid, type):
         """Does this cell have a history of xxx?
+
+        **Not Yes Implemented
 
         Evaluates the folllowing criteria:
             1. xxx

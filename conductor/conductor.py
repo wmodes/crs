@@ -326,11 +326,11 @@ class Conductor(object):
                     else:
                         avg_trigger = CELL_AVG[DEFAULT]
                     if dbug.LEV & dbug.COND: 
-                        if running_avg and avg_trigger:
+                        #if running_avg and avg_trigger:
                         #if avg_trigger:
-                            print "Conduct:update_cells:results:id:", \
-                                    "%s-%s %.2f"%(uid,type,running_avg), \
-                                    "(trigger:%.2f)"%avg_trigger
+                        print "Conduct:update_cell:post_test:id:", \
+                                "%s-%s %.2f"%(uid,type,running_avg), \
+                                "(trigger:%.2f)"%avg_trigger
                     # if running_avg is above trigger
                     if running_avg > avg_trigger:
                         #if dbug.LEV & dbug.MORE: 
@@ -876,6 +876,7 @@ class Conductor(object):
         # evaluate something here
         # we record our score in our running avg table
         #return self.record_cell_avg(uid, type, score)
+        return 0
 
     def test_cell_interactive(self, uid, type):
         """Does this cell have a history of being interactive?
@@ -915,7 +916,7 @@ class Conductor(object):
             max_vel = CELL_QUAL[type]
         else:
             max_vel = CELL_QUAL[DEFAULT]
-        score = max(0, 1 - float(spd) / max_vel)
+        score = max(0, float(spd) / max_vel)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
 
@@ -996,6 +997,7 @@ class Conductor(object):
         # evaluate something here
         # we record our score in our running avg table
         #return self.record_cell_avg(uid, type, score)
+        return 0
 
     def test_cell_quantum(self, uid, type):
         """Does this cell have a history of xxx?
@@ -1011,6 +1013,7 @@ class Conductor(object):
         # evaluate something here
         # we record our score in our running avg table
         #return self.record_cell_avg(uid, type, score)
+        return 0
 
     def test_cell_jacks(self, uid, type):
         """Does this cell have a history of xxx?
@@ -1026,6 +1029,7 @@ class Conductor(object):
         # evaluate something here
         # we record our score in our running avg table
         #return self.record_cell_avg(uid, type, score)
+        return 0
 
     def test_cell_chosen(self, uid, type):
         """Does this cell have a history of xxx?
@@ -1041,6 +1045,7 @@ class Conductor(object):
         # evaluate something here
         # we record our score in our running avg table
         #return self.record_cell_avg(uid, type, score)
+        return 0
 
 
     # Create connections

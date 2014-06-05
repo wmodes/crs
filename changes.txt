@@ -201,3 +201,7 @@ was resized
 * Verified and tested conx attr: irlbuds
 * Verified and tested conx attr: facing
 
+6/5/2014
+* Fixed bug in cell_static in conductor where the value was reversed (was: 1-spd/max, should be: spd/max)
+* Fixed None return value from some conductor tests throwing an exception
+

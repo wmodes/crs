@@ -18,6 +18,7 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
+import itertools
 
 # installed modules
 # noinspection PyUnresolvedReferences
@@ -31,41 +32,18 @@ from shared import debug
 
 # local Classes
 
+# configure servers & clients properly
+import socket
+ip = socket.gethostbyname(socket.gethostname())
+IAM = 'visual'
+if ip == config.osc_ips_prod['localhost']:
+    OSC_IPS = config.osc_ips_prod
+    OSC_PORTS = config.osc_ports_prod
+else:
+    OSC_IPS = config.osc_ips_local
+    OSC_PORTS = config.osc_ports_prod
+
 # Constants
-OSCSERVERHOST = config.osc_visual_host \
-    if config.osc_visual_host else config.osc_default_host
-OSCSERVERPORT = config.osc_visual_port \
-    if config.osc_visual_port else config.osc_default_port
-
-OSCTRACKHOST = config.osc_tracking_host \
-    if config.osc_tracking_host else config.osc_default_host
-OSCTRACKPORT = config.osc_tracking_port \
-    if config.osc_tracking_port else config.osc_default_port
-
-OSCSOUNDHOST = config.osc_sound_host \
-    if config.osc_sound_host else config.osc_default_host
-OSCSOUNDPORT = config.osc_sound_port \
-    if config.osc_sound_port else config.osc_default_port
-
-OSCCONDUCTHOST = config.osc_conductor_host \
-    if config.osc_conductor_host else config.osc_default_host
-OSCCONDUCTPORT = config.osc_conductor_port \
-    if config.osc_conductor_port else config.osc_default_port
-
-#OSCVISUALHOST = config.osc_visual_host \
-#    if config.osc_visual_host else config.osc_default_host
-#OSCVISUALPORT = config.osc_visual_port \
-#    if config.osc_visual_port else config.osc_default_port
-
-OSCLASERHOST = config.osc_laser_host \
-    if config.osc_laser_host else config.osc_default_host
-OSCLASERPORT = config.osc_laser_port \
-    if config.osc_laser_port else config.osc_default_port
-
-OSCRECORDERHOST = config.osc_recorder_host \
-    if config.osc_recorder_host else config.osc_default_host
-OSCRECORDERPORT = config.osc_recorder_port \
-    if config.osc_recorder_port else config.osc_default_port
 
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
@@ -81,16 +59,21 @@ class MyOSCHandler(OSCHandler):
 
     def __init__(self, field):
 
+        osc_server = []
+        osc_clients = []
+
         # build up connection array
-        osc_server = [('server', OSCSERVERHOST, OSCSERVERPORT)]
-        osc_clients = [
-                ('tracker', OSCTRACKHOST, OSCTRACKPORT),
-                ('sound', OSCSOUNDHOST, OSCSOUNDPORT),
-                #('visual', OSCVISUALHOST, OSCVISUALPORT),
-                ('conductor', OSCCONDUCTHOST, OSCCONDUCTPORT),
-                ('laser', OSCLASERHOST, OSCLASERPORT),
-                ('recorder', OSCRECORDERHOST, OSCRECORDERPORT),
-            ]
+        for host in OSC_IPS:
+            if host == IAM:
+                print "System:Config server:",(host,OSC_IPS[host],
+                        OSC_PORTS[host])
+                osc_server = [('server', OSC_IPS[host], OSC_PORTS[host])]
+            elif host == 'localhost' or host == 'default':
+                continue
+            else:
+                print "System:Config client:",(host,OSC_IPS[host],
+                        OSC_PORTS[host])
+                osc_clients.append((host, OSC_IPS[host], OSC_PORTS[host]))
 
         self.eventfunc = {
             # from conductor

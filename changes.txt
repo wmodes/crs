@@ -205,3 +205,6 @@ was resized
 * Fixed bug in cell_static in conductor where the value was reversed (was: 1-spd/max, should be: spd/max)
 * Fixed None return value from some conductor tests throwing an exception
 * Added event messages, specifically "touch" (like an instanaeous contact)
+* re-merged config files together
+* simplified ip:host config in shared/config.py and */myoschandler.py
+* added logic to automatically set ip for prod if localhost ip is prod_ip

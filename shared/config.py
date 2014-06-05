@@ -2,10 +2,60 @@
 # -*- coding: utf-8 -*-
 """Co-related space shared config file """
 
-from shared.config_ext import *
-
 # system configuration
 framerate = 25.0
+
+# Debugging codes get and'ed together
+# MORE  = 1
+# FIELD = 2
+# DATA  = 4
+# GRAPH = 8
+# MSGS  = 16
+# PYG   = 32
+# COND  = 32
+debug_level = 2 + 4 + 64    # data (2), field (4), osc(16), conduct(64)
+#debug_level = 2 + 4    # data (2), field (4)
+#debug_level = 2 + 4 + 8    # data (2), field (4), graph (8)
+#debug_level = 255    # everything
+
+max_lost_patience = 2   # (sec)
+
+# OSC configuration
+
+osc_ips_local = {
+    'default': "UNSPECIFIED",
+    'localhost': "127.0.0.1",
+    'visual': "localhost",
+    'conductor': "localhost",
+    'tracking': "localhost",
+    'sound': "localhost",
+    'laser': "localhost",
+    'recorder': "localhost",
+}
+
+osc_ips_prod = {
+    'default': "UNSPECIFIED",
+    'localhost': "192.168.0.33",
+    'visual': "localhost",
+    'conductor': "localhost",
+    'tracking': "localhost",
+    'sound': "192.168.0.29",
+    'laser': "localhost",
+    'recorder': "localhost",
+}
+
+osc_ports_local = {
+    'default': -1,
+    'localhost': "7010",
+    'visual': 7012,
+    'conductor': 7011,
+    'tracking': 7770,
+    'sound': 7010,
+    'laser': 7780,
+    'recorder': 7790, 
+} 
+
+osc_ports_prod = osc_ports_local
 
 # modeling configuration
 #

@@ -56,10 +56,10 @@ class OSCHandler(object):
         try:
             (name, host, port) = osc_server[0]
         except:
-            print "Unable to create OSC handler with server=",osc_server
+            print "System:Unable to create OSC handler with server=",osc_server
             sys.exit(1)
         self.m_oscserver = OSCServer( (host, port) )
-        if dbug.LEV & dbug.MSGS: print "OSC:init server: %s:%s"%(host, port)
+        print "System:init server: %s:%s"%(host, port)
         self.m_oscserver.timeout = OSCTIMEOUT
         self.m_oscserver.print_tracebacks = True
 
@@ -70,17 +70,15 @@ class OSCHandler(object):
                 (oldname, oldhost, oldport) = osc_clients[j]
                 if host == oldhost and port == oldport:
                     self.m_osc_clients[name] = self.m_osc_clients[oldname]
-                    if dbug.LEV & dbug.MSGS: 
-                        print "OSC:init %s:same as %s"%(name,oldname)
+                    print "System:init %s:same as %s"%(name,oldname)
                     break
             if not name in self.m_osc_clients:
                 try:
                     self.m_osc_clients[name] = OSCClient()
                 except:
-                    print "Unable to create OSC handler with client=",(name,host,port)
+                    print "System:Unable to create OSC handler with client=",(name,host,port)
                 self.m_osc_clients[name].connect( (host, port) )
-                if dbug.LEV & dbug.MSGS: 
-                    print "OSC:init %s: %s:%s"%(name,host,port)
+                print "System:init %s: %s:%s"%(name,host,port)
             self.send_to(name,OSCPATH['ping'],[0])
 
         self.m_xmin = 0

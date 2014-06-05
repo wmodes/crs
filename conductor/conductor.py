@@ -45,14 +45,14 @@ DEFAULT_MAX = 'default-max'
 
 CELL_MIN = config.cell_avg_min
 CELL_AVG = config.cell_avg_triggers
-CELL_TIME = config.cell_memory_time
+CELL_MEM = config.cell_memory_time
 CELL_QUAL = config.cell_qualifying_triggers
 CELL_AGE = config.cell_max_age
 CELL_LAT = config.cell_latitude
 
 CONX_MIN = config.connector_avg_min
 CONX_AVG = config.connector_avg_triggers
-CONX_TIME = config.connector_memory_time
+CONX_MEM = config.connector_memory_time
 CONX_QUAL = config.connector_qualifying_triggers
 CONX_AGE = config.connector_max_age
 CONX_LAT = config.connector_latitude
@@ -129,11 +129,6 @@ class Conductor(object):
             #
             'touch': self.test_conx_touch,
             'tag': self.test_conx_tag,
-        }
-
-        self.event_tests = {
-            'touch': self.test_event_touch,
-            #'tag': self.test_event_tag,
         }
 
         self.m_avg_table = {}
@@ -223,16 +218,19 @@ class Conductor(object):
         """Track Exponentially decaying weighted moving averages (ema) in an 
         indexed dict."""
         index = str(id)+'-'+str(type)
-        if type in CONX_TIME:
-            time = CONX_TIME[type]
+        if type in CONX_MEM:
+            mem_time = CONX_MEM[type]
         else:
-            time = CONX_TIME[DEFAULT]
-        k = 1 - 1/(FRAMERATE*float(time))
-        if index in self.m_avg_table:
-            old_avg = self.m_avg_table[index]
+            mem_time = CONX_MEM[DEFAULT]
+        if mem_time:
+            k = 1 - 1/(FRAMERATE*float(mem_time))
+            if index in self.m_avg_table:
+                old_avg = self.m_avg_table[index]
+            else:
+                old_avg = 0
+            self.m_avg_table[index] = k*old_avg + (1-k)*sample
         else:
-            old_avg = 0
-        self.m_avg_table[index] = k*old_avg + (1-k)*sample
+            self.m_avg_table[index] = sample
         return self.m_avg_table[index]
 
     def get_conx_avg(self, id, type):
@@ -387,10 +385,10 @@ class Conductor(object):
         """Track Exponentially decaying weighted moving averages (ema) in an 
         indexed dict."""
         index = str(id)+'-'+str(type)
-        if type in CELL_TIME:
-            time = CELL_TIME[type]
+        if type in CELL_MEM:
+            time = CELL_MEM[type]
         else:
-            time = CELL_TIME[DEFAULT]
+            time = CELL_MEM[DEFAULT]
         k = 1 - 1/(FRAMERATE*float(time))
         if index in self.m_avg_table:
             old_avg = self.m_avg_table[index]

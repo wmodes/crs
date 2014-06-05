@@ -184,18 +184,8 @@ class MyOSCHandler(OSCHandler):
             if conx.m_cell0.m_visible and conx.m_cell1.m_visible:
                 for type, attr in conx.m_attr_dict.iteritems():
                     duration = time() - attr.m_createtime
-                    if type in HAPPENING_TYPES:
-                        self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                                [HAPPEN, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
-                                attr.m_value, duration])
-                    elif type in EVENT_TYPES:
-                        self.m_field.m_osc.send_downstream(OSCPATH['conduct_event'],
-                                [type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
-                                attr.m_value])
-                    else:
-                        self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                                [PERSIST, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
-                                attr.m_value, duration])
+                    self.send_conx_downstream(cid, type, conx.m_cell0.m_id,
+                            conx.m_cell1.m_id, attr.m_value, duration)
 
     def send_group_attrs(self):
         """Sends the current attributes of visible groups.
@@ -221,6 +211,17 @@ class MyOSCHandler(OSCHandler):
 
     # On-Call Messages
 
+    def send_conx_downstream(self, cid, type, uid0, uid1, value, duration):
+        if type in HAPPENING_TYPES:
+            self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
+                    [HAPPEN, type, cid, uid0, uid1, value, duration])
+        elif type in EVENT_TYPES:
+            self.m_field.m_osc.send_downstream(OSCPATH['conduct_event'],
+                    [type, cid, uid0, uid1, value])
+        else:
+            self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
+                    [PERSIST, type, cid, uid0, uid1, value, duration])
+
     def nix_cell_attr(self, uid, type):
         """Sends OSC messages to announce the removal of cell attr.
         
@@ -242,13 +243,8 @@ class MyOSCHandler(OSCHandler):
             if type in conx.m_attr_dict:
                 attr = conx.m_attr_dict[type]
                 duration = time() - attr.m_createtime
-                if type in NOLINE_TYPES:
-                    subtype = HAPPEN
-                else:
-                    subtype = PERSIST
-                self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                        [subtype, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
-                        0.0, duration])
+                self.send_conx_downstream(cid, type, conx.m_cell0.m_id,
+                        conx.m_cell1.m_id, 0.0, duration)
 
     def nix_conxs(self, cid):                
         """Sends OSC messages to announce the removal of a connection.
@@ -259,11 +255,7 @@ class MyOSCHandler(OSCHandler):
             conx = self.m_field.m_conx_dict[cid]
             for type,attr in conx.m_attr_dict.iteritems():
                 duration = time() - attr.m_createtime
-                if type in NOLINE_TYPES:
-                    subtype = HAPPEN
-                else:
-                    subtype = PERSIST
-                self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                        [subtype, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id, 0.0, duration])
+                self.send_conx_downstream(cid, type, conx.m_cell0.m_id,
+                        conx.m_cell1.m_id, 0.0, duration)
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_conxbreak'],
                     [cid, conx.m_cell0.m_id, conx.m_cell1.m_id])

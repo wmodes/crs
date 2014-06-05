@@ -157,8 +157,8 @@ connector_max_age = {
     'fusion': 0,
     'transfer': 0,
     # event values
-    'touch': 1,
-    'tag': 1,
+    'touch': 0,
+    'tag': 0,
 }
 
 connector_qualifying_triggers = {

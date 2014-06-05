@@ -119,11 +119,26 @@ class Conductor(object):
             #'tag': self.test_conx_tag,
             #'chosen': self.test_conx_chosen,
             'facing': self.test_conx_facing,
+            #
+            # Happenings
+            #
             'fusion': self.test_conx_fusion,
             #'transfer': self.test_conx_transfer,
+            #
+            # Events
+            #
+            'touch': self.test_conx_touch,
+            'tag': self.test_conx_tag,
         }
+
+        self.event_tests = {
+            'touch': self.test_event_touch,
+            #'tag': self.test_event_tag,
+        }
+
         self.m_avg_table = {}
         self.m_dist_table = {}
+
     #
     # Connection housekeeping
     #   Yes, I know this shoud be refactored so that cell and conx are the same
@@ -712,19 +727,6 @@ class Conductor(object):
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
 
-    def test_conx_tag(self, cid, type, cell0, cell1):
-        """Did one of these individuals tag the other?
-
-        **Not Yes Implemented
-
-        Note: This requires something to be saved over time.
-        Meets the following conditions:
-            1.
-        Returns:
-            value: 1.0 if connected, 0 if no
-        """
-        return 0
-
     def test_conx_chosen(self, cid, type, cell0, cell1):
         """Did the conductor choose these people to be connected?
 
@@ -810,7 +812,7 @@ class Conductor(object):
         return self.get_conx_avg(cid, type)
 
     #
-    # Brief Happenings
+    # Happenings
     #
 
     def test_conx_fusion(self, cid, type, cell0, cell1):
@@ -851,6 +853,44 @@ class Conductor(object):
 
         **Not Yes Implemented
 
+        Meets the following conditions:
+            1.
+        Returns:
+            value: 1.0 if connected, 0 if no
+        """
+        return 0
+
+    #
+    # Event Tests
+    #
+
+    def test_conx_touch(self, cid, type, cell0, cell1):
+        """Are these two people touching?
+
+        **Not Implemented
+
+        Evaluates the folllowing criteria
+            1. Is distance between cells < contact_dist
+            score = 1.0 if dist is within physical threshold
+        Returns:
+            The exponentially decaying weighted moving average
+        """
+        # we calculate a score
+        # we get the distance between cells
+        dist = self.m_dist_table[cid]
+        if dist < CONX_QUAL[type]:
+            score = 1.0
+        else:
+            score = 0
+        # we record our score in our running avg table
+        return self.record_conx_avg(cid, type, score)
+
+    def test_conx_tag(self, cid, type, cell0, cell1):
+        """Did one of these individuals tag the other?
+
+        **Not Yes Implemented
+
+        Note: This requires something to be saved over time.
         Meets the following conditions:
             1.
         Returns:
@@ -1046,11 +1086,3 @@ class Conductor(object):
         # we record our score in our running avg table
         #return self.record_cell_avg(uid, type, score)
         return 0
-
-
-    # Create connections
-
-
-    # Check for expirations
-
-

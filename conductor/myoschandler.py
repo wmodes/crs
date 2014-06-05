@@ -71,7 +71,8 @@ OSCPATH = config.oscpath
 REPORT_FREQ = config.report_frequency
 PERSIST = 'persistent'
 HAPPEN = 'happening'
-NOLINE_TYPES = ['fusion', 'transfer']
+HAPPENING_TYPES = ['fusion', 'transfer']
+EVENT_TYPES = ['touch', 'tag']
 
 
 # init debugging
@@ -183,13 +184,18 @@ class MyOSCHandler(OSCHandler):
             if conx.m_cell0.m_visible and conx.m_cell1.m_visible:
                 for type, attr in conx.m_attr_dict.iteritems():
                     duration = time() - attr.m_createtime
-                    if type in NOLINE_TYPES:
-                        subtype = HAPPEN
+                    if type in HAPPENING_TYPES:
+                        self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
+                                [HAPPEN, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
+                                attr.m_value, duration])
+                    elif type in EVENT_TYPES:
+                        self.m_field.m_osc.send_downstream(OSCPATH['conduct_event'],
+                                [type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
+                                attr.m_value])
                     else:
-                        subtype = PERSIST
-                    self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                            [subtype, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
-                            attr.m_value, duration])
+                        self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
+                                [PERSIST, type, cid, conx.m_cell0.m_id, conx.m_cell1.m_id,
+                                attr.m_value, duration])
 
     def send_group_attrs(self):
         """Sends the current attributes of visible groups.

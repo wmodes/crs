@@ -102,11 +102,14 @@ connector_avg_triggers = {
     'leastconx': 0,
     'nearby': 0.8,
     'strangers': 0.8,  # implemented
-    'tag': 0,
     'chosen': 0,
     'facing': 0.5,
+    # happening values
     'fusion': 0,   # implemented; tested
     'transfer': 0,
+    # event values
+    'touch': 0.3,    # implemented; tested
+    'tag': 0.3,    # implemented; tested
 }
 
 connector_memory_time = {
@@ -123,11 +126,14 @@ connector_memory_time = {
     'leastconx': 10,
     'nearby': 5,
     'strangers': 2*60,
-    'tag': 10,
     'chosen': 10,
     'facing': 10,
+    # happening values
     'fusion': 0,
     'transfer': 0,
+    # event values
+    'touch': 0,
+    'tag': 0,
 }
 
 connector_max_age = {
@@ -145,11 +151,14 @@ connector_max_age = {
     'mirror': 10,
     'nearby': 5,
     'strangers': 30,
-    'tag': 10,
     'chosen': 20,
     'facing': 20,
+    # happening values
     'fusion': 0,
     'transfer': 0,
+    # event values
+    'touch': 1,
+    'tag': 1,
 }
 
 connector_qualifying_triggers = {
@@ -162,17 +171,22 @@ connector_qualifying_triggers = {
     'coord-max-vdiff': 4,   # m/s
     'contact': .33,    # m
     'facing': 90,   # degrees
-    'fusion-min': .5, # m
     'fusion-max': 1.5, # m
     'nearby-min': 4,   # m
     'nearby-max': 1.5, # m
     'strangers-min': 5, # sec
+    # happening values
+    'fusion-min': .5, # m
+    # event values
+    'touch': .33,    # m
+    'tag': .33,   # m
 }
 
 connector_latitude = {
     # all as percentage variance
     'heading': 10,
 }
+
 
 # visual configuration
 #

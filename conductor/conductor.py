@@ -828,8 +828,8 @@ class Conductor(object):
                       (max_dist-min_dist))
         """
         # if they are not in a group together
-        #if cell0.m_gid and cell0.m_gid == cell1.m_gid:
-            #return 0
+        if cell0.m_gid and cell0.m_gid == cell1.m_gid:
+            return 0
         cell_dist = self.dist(cell0, cell1)
         # Is distance between fusion_min and fusion_max?
         if 'fusion-min' in CONX_QUAL:
@@ -877,11 +877,11 @@ class Conductor(object):
         # we get the distance between cells
         dist = self.m_dist_table[cid]
         if dist < CONX_QUAL[type]:
-            score = 1.0
+            return 1.0
         else:
-            score = 0
-        # we record our score in our running avg table
-        return self.record_conx_avg(cid, type, score)
+            return 0.0
+        # we (don't) record our score in our running avg table
+        #return self.record_conx_avg(cid, type, score)
 
     def test_conx_tag(self, cid, type, cell0, cell1):
         """Did one of these individuals tag the other?

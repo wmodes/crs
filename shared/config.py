@@ -66,7 +66,7 @@ diam_padding = .25      # 1/4 meter
 group_distance = 100
 ungroup_distance = 150
 
-cell_avg_min = 0.01    # below this and we consider it zero
+cell_avg_min = 0.05    # below this and we consider it zero
 cell_avg_triggers = {
     # what avg value triggers the connection
     # You can think of this as how much of the time do you expect them to be
@@ -75,7 +75,7 @@ cell_avg_triggers = {
     'default': 0.8,
     # cell values
     'dance': 0.8,
-    'interactive': 0.12,    # implemented
+    'interactive': 0.24,    # implemented
     'static': 0.2,  # implemented
     'kinetic': 0.4, # implemented
     'fast': 0.8,    # implemented; tested
@@ -93,7 +93,7 @@ cell_memory_time = {
     # cell values
     'dance': 5,
     'interactive': 30,
-    'static': 10,
+    'static': 20,
     'kinetic': 10,
     'fast': 1,
     'timein': 30,
@@ -125,7 +125,7 @@ cell_qualifying_triggers = {
     'default': 2, # totally arbitrary since default dist is meaningless
     # cell values
     'interactive': 3,
-    'static': 4,  # m/s
+    'static': 3,  # m/s
     'kinetic': 4,  # m/s
     'timein': 60,   # sec
 }
@@ -135,7 +135,7 @@ cell_latitude = {
 }
 
 
-connector_avg_min = 0.01    # below this and we consider it zero
+connector_avg_min = 0.05    # below this and we consider it zero
 connector_avg_triggers = {
     # what avg value triggers the connection
     # 0 = no avg triggers
@@ -143,7 +143,7 @@ connector_avg_triggers = {
     # connector values
     'grouped': 0.3,    # implemented; tested
     'contact': 0.3,    # implemented; tested
-    'friends': 0.4,    # implemented; tested
+    'friends': 0.6,    # implemented; tested
     'coord': 0.1,      # implemented
     'mirror': 0,
     'fof': 0,
@@ -168,7 +168,7 @@ connector_memory_time = {
     # connector values
     'grouped': 3,
     'contact': 10,
-    'friends': 5,
+    'friends': 10,
     'coord': 2,
     'fof': 0,
     'irlbuds': 60,
@@ -215,7 +215,7 @@ connector_qualifying_triggers = {
     'default-min': 1, # totally arbitrary since default dist is meaningless
     'default-max': 3, # totally arbitrary since default dist is meaningless
     # connector values
-    'friends': 10,
+    'friends': 5,
     'coord-min-vel': 4,   # m/s
     'coord-max-vdiff': 4,   # m/s
     'contact': 5/8,    # m

@@ -24,9 +24,9 @@ max_lost_patience = 2   # (sec)
 
 osc_ips_local = {
     'default': "UNSPECIFIED",
-    'localhost': "127.0.0.1",
-    'visual': "localhost",
-    'conductor': "localhost",
+    'localhost': "192.168.70.66",
+    'visual': "192.168.70.66",
+    'conductor': "192.168.70.66",
     'tracking': "localhost",
     'sound': "localhost",
     'laser': "localhost",
@@ -35,7 +35,7 @@ osc_ips_local = {
 
 osc_ips_prod = {
     'default': "UNSPECIFIED",
-    'localhost': "192.168.0.33",
+    'localhost': "192.168.0.31",
     'visual': "localhost",
     'conductor': "localhost",
     'tracking': "localhost",

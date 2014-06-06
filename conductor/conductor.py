@@ -173,10 +173,10 @@ class Conductor(object):
                         avg_trigger = CONX_AVG[DEFAULT]
                     if dbug.LEV & dbug.COND: 
                         #if running_avg and avg_trigger:
-                        #if avg_trigger:
-                        print "Conduct:update_conx:post_test:id:", \
-                                "%s-%s %.2f"%(cid,type,running_avg), \
-                                "(trigger:%.2f)"%avg_trigger
+                        if avg_trigger:
+                            print "Conduct:update_conx:post_test:id:", \
+                                    "%s-%s %.2f"%(cid,type,running_avg), \
+                                    "(trigger:%.2f)"%avg_trigger
                     # if running_avg is above trigger
                     if running_avg > avg_trigger:
                         #if dbug.LEV & dbug.MORE: 
@@ -340,10 +340,10 @@ class Conductor(object):
                         avg_trigger = CELL_AVG[DEFAULT]
                     if dbug.LEV & dbug.COND: 
                         #if running_avg and avg_trigger:
-                        #if avg_trigger:
-                        print "Conduct:update_cell:post_test:id:", \
-                                "%s-%s %.2f"%(uid,type,running_avg), \
-                                "(trigger:%.2f)"%avg_trigger
+                        if avg_trigger:
+                            print "Conduct:update_cell:post_test:id:", \
+                                    "%s-%s %.2f"%(uid,type,running_avg), \
+                                    "(trigger:%.2f)"%avg_trigger
                     # if running_avg is above trigger
                     if running_avg > avg_trigger:
                         #if dbug.LEV & dbug.MORE: 

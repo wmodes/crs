@@ -167,11 +167,11 @@ connector_memory_time = {
     'default': 10,
     # connector values
     'grouped': 3,
-    'contact': 10,
+    'contact': 3,
     'friends': 10,
     'coord': 2,
     'fof': 0,
-    'irlbuds': 60,
+    'irlbuds': 30,
     'leastconx': 5,
     'nearby': 5,
     'strangers': 60,
@@ -216,13 +216,13 @@ connector_qualifying_triggers = {
     'default-max': 3, # totally arbitrary since default dist is meaningless
     # connector values
     'friends': 5,
-    'coord-min-vel': 4,   # m/s
-    'coord-max-vdiff': 4,   # m/s
+    'coord-min-vel': 1,   # m/s
+    'coord-max-vdiff': 2,   # m/s
     'contact': 5/8,    # m
-    'facing': 110,   # degrees
+    'facing': 180,   # degrees
     'fusion-max': 1.5, # m
-    'nearby-min': 4,   # m
-    'nearby-max': 1.5, # m
+    'nearby-min': 1.5,   # m
+    'nearby-max': 4, # m
     'strangers-min': 5, # sec
     # happening values
     'fusion-min': .5, # m

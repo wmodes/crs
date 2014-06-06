@@ -75,11 +75,11 @@ cell_avg_triggers = {
     'default': 0.8,
     # cell values
     'dance': 0.8,
-    'interactive': 0.25,    # implemented
-    'static': 0.8,  # implemented
-    'kinetic': 0.8, # implemented
+    'interactive': 0.12,    # implemented
+    'static': 0.2,  # implemented
+    'kinetic': 0.4, # implemented
     'fast': 0.8,    # implemented; tested
-    'timein': 0.5,  # implemented
+    'timein': 0.3,  # implemented
     'spin': 0.8,
     'quantum': 0.8,
     'jacks': 0.8,
@@ -91,17 +91,16 @@ cell_memory_time = {
     # 0 = no timed triggers
     'default': 10,
     # cell values
-    'dance': 10,
-    'interactive': 5*60,
-    'static': 20,
-    'kinetic': 20,
-    'fast': 2,
-    'timein': 20,
-    #'timein': 120,
-    'spin': 10,
-    'quantum': 10,
-    'jacks': 10,
-    'chosen': 10,
+    'dance': 5,
+    'interactive': 30,
+    'static': 10,
+    'kinetic': 10,
+    'fast': 1,
+    'timein': 30,
+    'spin': 5,
+    'quantum': 5,
+    'jacks': 5,
+    'chosen': 5,
 }
 
 cell_max_age = {
@@ -144,16 +143,16 @@ connector_avg_triggers = {
     # connector values
     'grouped': 0.3,    # implemented; tested
     'contact': 0.3,    # implemented; tested
-    'friends': 0.8,    # implemented; tested
-    'coord': 0.9,      # implemented
+    'friends': 0.4,    # implemented; tested
+    'coord': 0.1,      # implemented
     'mirror': 0,
     'fof': 0,
-    'irlbuds': 0.66,    # implemented
+    'irlbuds': 0.33,    # implemented
     'leastconx': 0,
-    'nearby': 0.8,
-    'strangers': 0.8,  # implemented
+    'nearby': 0.4,
+    'strangers': 0.4,  # implemented
     'chosen': 0,
-    'facing': 0.5,
+    'facing': 0.25,
     # happening values
     'fusion': 0,   # implemented; tested
     'transfer': 0,
@@ -168,16 +167,16 @@ connector_memory_time = {
     'default': 10,
     # connector values
     'grouped': 3,
-    'contact': 20,
-    'friends': 10,
-    'coord': 5,
+    'contact': 10,
+    'friends': 5,
+    'coord': 2,
     'fof': 0,
-    'irlbuds': 2*60,
-    'leastconx': 10,
+    'irlbuds': 60,
+    'leastconx': 5,
     'nearby': 5,
-    'strangers': 2*60,
-    'chosen': 10,
-    'facing': 10,
+    'strangers': 60,
+    'chosen': 5,
+    'facing': 5,
     # happening values
     'fusion': 0,
     'transfer': 0,
@@ -219,8 +218,8 @@ connector_qualifying_triggers = {
     'friends': 10,
     'coord-min-vel': 4,   # m/s
     'coord-max-vdiff': 4,   # m/s
-    'contact': .33,    # m
-    'facing': 90,   # degrees
+    'contact': 5/8,    # m
+    'facing': 110,   # degrees
     'fusion-max': 1.5, # m
     'nearby-min': 4,   # m
     'nearby-max': 1.5, # m

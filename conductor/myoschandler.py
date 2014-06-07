@@ -32,7 +32,10 @@ from shared import debug
 
 # configure servers & clients properly
 import socket
-ip = socket.gethostbyname(socket.gethostname())
+hostname=socket.gethostname()
+print "hostname=",hostname
+hostname="localhost"
+ip = socket.gethostbyname(hostname)
 print "ip=",ip
 IAM = 'conductor'
 if True:   # ip == config.osc_ips_prod['localhost']:

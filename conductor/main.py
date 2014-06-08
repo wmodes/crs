@@ -33,7 +33,7 @@ from shared import config
 
 # local classes
 from shared import debug
-from myfieldelements import MyField
+from myfield import MyField
 from myoschandler import MyOSCHandler
 from conductor import Conductor
 
@@ -80,12 +80,13 @@ def main():
 
     CYCLETIME = 1/25.0
 
-    # initialize field
+    # initialize stuff
     field = MyField()
-
-    osc = MyOSCHandler(field)
+    osc = MyOSCHandler()
+    conductor = Conductor()
     field.update(osc=osc)
-    conductor = Conductor(field)
+    osc.update(field=field, conductor=conductor)
+    conductor.update(field=field)
 
     keep_running = True
     lastframe = None

@@ -60,8 +60,8 @@ class MyOSCHandler(OSCHandler):
 
     """Set up OSC server and other handlers."""
 
-    def __init__(self, field):
-
+    def __init__(self, field=None, conductor=None):
+        self.m_conductor = conductor
         osc_server = []
         osc_clients = []
 
@@ -81,9 +81,15 @@ class MyOSCHandler(OSCHandler):
         self.eventfunc = {
             # to conductor
             'conduct_dump': self.event_conduct_dump,
+            'ui_condglobal': self.event_ui_condglobal,
         }
 
-        super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)
+        super(MyOSCHandler, self).__init__(osc_server,
+                osc_clients, field)
+
+    def update(self, field=None, conductor=None):
+        self.m_field = field
+        self.m_conductor = conductor
 
     #
     # INCOMING to Conductor
@@ -103,6 +109,22 @@ class MyOSCHandler(OSCHandler):
                 except:
                     if dbug.LEV & dbug.MSGS:
                         print "OSC:dump_req:unable to reach", clientkey
+
+    def event_ui_condglobal(self, path, tags, args, source):
+        """Receive condglobal from UI.
+
+        Sent from UI.
+        args:
+            frame - frame number
+            cg - conductor global
+        """
+        #print "OSC:event_track_entry:",path,args,source
+        #print "args:",args,args[0],args[1],args[2]
+        #frame = args[0]
+        cg = args[0]
+        if dbug.LEV & dbug.MSGS: print "OSC:event_ui_condglobal:cg =",cg
+        self.m_conductor.update(condglobal=condglobal)
+
 
     #
     # OUTGOING from Conductor

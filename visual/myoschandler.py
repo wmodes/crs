@@ -88,7 +88,7 @@ class MyOSCHandler(OSCHandler):
             'conduct_event': self.event_conduct_event,
         }
 
-        super(MyOSCHandler, self).__init__(field, osc_server, osc_clients)
+        super(MyOSCHandler, self).__init__(osc_server, osc_clients, field)
 
     def honey_im_home(self):
         """Broadcast a hello message to the network."""

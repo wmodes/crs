@@ -49,7 +49,7 @@ class OSCHandler(object):
 
     """Set up OSC server and other handlers."""
 
-    def __init__(self, field, osc_server, osc_clients):
+    def __init__(self, osc_server, osc_clients, field=None):
         self.m_field = field
         self.m_run = True
 
@@ -298,7 +298,6 @@ class OSCHandler(object):
             beginning of run)
             target - UID of target
             channel - channel number assigned
-
         """
         #print "OSC:event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]

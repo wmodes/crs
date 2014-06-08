@@ -383,4 +383,9 @@ oscpath = {
     'conduct_gattr': "/conductor/gattr",
     'conduct_event': "/conductor/event",
 
+    # OSCTouch system
+    #
+    # Incoming to the conductor
+    'ui_condglobal': "/ui/condglobal",
+
 }

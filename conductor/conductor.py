@@ -92,7 +92,10 @@ class Conductor(object):
 
     def __init__(self, field=None, condglobal=None):
         self.m_field = field
-        self.m_condglobal = 1
+        if condglobal is None:
+            self.m_condglobal = 1
+        else:
+            self.m_condglobal = condglobal
         self.cell_tests = {
             'dance': self.test_cell_dance,
             'interactive': self.test_cell_interactive,
@@ -137,7 +140,8 @@ class Conductor(object):
 
     def update(self, condglobal=None, field=None):
         self.m_field = field
-        self.m_condglobal = condglobal
+        if condglobal is not None:
+            self.m_condglobal = condglobal
 
     #
     # Connection housekeeping
@@ -172,7 +176,7 @@ class Conductor(object):
                 self.m_dist_table[cid] = self.dist(cell0, cell1)
                 for type,conx_test in self.conx_tests.iteritems():
                     running_avg = conx_test(cid, type, cell0, cell1) * \
-                            self.condglobal
+                            self.m_condglobal
                     if type in CONX_AVG:
                         avg_trigger = CONX_AVG[type]
                     else:
@@ -339,7 +343,7 @@ class Conductor(object):
         for uid,cell in self.m_field.m_cell_dict.iteritems():
             if self.m_field.is_cell_good_to_go(uid):
                 for type, cell_test in self.cell_tests.iteritems():
-                    running_avg = cell_test(uid, type) * self.condglobal
+                    running_avg = cell_test(uid, type) * self.m_condglobal
                     if type in CELL_AVG:
                         avg_trigger = CELL_AVG[type]
                     else:

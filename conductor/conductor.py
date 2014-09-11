@@ -139,8 +139,7 @@ class Conductor(object):
         self.m_dist_table = {}
 
     def update(self, condglobal=None, field=None):
-        if field is non None:
-            self.m_field = field
+        self.m_field = field
         if condglobal is not None:
             self.m_condglobal = condglobal
 

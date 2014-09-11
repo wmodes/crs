@@ -32,17 +32,13 @@ from shared import debug
 
 # configure servers & clients properly
 import socket
-<<<<<<< HEAD
 hostname=socket.gethostname()
 print "hostname=",hostname
 hostname="localhost"
 ip = socket.gethostbyname(hostname)
 print "ip=",ip
-=======
-ip = socket.gethostbyname(socket.gethostname())
->>>>>>> parent of 8d011cf... Force to production
 IAM = 'conductor'
-if ip == config.osc_ips_prod['localhost']:
+if True:   # ip == config.osc_ips_prod['localhost']:
     OSC_IPS = config.osc_ips_prod
     OSC_PORTS = config.osc_ports_prod
 else:

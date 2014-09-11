@@ -24,29 +24,29 @@ max_lost_patience = 2   # (sec)
 
 osc_ips_local = {
     'default': "UNSPECIFIED",
-    'localhost': "192.168.70.66",
-    'visual': "192.168.70.66",
-    'conductor': "192.168.70.66",
-    'tracking': "localhost",
-    'sound': "localhost",
-    'laser': "localhost",
-    'recorder': "localhost",
+    'localhost': "127.0.0.1",
+    'visual': "127.0.0.1",
+    'conductor': "127.0.0.1",
+    'tracking': "127.0.0.1",
+    'sound': "127.0.0.1",
+    'laser': "127.0.0.1",
+    'recorder': "127.0.0.1",
 }
 
 osc_ips_prod = {
     'default': "UNSPECIFIED",
-    'localhost': "192.168.0.31",
+    'localhost': "192.168.0.3",
     'visual': "localhost",
     'conductor': "localhost",
     'tracking': "localhost",
-    'sound': "192.168.0.29",
+    'sound': "192.168.0.3",
     'laser': "localhost",
     'recorder': "localhost",
 }
 
 osc_ports_local = {
     'default': -1,
-    'localhost': "7010",
+    'localhost': 7010,
     'visual': 7012,
     'conductor': 7011,
     'tracking': 7770,

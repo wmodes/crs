@@ -172,7 +172,7 @@ class Conductor(object):
                 self.m_dist_table[cid] = self.dist(cell0, cell1)
                 for type,conx_test in self.conx_tests.iteritems():
                     running_avg = conx_test(cid, type, cell0, cell1) * \
-                            self.condglobal
+                            self.m_condglobal
                     if type in CONX_AVG:
                         avg_trigger = CONX_AVG[type]
                     else:
@@ -339,7 +339,7 @@ class Conductor(object):
         for uid,cell in self.m_field.m_cell_dict.iteritems():
             if self.m_field.is_cell_good_to_go(uid):
                 for type, cell_test in self.cell_tests.iteritems():
-                    running_avg = cell_test(uid, type) * self.condglobal
+                    running_avg = cell_test(uid, type) * self.m_condglobal
                     if type in CELL_AVG:
                         avg_trigger = CELL_AVG[type]
                     else:

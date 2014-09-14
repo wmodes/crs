@@ -127,7 +127,7 @@ class MyOSCHandler(OSCHandler):
         #frame = args[0]
         cg = args[0]
         if dbug.LEV & dbug.MSGS: print "OSC:event_ui_condglobal:cg =",cg
-        self.m_conductor.update(condglobal=condglobal)
+        self.m_conductor.update(condglobal=cg)
 
 
     #

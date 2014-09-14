@@ -90,9 +90,9 @@ class Conductor(object):
             triggered (it diminishes to 0 in this time)
     """
 
-    def __init__(self, field=None, condglobal=None):
+    def __init__(self, field=None, condglobal=1):
         self.m_field = field
-        self.m_condglobal = 1
+        self.m_condglobal = condglobal
         self.cell_tests = {
             'dance': self.test_cell_dance,
             'interactive': self.test_cell_interactive,
@@ -135,7 +135,7 @@ class Conductor(object):
         self.m_avg_table = {}
         self.m_dist_table = {}
 
-    def update(self, condglobal=None, field=None):
+    def update(self, condglobal=1, field=None):
         self.m_field = field
         self.m_condglobal = condglobal
 

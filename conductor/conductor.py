@@ -192,10 +192,10 @@ class Conductor(object):
                                     #(cell0.m_id, cell1.m_id, type, running_avg)
                         # if a connection/attr does not already exist already
                         #if not self.m_field.check_for_conx_attr(uid0, uid1, type):
-                        if dbug.LEV & dbug.MORE: 
+                        if dbug.LEV & dbug.COND: 
                             print "Conduct:update_conx:triggered:id:", \
-                                    "%s-%s %.2f"%(cid,type,running_avg), \
-                                    "(trigger:%.2f)"%avg_trigger
+                                    "%s-%s avg (%.3f) >="%(cid,type,running_avg), \
+                                    "trigger (%.3f)"%avg_trigger
                         # create one
                         self.m_field.update_conx_attr(cid, uid0, uid1, 
                                                     type, running_avg)
@@ -211,6 +211,8 @@ class Conductor(object):
                         #   AND decay time is zero, kill it
                         if not max_age:
                             if self.m_field.check_for_conx_attr(uid0, uid1, type):
+                                if dbug.LEV & dbug.COND: 
+                                    print "Conduct:update_conx:delete happening:",cid,type," avg(%.2f) < trigger (%.2f)"%(running_avg, avg_trigger)
                                 # send "del conx" osc msg
                                 self.m_field.m_osc.nix_conx_attr(cid, type)
                                 # delete attr and maybe conx
@@ -219,8 +221,6 @@ class Conductor(object):
                                 # actually we want to keep the avg
                                 #if index in self.m_avg_table:
                                     #del self.m_avg_table[index]
-                                if dbug.LEV & dbug.COND: 
-                                    print "Conduct:update_conx:delete happening:",cid,type
 
     def record_conx_avg(self, id, type, sample):
         """Track Exponentially decaying weighted moving averages (ema) in an 
@@ -305,11 +305,14 @@ class Conductor(object):
                         if dbug.LEV & dbug.COND: 
                             print "    Aging:%s-%s"%(cid,type),\
                                   "age:%.2f"%age,\
+                                  "max_age:%.2f"%max_age,\
                                   "since_update:%.2f"%since_update,\
                                   "orig_value:%.2f"%attr.m_origvalue,\
                                   "new_value:%.2f"%attr.m_value
                 # the value of attr is zero, ie, it has decayed to nothin
                 else:
+                    if dbug.LEV & dbug.COND: 
+                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger))
                     # send "del conx" osc msg
                     self.m_field.m_osc.nix_conx_attr(cid, type)
                     # delete attr and maybe conx
@@ -318,9 +321,6 @@ class Conductor(object):
                     # actually we want to keep the avg
                     #if index in self.m_avg_table:
                         #del self.m_avg_table[index]
-                    if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s"%(cid,type),\
-                              "(faded away to nothin')"
 
 
     #
@@ -358,7 +358,7 @@ class Conductor(object):
                                     "%s-%s %.2f"%(uid,type,running_avg), \
                                     "(trigger:%.2f)"%avg_trigger
                     # if running_avg is above trigger
-                    if running_avg > avg_trigger:
+                    if running_avg >= avg_trigger:
                         #if dbug.LEV & dbug.MORE: 
                             #print "Conduct:update_cell:results:%s-%s,%s,%s"% \
                                     #(cell0.m_id, cell1.m_id, type, running_avg)
@@ -366,8 +366,8 @@ class Conductor(object):
                         #if not self.m_field.check_for_cell_attr(uid0, uid1, type):
                         if dbug.LEV & dbug.COND: 
                             print "Conduct:update_cell:triggered:id:", \
-                                    "%s-%s %.2f"%(uid,type,running_avg), \
-                                    "(trigger:%.2f)"%avg_trigger
+                                    "%s-%s avg(%.2f) > "%(uid,type,running_avg), \
+                                    "trigger(%.2f)"%avg_trigger
                         # update or create one
                         self.m_field.update_cell_attr(uid, type, running_avg)
                         #else:
@@ -472,11 +472,14 @@ class Conductor(object):
                         if dbug.LEV & dbug.COND: 
                             print "    Aging:&s-%s"%uid,type,\
                                   "age:%.2f"%age,\
+                                  "max_age:%.2f"%max_age,\
                                   "since_update:%.2f"%since_update,\
                                   "orig_value:%.2f"%attr.m_origvalue,\
                                   "new_value:%.2f"%attr.m_value
                 # the value of attr is zero, ie, it has decayed to nothin
                 else:
+                    if dbug.LEV & dbug.COND: 
+                        print "    Expired:%s-%s, value=%.2f, minimum=%.2f"%(uid,type,attr.m_value,min(CELL_MIN,avg_trigger))
                     # send "del cell" osc msg
                     self.m_field.m_osc.nix_cell_attr(uid, type)
                     # delete attr and maybe cell
@@ -484,9 +487,6 @@ class Conductor(object):
                     # actually we want to keep the avg
                     #if index in self.m_avg_table:
                         #del self.m_avg_table[index]
-                    if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s"%(uid,type),\
-                              "(faded away to nothin')"
 
     # Gather or calculate whether conditions are met for connection
 

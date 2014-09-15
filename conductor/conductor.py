@@ -470,7 +470,7 @@ class Conductor(object):
                         # record the new value
                         attr.decay_value(newvalue)
                         if dbug.LEV & dbug.COND: 
-                            print "    Aging:&s-%s"%uid,type,\
+                            print "    Aging:%s-%s"%(uid,type),\
                                   "age:%.2f"%age,\
                                   "max_age:%.2f"%max_age,\
                                   "since_update:%.2f"%since_update,\

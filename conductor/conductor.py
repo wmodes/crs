@@ -135,9 +135,11 @@ class Conductor(object):
         self.m_avg_table = {}
         self.m_dist_table = {}
 
-    def update(self, condglobal=1, field=None):
-        self.m_field = field
-        self.m_condglobal = condglobal
+    def update(self, field=None, condglobal=None):
+        if field!=None:
+            self.m_field = field
+        if condglobal!=None:
+            self.m_condglobal = condglobal
 
     #
     # Connection housekeeping

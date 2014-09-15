@@ -181,12 +181,12 @@ class Conductor(object):
                         avg_trigger = CONX_AVG[DEFAULT]
                     if dbug.LEV & dbug.COND: 
                         #if running_avg and avg_trigger:
-                        if running_avg > CONX_MIN:
+                        if running_avg >= min(avg_trigger,CONX_MIN):
                             print "Conduct:update_conx:post_test:id:", \
                                     "%s-%s %.2f"%(cid,type,running_avg), \
                                     "(trigger:%.2f)"%avg_trigger
                     # if running_avg is above trigger
-                    if running_avg > avg_trigger:
+                    if running_avg >= avg_trigger:
                         #if dbug.LEV & dbug.MORE: 
                             #print "Conduct:update_conx:results:%s-%s,%s,%s"% \
                                     #(cell0.m_id, cell1.m_id, type, running_avg)
@@ -280,8 +280,13 @@ class Conductor(object):
                     max_age = CONX_AGE[type]
                 else:
                     max_age = CONX_AGE[DEFAULT]
+                if type in CONX_AVG:
+                    avg_trigger = CONX_AVG[type]
+                else:
+                    avg_trigger = CONX_AVG[DEFAULT]
+
                 # if value of attr is greater than zero
-                if attr.m_value > CONX_MIN:
+                if attr.m_value >= min(CONX_MIN,avg_trigger):
                     # if decay time of type is not zero (no decay)
                     if max_age:
                         # HERE is where we calc the decay 
@@ -348,7 +353,7 @@ class Conductor(object):
                         avg_trigger = CELL_AVG[DEFAULT]
                     if dbug.LEV & dbug.COND: 
                         #if running_avg and avg_trigger:
-                        if running_avg > CONX_MIN:
+                        if running_avg >= min(CONX_MIN,avg_trigger):
                             print "Conduct:update_cell:post_test:id:", \
                                     "%s-%s %.2f"%(uid,type,running_avg), \
                                     "(trigger:%.2f)"%avg_trigger
@@ -444,8 +449,12 @@ class Conductor(object):
                     max_age = CELL_AGE[type]
                 else:
                     max_age = CELL_AGE[DEFAULT]
+                if type in CELL_AVG:
+                    avg_trigger = CELL_AVG[type]
+                else:
+                    avg_trigger = CELL_AVG[DEFAULT]
                 # if value of attr is greater than zero
-                if attr.m_value > CELL_MIN:
+                if attr.m_value >= min(CELL_MIN,avg_trigger):
                     # if decay time of type is not zero (no decay)
                     if max_age:
                         # HERE is where we calc the decay

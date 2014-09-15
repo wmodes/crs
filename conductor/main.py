@@ -17,6 +17,8 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 
+import debughook
+
 # core modules
 import sys
 import warnings

@@ -179,7 +179,7 @@ class Conductor(object):
                         avg_trigger = CONX_AVG[type]
                     else:
                         avg_trigger = CONX_AVG[DEFAULT]
-                    if dbug.LEV & dbug.COND: 
+                    if dbug.LEV & dbug.COND & dbug.MORE: 
                         #if running_avg and avg_trigger:
                         if running_avg >= min(avg_trigger,CONX_MIN):
                             print "Conduct:update_conx:post_test:id:", \
@@ -269,7 +269,7 @@ class Conductor(object):
 
         """
         new_conx_dict = copy(self.m_field.m_conx_dict)
-        if len(new_conx_dict) and (dbug.LEV & dbug.COND): 
+        if len(new_conx_dict) and (dbug.LEV & dbug.COND & dbug.MORE):
             print "Conduct:age_and_expire_conx"
         # iterate over every connector
         for cid,connector in new_conx_dict.iteritems():
@@ -351,7 +351,7 @@ class Conductor(object):
                         avg_trigger = CELL_AVG[type]
                     else:
                         avg_trigger = CELL_AVG[DEFAULT]
-                    if dbug.LEV & dbug.COND: 
+                    if dbug.LEV & dbug.COND & dbug.MORE: 
                         #if running_avg and avg_trigger:
                         if running_avg >= min(CONX_MIN,avg_trigger):
                             print "Conduct:update_cell:post_test:id:", \
@@ -438,7 +438,7 @@ class Conductor(object):
 
         """
         new_cell_dict = copy(self.m_field.m_cell_dict)
-        if len(new_cell_dict) and (dbug.LEV & dbug.COND): 
+        if len(new_cell_dict) and (dbug.LEV & dbug.COND & dbug.MORE):
             print "Conduct:age_and_expire_cell"
         # iterate over every connector
         for uid,connector in new_cell_dict.iteritems():

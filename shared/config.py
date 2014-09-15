@@ -154,7 +154,7 @@ connector_avg_triggers = {
     'chosen': 0,
     'facing': 0.25,
     # happening values
-    'fusion': 0,   # implemented; tested
+    'fusion': 0.01,   # implemented; tested
     'transfer': 0,
     # event values
     'touch': 0.3,    # implemented; tested

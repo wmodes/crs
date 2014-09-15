@@ -125,8 +125,8 @@ cell_qualifying_triggers = {
     'default': 2, # totally arbitrary since default dist is meaningless
     # cell values
     'interactive': 3,
-    'static': 3,  # m/s
-    'kinetic': 4,  # m/s
+    'static': 0.2,  # m/s
+    'kinetic': 0.5,  # m/s
     'timein': 60,   # sec
 }
 

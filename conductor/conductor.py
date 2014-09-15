@@ -973,9 +973,15 @@ class Conductor(object):
             max_vel = CELL_QUAL[type]
         else:
             max_vel = CELL_QUAL[DEFAULT]
-        score = max(0, float(spd) / max_vel)
+        if spd<max_vel:
+            score=1.0
+        else:
+            score=0.0;
+    	avg=self.record_cell_avg(uid, type, score)
+        if dbug.LEV & dbug.COND & dbug.MORE: 
+            print "test_cell_static: uid=%s, spd=%.2f, max_vel=%.2f, score=%.2f,avg=%.2f"%(uid,spd,max_vel,score,avg)
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        return avg
 
     def test_cell_kinetic(self, uid, type):
         """Does this cell have a long history of going fast?
@@ -991,12 +997,18 @@ class Conductor(object):
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
         if type in CELL_QUAL:
-            max_vel = CELL_QUAL[type]
+            min_vel = CELL_QUAL[type]
         else:
-            max_vel = CELL_QUAL[DEFAULT]
-        score = min(1, float(spd) / max_vel)
+            min_vel = CELL_QUAL[DEFAULT]
+        if spd>min_vel:
+            score=1.0
+        else:
+            score=0.0
+        avg=self.record_cell_avg(uid, type, score)
+        if dbug.LEV & dbug.COND & dbug.MORE: 
+            print "test_cell_kinetic: uid=%s, spd=%.2f, min_vel=%.2f, score=%.2f, avg=%.2f"%(uid,spd,min_vel,score,avg)
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        return avg
 
     def test_cell_fast(self, uid, type):
         """Does this cell have a short history of moving fast?

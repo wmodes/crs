@@ -258,13 +258,12 @@ class Field(object):
         self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize,
                                     visible=visible, frame=frame)
 
-    def check_for_cell_attr(self, uid0, uid1, type):
-        connector = self.get_connector(self.get_cid(uid0, uid1))
-        if not connector:
-            return False
-        if type not in connector.m_attr_dict:
-            return False
-        return True
+    def check_for_cell_attr(self, uid, type):
+        if uid in self.m_cell_dict:
+            cell = self.m_cell_dict[uid]
+            if type in cell.m_attr_dict:
+                return True
+        return False
 
     def update_cell_attr(self, uid, type, value):
         """Update an attribute to a cell, creating it if it doesn't exist."""

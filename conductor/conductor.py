@@ -191,14 +191,13 @@ class Conductor(object):
                             #print "Conduct:update_conx:results:%s-%s,%s,%s"% \
                                     #(cell0.m_id, cell1.m_id, type, running_avg)
                         # if a connection/attr does not already exist already
-                        #if not self.m_field.check_for_conx_attr(uid0, uid1, type):
-                        if dbug.LEV & dbug.COND: 
-                            print "Conduct:update_conx:triggered:id:", \
+                        if not self.m_field.check_for_conx_attr(uid0, uid1, type):
+                            if dbug.LEV & dbug.COND: 
+                                print "Conduct:update_conx:triggered:id:", \
                                     "%s-%s avg (%.3f) >="%(cid,type,running_avg), \
                                     "trigger (%.3f)"%avg_trigger
                         # create one
-                        self.m_field.update_conx_attr(cid, uid0, uid1, 
-                                                    type, running_avg)
+                        self.m_field.update_conx_attr(cid, uid0, uid1, type, running_avg)
                         #else:
                             #if dbug.LEV & dbug.MORE: 
                                 #print "Conduct:update_conx:already there, bro"
@@ -363,9 +362,9 @@ class Conductor(object):
                             #print "Conduct:update_cell:results:%s-%s,%s,%s"% \
                                     #(cell0.m_id, cell1.m_id, type, running_avg)
                         # if a connection/attr does not already exist already
-                        #if not self.m_field.check_for_cell_attr(uid0, uid1, type):
-                        if dbug.LEV & dbug.COND: 
-                            print "Conduct:update_cell:triggered:id:", \
+                        if not self.m_field.check_for_cell_attr(uid, type):
+                            if dbug.LEV & dbug.COND: 
+                                print "Conduct:update_cell:triggered:id:", \
                                     "%s-%s avg(%.2f) > "%(uid,type,running_avg), \
                                     "trigger(%.2f)"%avg_trigger
                         # update or create one

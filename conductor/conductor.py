@@ -90,9 +90,10 @@ class Conductor(object):
             triggered (it diminishes to 0 in this time)
     """
 
-    def __init__(self, field=None, condglobal=1):
+    def __init__(self, field=None, condglobal=1, cellglobal=1):
         self.m_field = field
         self.m_condglobal = condglobal
+        self.m_cellglobal = cellglobal
         self.cell_tests = {
             'dance': self.test_cell_dance,
             'interactive': self.test_cell_interactive,
@@ -135,11 +136,13 @@ class Conductor(object):
         self.m_avg_table = {}
         self.m_dist_table = {}
 
-    def update(self, field=None, condglobal=None):
+    def update(self, field=None, condglobal=None, cellglobal=None):
         if field!=None:
             self.m_field = field
         if condglobal!=None:
             self.m_condglobal = condglobal
+        if cellglobal!=None:
+            self.m_cellglobal = cellglobal
 
     #
     # Connection housekeeping
@@ -345,7 +348,7 @@ class Conductor(object):
         for uid,cell in self.m_field.m_cell_dict.iteritems():
             if self.m_field.is_cell_good_to_go(uid):
                 for type, cell_test in self.cell_tests.iteritems():
-                    running_avg = cell_test(uid, type) * self.m_condglobal
+                    running_avg = cell_test(uid, type) * self.m_cellglobal
                     if type in CELL_AVG:
                         avg_trigger = CELL_AVG[type]
                     else:

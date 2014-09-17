@@ -388,5 +388,6 @@ oscpath = {
     # Incoming to the conductor
     'ui_condglobal': "/ui/condglobal",  # global sensitivity for conx attr
     'ui_cellglobal': "/ui/cellglobal",  # global sensitivity for cell attr
+    'ui_cond': "/ui/cond",
 
 }

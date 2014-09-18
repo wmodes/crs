@@ -20,6 +20,7 @@ __license__ = "GNU GPL 3.0 or later"
 import debughook
 
 # core modules
+import os.path
 import sys
 import warnings
 import logging
@@ -89,6 +90,10 @@ def main():
     field.update(osc=osc)
     osc.update(field=field, conductor=conductor)
     conductor.update(field=field)
+
+    if os.path.isfile('settings.py'):
+        print "Loading settings from settings.py"
+        execfile('settings.py')
 
     keep_running = True
     lastframe = None

@@ -253,12 +253,16 @@ class MyOSCHandler(OSCHandler):
 
     def send_uisettings(self):
         print "Sending ui settings"
+        fd=open("settings.py","w")
         for key in config.connector_avg_triggers:
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+key+"/trigger",config.connector_avg_triggers[key])
+            print >>fd,"config.connector_avg_triggers['"+key+"']=",config.connector_avg_triggers[key]
         for key in config.connector_memory_time:
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+key+"/memory",config.connector_memory_time[key])
+            print >>fd,"config.connector_memory_time['"+key+"']=",config.connector_memory_time[key]
         for key in config.connector_max_age:
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+key+"/maxage",config.connector_max_age[key])
+            print >>fd,"config.connector_max_age['"+key+"']=",config.connector_max_age[key]
         for key in config.connector_qualifying_triggers:
             if key.endswith("-min"):
                 k=key[:len(key)-4]
@@ -271,13 +275,17 @@ class MyOSCHandler(OSCHandler):
                 a="qual"
             #            print "Setting ","/ui/cond/"+k+"/"+a+" to ", config.connector_qualifying_triggers[key]
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+k+"/"+a,config.connector_qualifying_triggers[key])
+            print >>fd,"config.connector_qualifying_triggers['"+key+"']=",config.connector_qualifying_triggers[key]
         # Same for cells
         for key in config.cell_avg_triggers:
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+key+"/trigger",config.cell_avg_triggers[key])
+            print >>fd,"config.cell_avg_triggers['"+key+"']=",config.cell_avg_triggers[key]
         for key in config.cell_memory_time:
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+key+"/memory",config.cell_memory_time[key])
+            print >>fd,"config.cell_memory_time['"+key+"']=",config.cell_memory_time[key]
         for key in config.cell_max_age:
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+key+"/maxage",config.cell_max_age[key])
+            print >>fd,"config.cell_max_age['"+key+"']=",config.cell_max_age[key]
         for key in config.cell_qualifying_triggers:
             if key.endswith("-min"):
                 k=key[:len(key)-4]
@@ -290,6 +298,8 @@ class MyOSCHandler(OSCHandler):
                 a="qual"
             # print "Setting ","/ui/cond/"+k+"/"+a+" to ", config.cell_qualifying_triggers[key]
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+k+"/"+a,config.cell_qualifying_triggers[key])
+            print >>fd,"config.cell_qualifying_triggers['"+key+"']=",config.cell_qualifying_triggers[key]
+        fd.close()
         
     def send_rollcall(self):
         """Sends the currently highlighted cells via OSC.

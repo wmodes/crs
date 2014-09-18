@@ -419,15 +419,15 @@ class Conductor(object):
                             #TODO: is uid avail here? XXX
                             if self.m_field.check_for_cell_attr(uid, type):
                                 # send "del cell" osc msg
-                                self.m_field.m_osc.nix_cell_attr(cid, type)
+                                self.m_field.m_osc.nix_cell_attr(uid, type)
                                 # delete attr and maybe cell
-                                self.m_field.del_cell_attr(cid, type)
-                                index = str(cid)+'-'+str(type)
+                                self.m_field.del_cell_attr(uid, type)
+                                index = str(uid)+'-'+str(type)
                                 # actually we want to keep the avg
                                 #if index in self.m_avg_table:
                                     #del self.m_avg_table[index]
                                 if dbug.LEV & dbug.COND: 
-                                    print "Conduct:update_cell:delete happening:",cid,type
+                                    print "Conduct:update_cell:delete happening:",uid,type
 
     def record_cell_avg(self, id, type, sample):
         """Track Exponentially decaying weighted moving averages (ema) in an 

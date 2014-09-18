@@ -144,6 +144,29 @@ class Conductor(object):
         if cellglobal!=None:
             self.m_cellglobal = cellglobal
 
+    def update_cell_param(self, param, value):
+        mod_array = None
+        if param == "trigger":
+            mod_array = CELL_AVG
+        elif param == "memory":
+            mod_array = CELL_MEM
+        elif param == "maxage":
+            mod_array = CELL_AGE
+        if mod_array is not None:
+            mod_array[param] = value
+
+    def update_conx_param(self, param, value):
+        mod_array = None
+        if param == "trigger":
+            mod_array = CONX_AVG
+        elif param == "memory":
+            mod_array = CONX_MEM
+        elif param == "maxage":
+            mod_array = CONX_AGE
+        if mod_array is not None:
+            mod_array[param] = value
+
+
     #
     # Connection housekeeping
     #   Yes, I know this shoud be refactored so that cell and conx are the same

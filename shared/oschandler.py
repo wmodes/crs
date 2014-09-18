@@ -204,6 +204,9 @@ class OSCHandler(object):
         return None
 
     def event_ping(self, path, tags, args, source):
+        if len(args)<1:
+            # Possibly ping from touchosc which doesn't include code
+            return
         ping_code = args[0]
         source_ip = source[0]
         if dbug.LEV & dbug.MSGS:

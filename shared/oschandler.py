@@ -131,7 +131,6 @@ class OSCHandler(object):
 
         # We are enumerating paths
         # Esp /ui/cond/type/param match /ui/cond/
-        print "path_enum:",self.eventfunc_enum
         try:
             for path in self.eventfunc_enum:
                 self.m_oscserver.addMsgHandler(path, self.eventfunc_enum[path])

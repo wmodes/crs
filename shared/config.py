@@ -31,6 +31,7 @@ osc_ips_local = {
     'sound': "127.0.0.1",
     'laser': "127.0.0.1",
     'recorder': "127.0.0.1",
+    'touchosc':"192.168.0.148",
 }
 
 osc_ips_prod = {
@@ -42,6 +43,7 @@ osc_ips_prod = {
     'sound': "192.168.0.3",
     'laser': "localhost",
     'recorder': "localhost",
+    'touchosc':"192.168.0.148",
 }
 
 osc_ports_local = {
@@ -53,6 +55,7 @@ osc_ports_local = {
     'sound': 7010,
     'laser': 7780,
     'recorder': 7790, 
+    'touchosc': 9998, 
 } 
 
 osc_ports_prod = osc_ports_local
@@ -307,6 +310,7 @@ report_frequency = {
     'conxs': 5,
     'gattrs': 5,
     'events': 1,
+    'uisettings':50,
 }
 osctimeout = 0
 

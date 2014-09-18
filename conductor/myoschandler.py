@@ -214,7 +214,7 @@ class MyOSCHandler(OSCHandler):
         #type = args[0]
         #param = args[1]
         #value = args[2]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_ui_condparam:",\
+        if dbug.LEV & dbug.COND: print "OSC:event_ui_condparam:",\
             "type=%s,param=%s,value=%.2f"%(type,param,value)
         if type in CELL_ATTR_TYPES:
             self.m_conductor.update_cell_param(param, value)
@@ -248,7 +248,13 @@ class MyOSCHandler(OSCHandler):
             self.send_group_attrs()
         if frame%REPORT_FREQ['events'] == 0:
             self.send_events()
+        if frame%REPORT_FREQ['uisettings'] == 0:
+            self.send_uisettings()
 
+    def send_uisettings(self):
+        print "Sending ui settings"
+        self.m_field.m_osc.send_to("touchosc","/ui/cond/grouped/trigger",0.5)
+        
     def send_rollcall(self):
         """Sends the currently highlighted cells via OSC.
         

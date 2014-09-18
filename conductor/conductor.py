@@ -619,8 +619,8 @@ class Conductor(object):
         # we calculate a score
         # score = 1 if the values are exactly the same
         # score = 0 if the values are very different
-        if 'coord-min-vel' in CONX_QUAL:
-            min_spd = CONX_QUAL['coord-min-vel']
+        if 'coord-min' in CONX_QUAL:
+            min_spd = CONX_QUAL['coord-min']
         else:
             min_spd = CONX_QUAL[DEFAULT_MIN]
         spd0 = sqrt(cell0.m_vx**2+cell0.m_vy**2)
@@ -628,8 +628,8 @@ class Conductor(object):
         if spd0 < min_spd or spd1 < min_spd:
             score = 0.01
         else:
-            if 'coord-max-vdiff' in CONX_QUAL:
-                max_vdiff = CONX_QUAL['coord-max-vdiff']
+            if 'coord-max' in CONX_QUAL:
+                max_vdiff = CONX_QUAL['coord-max']
             else:
                 max_vdiff = CONX_QUAL[DEFAULT_MAX]
             #vdiff = sqrt((cell0.m_vx-cell1.m_vx)**2+(cell0.m_vy-cell1.m_vy)**2)

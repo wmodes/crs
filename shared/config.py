@@ -13,7 +13,7 @@ framerate = 25.0
 # MSGS  = 16
 # PYG   = 32
 # COND  =  64
-debug_level = 2 + 4 + 64    # data (2), field (4), osc(16), conduct(64)
+debug_level = 2 + 4 + 16 + 64    # data (2), field (4), osc(16), conduct(64)
 #debug_level = 2 + 4    # data (2), field (4)
 #debug_level = 2 + 4 + 8    # data (2), field (4), graph (8)
 #debug_level = 255    # everything
@@ -388,6 +388,7 @@ oscpath = {
     # Incoming to the conductor
     'ui_condglobal': "/ui/condglobal",  # global sensitivity for conx attr
     'ui_cellglobal': "/ui/cellglobal",  # global sensitivity for cell attr
-    'ui_cond': "/ui/cond",
+    'ui_condparam': "/ui/cond/param",
+
 
 }

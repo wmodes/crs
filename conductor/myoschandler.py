@@ -52,8 +52,47 @@ OSCPATH = config.oscpath
 REPORT_FREQ = config.report_frequency
 PERSIST = 'persistent'
 HAPPEN = 'happening'
-HAPPENING_TYPES = ['fusion', 'transfer']
-EVENT_TYPES = ['touch', 'tag']
+
+CELL_ATTR_TYPES = [
+    'dance',
+    'interactive',
+    'static',
+    'kinetic',
+    'fast',
+    'timein',
+    'spin',
+    'quantum',
+    'jacks',
+    'chosen',
+]
+
+CONX_ATTR_TYPES =[
+    'grouped',
+    'contact',
+    'friends',
+    'coord',
+    'fof',
+    'irlbuds',
+    'leastconx',
+    'nearby',
+    'strangers',
+    'chosen',
+    'facing',
+    'fusion',
+    'transfer',
+    'touch',
+    'tag',
+]
+
+HAPPENING_TYPES = [
+    'fusion', 
+    'transfer',
+]
+
+EVENT_TYPES = [
+    'touch', 
+    'tag',
+]
 
 
 # init debugging
@@ -89,6 +128,7 @@ class MyOSCHandler(OSCHandler):
             'ui_condglobal': self.event_ui_condglobal,
             # global sensitivity for cell attr
             'ui_cellglobal': self.event_ui_cellglobal,
+            'ui_condparam': self.event_ui_condparam,
         }
 
         super(MyOSCHandler, self).__init__(osc_server,
@@ -146,6 +186,33 @@ class MyOSCHandler(OSCHandler):
         cg = args[0]
         if dbug.LEV & dbug.MSGS: print "OSC:event_ui_cellglobal:cg =",cg
         self.m_conductor.update(cellglobal=cg)
+
+    def event_ui_condparam(self, path, tags, args, source):
+        """Receive condparam from UI.
+
+        Sent from UI.
+        args:
+            type - type of attr
+            param - conductor param
+            value - value to change to
+        """
+        #print "OSC:event_track_entry:",path,args,source
+        #print "args:",args,args[0],args[1],args[2]
+        #frame = args[0]
+        pathsplit = path.split('/')
+        type = pathsplit[len(pathsplit)-2]
+        param = pathsplit[len(pathsplit)-1]
+        value = args[0]
+        # if I received the type and attr as args, I'd use these 3 lines
+        #type = args[0]
+        #param = args[1]
+        #value = args[2]
+        if dbug.LEV & dbug.MSGS: print "OSC:event_ui_condparam:",\
+            "type=%s,param=%s,value=%.2f"%(type,param,value)
+        if type in CELL_ATTR_TYPES:
+            self.m_conductor.update_cell_param(param, value)
+        elif type in CONX_ATTR_TYPES:
+            self.m_conductor.update_conx_param(param, value)
 
 
     #

@@ -124,6 +124,8 @@ class OSCHandler(object):
         self.m_oscserver.handle_timeout = types.MethodType(handle_timeout, 
                                                            self.m_oscserver)
 
+        # How to make this match partial paths? 
+        # Esp /ui/cond/type/param match /ui/cond/
         for i in self.eventfunc:
             self.m_oscserver.addMsgHandler(OSCPATH[i], self.eventfunc[i])
 

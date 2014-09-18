@@ -437,12 +437,15 @@ class Conductor(object):
             time = CELL_MEM[type]
         else:
             time = CELL_MEM[DEFAULT]
-        k = 1 - 1/(FRAMERATE*float(time))
         if index in self.m_avg_table:
             old_avg = self.m_avg_table[index]
         else:
             old_avg = 0
-        self.m_avg_table[index] = k*old_avg + (1-k)*sample
+        if float(time)*FRAMERATE<=1:
+            self.m_avg_table[index] = sample
+        else:
+            k = 1 - 1/(FRAMERATE*float(time))
+            self.m_avg_table[index] = k*old_avg + (1-k)*sample
         return self.m_avg_table[index]
 
     def get_cell_avg(self, id, type):

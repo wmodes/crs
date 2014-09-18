@@ -129,6 +129,15 @@ class OSCHandler(object):
         for i in self.eventfunc:
             self.m_oscserver.addMsgHandler(OSCPATH[i], self.eventfunc[i])
 
+        # We are enumerating paths
+        # Esp /ui/cond/type/param match /ui/cond/
+        print "path_enum:",self.eventfunc_enum
+        try:
+            for path in self.eventfunc_enum:
+                self.m_oscserver.addMsgHandler(path, self.eventfunc_enum[path])
+        except NameError:
+            pass
+
         # this registers a 'default' handler (for unmatched messages), 
         # an /'error' handler, an '/info' handler.
         # And, if the client supports it, a '/subscribe' &

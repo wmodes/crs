@@ -131,6 +131,13 @@ class MyOSCHandler(OSCHandler):
             'ui_condparam': self.event_ui_condparam,
         }
 
+        self.eventfunc_enum = {}
+        for type in CELL_ATTR_TYPES + CONX_ATTR_TYPES:
+            for param in ("trigger", "memory", "maxage"):
+                self.eventfunc_enum.update({
+                    OSCPATH['ui_condparam']+type+'/'+param: self.event_ui_condparam
+                })
+
         super(MyOSCHandler, self).__init__(osc_server,
                 osc_clients, field)
 

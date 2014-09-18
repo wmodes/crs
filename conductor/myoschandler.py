@@ -129,7 +129,7 @@ class MyOSCHandler(OSCHandler):
         #print "args:",args,args[0],args[1],args[2]
         #frame = args[0]
         cg = args[0]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_ui_condglobal:cg =",cg
+        if dbug.LEV & dbug.COND: print "OSC:event_ui_condglobal:cg =",cg
         self.m_conductor.update(condglobal=cg)
 
     def event_ui_cellglobal(self, path, tags, args, source):

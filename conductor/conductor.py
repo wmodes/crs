@@ -144,7 +144,7 @@ class Conductor(object):
         if cellglobal!=None:
             self.m_cellglobal = cellglobal
 
-    def update_cell_param(self, param, value):
+    def update_cell_param(self, type,param, value):
         mod_array = None
         if param == "trigger":
             mod_array = CELL_AVG
@@ -155,9 +155,9 @@ class Conductor(object):
         elif param == "qual":
             mod_array = CELL_QUAL
         if mod_array is not None:
-            mod_array[param] = value
-
-    def update_conx_param(self, param, value):
+            mod_array[type] = value
+            
+    def update_conx_param(self, type,param, value):
         mod_array = None
         if param == "trigger":
             mod_array = CONX_AVG
@@ -169,12 +169,12 @@ class Conductor(object):
             mod_array = CONX_QUAL
         elif param == "qualmax":
             mod_array = CONX_QUAL
-            param=param+"-max"
+            type=type+"-max"
         elif param == "qualmin":
             mod_array = CONX_QUAL
-            param=param+"-min"
+            type=type+"-min"
         if mod_array is not None:
-            mod_array[param] = value
+            mod_array[type] = value
 
 
     #

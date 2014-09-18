@@ -217,9 +217,9 @@ class MyOSCHandler(OSCHandler):
         if dbug.LEV & dbug.COND: print "OSC:event_ui_condparam:",\
             "type=%s,param=%s,value=%.2f"%(type,param,value)
         if type in CELL_ATTR_TYPES:
-            self.m_conductor.update_cell_param(param, value)
+            self.m_conductor.update_cell_param(type,param, value)
         elif type in CONX_ATTR_TYPES:
-            self.m_conductor.update_conx_param(param, value)
+            self.m_conductor.update_conx_param(type,param, value)
 
 
     #

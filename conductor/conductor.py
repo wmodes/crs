@@ -152,6 +152,8 @@ class Conductor(object):
             mod_array = CELL_MEM
         elif param == "maxage":
             mod_array = CELL_AGE
+        elif param == "qual":
+            mod_array = CELL_QUAL
         if mod_array is not None:
             mod_array[param] = value
 
@@ -163,6 +165,14 @@ class Conductor(object):
             mod_array = CONX_MEM
         elif param == "maxage":
             mod_array = CONX_AGE
+        elif param == "qual":
+            mod_array = CONX_QUAL
+        elif param == "qualmax":
+            mod_array = CONX_QUAL
+            param=param+"-max"
+        elif param == "qualmin":
+            mod_array = CONX_QUAL
+            param=param+"-min"
         if mod_array is not None:
             mod_array[param] = value
 

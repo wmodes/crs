@@ -994,7 +994,10 @@ class Conductor(object):
             max_dist = CELL_QUAL[type]
         else:
             max_dist = CELL_QUAL[DEFAULT]
-        score = max(0, 1 - float(cell.m_fromnearest) / max_dist)
+        if cell.m_fromnearest<0:
+            score=0
+        else:
+            score = max(0, 1 - float(cell.m_fromnearest) / max_dist)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
 

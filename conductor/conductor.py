@@ -148,6 +148,8 @@ class Conductor(object):
         mod_array = None
         if param == "trigger":
             mod_array = CELL_AVG
+            if value<.01:
+                value=.01
         elif param == "memory":
             mod_array = CELL_MEM
         elif param == "maxage":
@@ -161,6 +163,8 @@ class Conductor(object):
         mod_array = None
         if param == "trigger":
             mod_array = CONX_AVG
+            if value<.01:
+                value=.01
         elif param == "memory":
             mod_array = CONX_MEM
         elif param == "maxage":

@@ -365,14 +365,15 @@ class MyOSCHandler(OSCHandler):
 
     def send_conx_downstream(self, cid, type, uid0, uid1, value, duration):
         if type in HAPPENING_TYPES:
+            print "send:",   [HAPPEN, type, cid, uid0, uid1, value, duration]
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                    [HAPPEN, type, cid, uid0, uid1, value, duration])
+                    [HAPPEN, type, cid, uid0, uid1, 1.0*value, duration])
         elif type in EVENT_TYPES:
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_event'],
-                    [type, cid, uid0, uid1, value])
+                    [type, cid, uid0, uid1, 1.0*value])
         else:
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
-                    [PERSIST, type, cid, uid0, uid1, value, duration])
+                    [PERSIST, type, cid, uid0, uid1, 1.0*value, duration])
 
     def nix_cell_attr(self, uid, type):
         """Sends OSC messages to announce the removal of cell attr.

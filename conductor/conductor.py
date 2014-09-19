@@ -1093,7 +1093,10 @@ class Conductor(object):
             min_age = CELL_QUAL[type]
         else:
             min_age = CELL_QUAL[DEFAULT]
-        score = max(0, min(1, (float(age) / min_age)-1))
+        if min_age<=0:
+            score=1
+        else:
+            score = max(0, min(1, (float(age) / min_age)-1))
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
 

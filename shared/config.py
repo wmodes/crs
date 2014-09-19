@@ -36,11 +36,11 @@ osc_ips_local = {
 
 osc_ips_prod = {
     'default': "UNSPECIFIED",
-    'localhost': "192.168.0.3",
+    'localhost': "192.168.0.31",
     'visual': "localhost",
     'conductor': "localhost",
     'tracking': "localhost",
-    'sound': "192.168.0.3",
+    'sound': "192.168.0.29",
     'laser': "localhost",
     'recorder': "localhost",
     'touchosc':"192.168.0.148",

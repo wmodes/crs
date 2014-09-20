@@ -646,9 +646,12 @@ class Conductor(object):
             score = 0.01
         else:
             score=min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
+        avgscore=self.record_conx_avg(cid, type, score)
+        if dbug.LEV & dbug.COND & dbug.MORE: 
+            print "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f"%(spd0,cell0.m_vx,cell0.m_vy,spd1,cell1.m_vx,cell1.m_vy,score,avgscore)
 
         # we record our score in our running avg table
-        return self.record_conx_avg(cid, type, score)
+        return avgscore
 
     def test_conx_fof(self, cid, type, cell0, cell1):
         """Are these cells connected through a third person?

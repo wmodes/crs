@@ -860,18 +860,18 @@ class Conductor(object):
                 score1=1.0
             else:
                 score1=0.0
+            score = score0 * score1
+            self.record_conx_avg(cid, type, score)
             if dbug.LEV & dbug.COND: 
                 if score0 * score1:
-                    print "facing:Frame:",self.m_field.m_frame,"HOLY SHIT, NOT ZERO"
+                    print "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"
                 else:
-                    print "facing:Frame:",self.m_field.m_frame
+                    print "facing:Frame:",self.m_field.m_frame,", CID:", cid
                 print "    facing angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%\
                       (angle0,phi0,diff0,score0)
                 print "    facing angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%\
                       (angle1,phi1,diff1,score1)
-                print "    facing total score=%.2f"%(score0*score1)
-            score = score0 * score1
-            self.record_conx_avg(cid, type, score)
+                print "    facing: instantaneous score=%.2f, avg=%.2f"%(score,self.get_conx_avg(cid,type))
         # we record our score in our running avg table
         return self.get_conx_avg(cid, type)
 

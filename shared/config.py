@@ -224,6 +224,7 @@ connector_qualifying_triggers = {
     'contact': 5/8,    # m
     'facing': 180,   # degrees
     'fusion-max': 1.5, # m
+    'irlbuds': 3,
     'nearby-min': 1.5,   # m
     'nearby-max': 4, # m
     'strangers-min': 5, # sec

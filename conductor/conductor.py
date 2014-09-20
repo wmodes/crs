@@ -685,8 +685,12 @@ class Conductor(object):
             max_dist = CONX_QUAL[type]
         else:
             max_dist = CONX_QUAL[DEFAULT_MAX]
-        score = max(0, 1 - float(dist) / max_dist)
-        # we record our score in our running avg table
+        if dist<max_dist:
+            score=1.0
+        else:
+            score=0.0;
+
+        # we record our score in our running avg table to make it into a fraction of time that these 2 people were within max_dist of each other
         return self.record_conx_avg(cid, type, score)
 
     def test_conx_leastconx(self, cid, type, cell0, cell1):

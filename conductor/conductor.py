@@ -817,7 +817,7 @@ class Conductor(object):
 
         #TODO: Only if cells not in a group - Done
         #if True:
-        if cell0.m_gid != cell1.m_gid:
+        if cell0.m_gid != cell1.m_gid or cell0.m_gid==0 or cell1.m_gid==0:
             # get the facing angles of the two cells
             angle0 = cell0.m_body.m_facing%360
             angle1 = cell1.m_body.m_facing%360

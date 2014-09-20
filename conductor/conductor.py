@@ -341,7 +341,7 @@ class Conductor(object):
                             newvalue = 0
                         # record the new value
                         attr.decay_value(newvalue)
-                        if dbug.LEV & dbug.COND: 
+                        if dbug.LEV & dbug.MORE: 
                             print "    Aging:%s-%s"%(cid,type),\
                                   "age:%.2f"%age,\
                                   "max_age:%.2f"%max_age,\
@@ -511,7 +511,7 @@ class Conductor(object):
                             newvalue = 0
                         # record the new value
                         attr.decay_value(newvalue)
-                        if dbug.LEV & dbug.COND: 
+                        if dbug.LEV & dbug.MORE: 
                             print "    Aging:%s-%s"%(uid,type),\
                                   "age:%.2f"%age,\
                                   "max_age:%.2f"%max_age,\
@@ -862,7 +862,7 @@ class Conductor(object):
                 score1=0.0
             score = score0 * score1
             self.record_conx_avg(cid, type, score)
-            if dbug.LEV & dbug.COND: 
+            if dbug.LEV & dbug.MORE: 
                 if score0 * score1:
                     print "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"
                 else:

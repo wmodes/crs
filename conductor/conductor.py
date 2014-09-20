@@ -335,7 +335,7 @@ class Conductor(object):
                         # The following only works because value and
                         # age/max_age are on the same scale, that is, they are
                         # both unit values (0-1.0)
-                        newvalue = attr.m_origvalue - (since_update/max_age)
+                        newvalue = attr.m_origvalue*(1 - (since_update/max_age))
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:
                             newvalue = 0
@@ -505,7 +505,7 @@ class Conductor(object):
                         since_update = time() - attr.m_updatetime
                         # the following only works because value and 
                         # age/max_age are both unit values (0-1.0)
-                        newvalue = attr.m_origvalue - (since_update/max_age)
+                        newvalue = attr.m_origvalue*(1 - (since_update/max_age))
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:
                             newvalue = 0

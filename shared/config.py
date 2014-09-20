@@ -69,7 +69,7 @@ diam_padding = .25      # 1/4 meter
 group_distance = 100
 ungroup_distance = 150
 
-cell_avg_min = 0.05    # below this and we consider it zero
+cell_avg_min = 0.01    # below this and we consider it zero
 cell_avg_triggers = {
     # what avg value triggers the connection
     # You can think of this as how much of the time do you expect them to be
@@ -139,7 +139,7 @@ cell_latitude = {
 }
 
 
-connector_avg_min = 0.05    # below this and we consider it zero
+connector_avg_min = 0.01    # below this and we consider it zero
 connector_avg_triggers = {
     # what avg value triggers the connection
     # 0 = no avg triggers

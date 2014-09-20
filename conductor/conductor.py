@@ -351,7 +351,7 @@ class Conductor(object):
                 # the value of attr is zero, ie, it has decayed to nothin
                 else:
                     if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger))
+                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f, since_update=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger),time()-attr.m_updatetime)
                     # send "del conx" osc msg
                     self.m_field.m_osc.nix_conx_attr(cid, type)
                     # delete attr and maybe conx
@@ -862,7 +862,7 @@ class Conductor(object):
                 score1=0.0
             score = score0 * score1
             self.record_conx_avg(cid, type, score)
-            if dbug.LEV & dbug.MORE: 
+            if dbug.LEV & dbug.COND & dbug.MORE: 
                 if score0 * score1:
                     print "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"
                 else:

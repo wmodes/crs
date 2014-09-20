@@ -252,7 +252,7 @@ class MyOSCHandler(OSCHandler):
             self.send_uisettings()
 
     def send_uisettings(self):
-        print "Sending ui settings"
+        #print "Sending ui settings"
         fd=open("settings.py","w")
         for key in config.connector_avg_triggers:
             self.m_field.m_osc.send_to("touchosc","/ui/cond/"+key+"/trigger",config.connector_avg_triggers[key])

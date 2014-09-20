@@ -219,7 +219,7 @@ connector_qualifying_triggers = {
     'default-min': 1, # totally arbitrary since default dist is meaningless
     'default-max': 3, # totally arbitrary since default dist is meaningless
     # connector values
-    'friends': 5,
+    'friends': 3,
     'coord-min': 1,   # m/s
     'contact': 5/8,    # m
     'facing': 180,   # degrees

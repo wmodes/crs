@@ -777,10 +777,10 @@ class Conductor(object):
         if age0 < min_age or age1 < min_age:
             score = 0.01
         else:
-            if cell0.m_gid != cell1.m_gid:
-                score = 1.0
-            else:
+            if cell0.m_gid == cell1.m_gid and cell0.m_gid!=0:
                 score = 0.0
+            else:
+                score = 1.0
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
 

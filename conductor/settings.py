@@ -95,6 +95,7 @@ config.cell_max_age['default']= 10
 config.cell_max_age['timein']= 10
 config.cell_max_age['interactive']= 14.8567905426
 config.cell_qualifying_triggers['default']= 2
+config.cell_qualifying_triggers['fast']= 2
 config.cell_qualifying_triggers['timein']= 39.8428344727
 config.cell_qualifying_triggers['kinetic']= 0.5
 config.cell_qualifying_triggers['static']= 0.2

@@ -131,6 +131,7 @@ cell_qualifying_triggers = {
     'static': 0.2,  # m/s
     'kinetic': 0.5,  # m/s
     'timein': 60,   # sec
+    'fast':2,
 }
 
 cell_latitude = {

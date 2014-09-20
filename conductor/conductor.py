@@ -838,7 +838,11 @@ class Conductor(object):
             elif diff0 < -180:
                 diff0 = diff0 + 360
             diff0 = abs(diff0)
-            score0 = 1.0-min(diff0, min_angle)/min_angle
+            if diff0 < min_angle:
+                score0=1.0
+            else:
+                score0=0.0
+
             # reverse phi to get angle from cell1 to cell0
             phi1 = (phi0 + 180) % 360
             # get diff btwn the angle of cell1 and the angle to cell0
@@ -848,8 +852,11 @@ class Conductor(object):
             if diff1 < -180:
                 diff1 = diff1 + 360
             diff1 = abs(diff1)
-            score1 = 1.0-min(diff1, min_angle)/min_angle
-            if dbug.LEV & dbug.MORE: 
+            if diff1<min_angle:
+                score1=1.0
+            else:
+                score1=0.0
+            if dbug.LEV & dbug.COND: 
                 if score0 * score1:
                     print "facing:Frame:",self.m_field.m_frame,"HOLY SHIT, NOT ZERO"
                 else:
@@ -1066,7 +1073,10 @@ class Conductor(object):
             max_vel = CELL_QUAL[type]
         else:
             max_vel = CELL_QUAL[DEFAULT]
-        score = min(1, float(spd) / max_vel)
+        if spd>=max_vel:
+            score=1.0
+        else:
+            score=0.0
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
 

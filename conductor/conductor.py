@@ -834,7 +834,7 @@ class Conductor(object):
             # FIXME: Tracker is sending the "facing away" angle rather than
             # facing -- later when it is fixed, we can remove "+ 180"
             phi0=phase(complex(cell1.m_x-cell0.m_x,
-                                cell1.m_y-cell0.m_y)) *180/pi + 180
+                                cell1.m_y-cell0.m_y)) *180/pi - 90
             # get diff btwn the angle of cell0 and the angle to cell1
             diff0 = abs(phi0 - angle0)
             if diff0 > 180:

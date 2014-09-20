@@ -220,7 +220,6 @@ connector_qualifying_triggers = {
     # connector values
     'friends': 5,
     'coord-min': 1,   # m/s
-    'coord-max': 2,   # m/s
     'contact': 5/8,    # m
     'facing': 180,   # degrees
     'fusion-max': 1.5, # m

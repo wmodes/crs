@@ -61,7 +61,6 @@ config.connector_qualifying_triggers['nearby-max']= 0.600625216961
 config.connector_qualifying_triggers['facing']= 180
 config.connector_qualifying_triggers['contact']= 0.673461914062
 config.connector_qualifying_triggers['fusion-min']= 0.5
-config.connector_qualifying_triggers['coord-max']= 2
 config.cell_avg_triggers['jacks']= 0.8
 config.cell_avg_triggers['dance']= 0.8
 config.cell_avg_triggers['static']= 0.653472065926

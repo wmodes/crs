@@ -645,12 +645,6 @@ class Conductor(object):
         if spd0 < min_spd or spd1 < min_spd:
             score = 0.01
         else:
-            if 'coord-max' in CONX_QUAL:
-                max_vdiff = CONX_QUAL['coord-max']
-            else:
-                max_vdiff = CONX_QUAL[DEFAULT_MAX]
-            #vdiff = sqrt((cell0.m_vx-cell1.m_vx)**2+(cell0.m_vy-cell1.m_vy)**2)
-            #score = max(0, 1 - float(vdiff) / max_vdiff)
             score=min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
 
         # we record our score in our running avg table

@@ -252,7 +252,7 @@ class Field(object):
             # if non-zero, add cell to cell_dict in group
             if gid:
                 self.m_group_dict[gid].m_cell_dict[id] = self.m_cell_dict[id]
-                if dbug.LEV & dbug.FIELD: 
+                if dbug.LEV & dbug.FIELD & dbug.MORE: 
                     print "Field:update_cell:Cell",id,"added to group", \
                             self.m_cell_dict[id].m_gid
         self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize,

@@ -17,7 +17,7 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 
-import debughook
+#import debughook
 
 # core modules
 import os.path

@@ -36,11 +36,11 @@ osc_ips_local = {
 
 osc_ips_prod = {
     'default': "UNSPECIFIED",
-    'localhost': "192.168.0.3",
+    'localhost': "192.168.0.31",
     'visual': "localhost",
     'conductor': "localhost",
     'tracking': "localhost",
-    'sound': "192.168.0.3",
+    'sound': "192.168.0.29",
     'laser': "localhost",
     'recorder': "localhost",
     'touchosc':"192.168.0.148",
@@ -69,7 +69,7 @@ diam_padding = .25      # 1/4 meter
 group_distance = 100
 ungroup_distance = 150
 
-cell_avg_min = 0.05    # below this and we consider it zero
+cell_avg_min = 0.01    # below this and we consider it zero
 cell_avg_triggers = {
     # what avg value triggers the connection
     # You can think of this as how much of the time do you expect them to be
@@ -131,6 +131,7 @@ cell_qualifying_triggers = {
     'static': 0.2,  # m/s
     'kinetic': 0.5,  # m/s
     'timein': 60,   # sec
+    'fast':2,
 }
 
 cell_latitude = {
@@ -138,7 +139,7 @@ cell_latitude = {
 }
 
 
-connector_avg_min = 0.05    # below this and we consider it zero
+connector_avg_min = 0.01    # below this and we consider it zero
 connector_avg_triggers = {
     # what avg value triggers the connection
     # 0 = no avg triggers
@@ -218,12 +219,12 @@ connector_qualifying_triggers = {
     'default-min': 1, # totally arbitrary since default dist is meaningless
     'default-max': 3, # totally arbitrary since default dist is meaningless
     # connector values
-    'friends': 5,
+    'friends': 3,
     'coord-min': 1,   # m/s
-    'coord-max': 2,   # m/s
     'contact': 5/8,    # m
     'facing': 180,   # degrees
     'fusion-max': 1.5, # m
+    'irlbuds': 3,
     'nearby-min': 1.5,   # m
     'nearby-max': 4, # m
     'strangers-min': 5, # sec

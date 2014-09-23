@@ -148,6 +148,8 @@ class Conductor(object):
         mod_array = None
         if param == "trigger":
             mod_array = CELL_AVG
+            if value<.01:
+                value=.01
         elif param == "memory":
             mod_array = CELL_MEM
         elif param == "maxage":
@@ -161,6 +163,8 @@ class Conductor(object):
         mod_array = None
         if param == "trigger":
             mod_array = CONX_AVG
+            if value<.01:
+                value=.01
         elif param == "memory":
             mod_array = CONX_MEM
         elif param == "maxage":
@@ -331,13 +335,13 @@ class Conductor(object):
                         # The following only works because value and
                         # age/max_age are on the same scale, that is, they are
                         # both unit values (0-1.0)
-                        newvalue = attr.m_origvalue - (since_update/max_age)
+                        newvalue = attr.m_origvalue*(1 - (since_update/max_age))
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:
                             newvalue = 0
                         # record the new value
                         attr.decay_value(newvalue)
-                        if dbug.LEV & dbug.COND: 
+                        if dbug.LEV & dbug.MORE: 
                             print "    Aging:%s-%s"%(cid,type),\
                                   "age:%.2f"%age,\
                                   "max_age:%.2f"%max_age,\
@@ -347,7 +351,7 @@ class Conductor(object):
                 # the value of attr is zero, ie, it has decayed to nothin
                 else:
                     if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger))
+                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f, since_update=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger),time()-attr.m_updatetime)
                     # send "del conx" osc msg
                     self.m_field.m_osc.nix_conx_attr(cid, type)
                     # delete attr and maybe conx
@@ -501,13 +505,13 @@ class Conductor(object):
                         since_update = time() - attr.m_updatetime
                         # the following only works because value and 
                         # age/max_age are both unit values (0-1.0)
-                        newvalue = attr.m_origvalue - (since_update/max_age)
+                        newvalue = attr.m_origvalue*(1 - (since_update/max_age))
                         # if new value is < 0, we'll set it to 0
                         if newvalue <= 0:
                             newvalue = 0
                         # record the new value
                         attr.decay_value(newvalue)
-                        if dbug.LEV & dbug.COND: 
+                        if dbug.LEV & dbug.MORE: 
                             print "    Aging:%s-%s"%(uid,type),\
                                   "age:%.2f"%age,\
                                   "max_age:%.2f"%max_age,\
@@ -641,16 +645,13 @@ class Conductor(object):
         if spd0 < min_spd or spd1 < min_spd:
             score = 0.01
         else:
-            if 'coord-max' in CONX_QUAL:
-                max_vdiff = CONX_QUAL['coord-max']
-            else:
-                max_vdiff = CONX_QUAL[DEFAULT_MAX]
-            #vdiff = sqrt((cell0.m_vx-cell1.m_vx)**2+(cell0.m_vy-cell1.m_vy)**2)
-            #score = max(0, 1 - float(vdiff) / max_vdiff)
             score=min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
+        avgscore=self.record_conx_avg(cid, type, score)
+        if dbug.LEV & dbug.COND & dbug.MORE: 
+            print "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f"%(spd0,cell0.m_vx,cell0.m_vy,spd1,cell1.m_vx,cell1.m_vy,score,avgscore)
 
         # we record our score in our running avg table
-        return self.record_conx_avg(cid, type, score)
+        return avgscore
 
     def test_conx_fof(self, cid, type, cell0, cell1):
         """Are these cells connected through a third person?
@@ -687,8 +688,12 @@ class Conductor(object):
             max_dist = CONX_QUAL[type]
         else:
             max_dist = CONX_QUAL[DEFAULT_MAX]
-        score = max(0, 1 - float(dist) / max_dist)
-        # we record our score in our running avg table
+        if dist<max_dist:
+            score=1.0
+        else:
+            score=0.0;
+
+        # we record our score in our running avg table to make it into a fraction of time that these 2 people were within max_dist of each other
         return self.record_conx_avg(cid, type, score)
 
     def test_conx_leastconx(self, cid, type, cell0, cell1):
@@ -775,10 +780,10 @@ class Conductor(object):
         if age0 < min_age or age1 < min_age:
             score = 0.01
         else:
-            if cell0.m_gid != cell1.m_gid:
-                score = 1.0
-            else:
+            if cell0.m_gid == cell1.m_gid and cell0.m_gid!=0:
                 score = 0.0
+            else:
+                score = 1.0
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
 
@@ -819,7 +824,7 @@ class Conductor(object):
 
         #TODO: Only if cells not in a group - Done
         #if True:
-        if cell0.m_gid != cell1.m_gid:
+        if cell0.m_gid != cell1.m_gid or cell0.m_gid==0 or cell1.m_gid==0:
             # get the facing angles of the two cells
             angle0 = cell0.m_body.m_facing%360
             angle1 = cell1.m_body.m_facing%360
@@ -832,7 +837,7 @@ class Conductor(object):
             # FIXME: Tracker is sending the "facing away" angle rather than
             # facing -- later when it is fixed, we can remove "+ 180"
             phi0=phase(complex(cell1.m_x-cell0.m_x,
-                                cell1.m_y-cell0.m_y)) *180/pi + 180
+                                cell1.m_y-cell0.m_y)) *180/pi - 90
             # get diff btwn the angle of cell0 and the angle to cell1
             diff0 = abs(phi0 - angle0)
             if diff0 > 180:
@@ -840,7 +845,11 @@ class Conductor(object):
             elif diff0 < -180:
                 diff0 = diff0 + 360
             diff0 = abs(diff0)
-            score0 = 1.0-min(diff0, min_angle)/min_angle
+            if diff0 < min_angle:
+                score0=1.0
+            else:
+                score0=0.0
+
             # reverse phi to get angle from cell1 to cell0
             phi1 = (phi0 + 180) % 360
             # get diff btwn the angle of cell1 and the angle to cell0
@@ -850,19 +859,22 @@ class Conductor(object):
             if diff1 < -180:
                 diff1 = diff1 + 360
             diff1 = abs(diff1)
-            score1 = 1.0-min(diff1, min_angle)/min_angle
-            if dbug.LEV & dbug.MORE: 
+            if diff1<min_angle:
+                score1=1.0
+            else:
+                score1=0.0
+            score = score0 * score1
+            self.record_conx_avg(cid, type, score)
+            if dbug.LEV & dbug.COND & dbug.MORE: 
                 if score0 * score1:
-                    print "facing:Frame:",self.m_field.m_frame,"HOLY SHIT, NOT ZERO"
+                    print "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"
                 else:
-                    print "facing:Frame:",self.m_field.m_frame
+                    print "facing:Frame:",self.m_field.m_frame,", CID:", cid
                 print "    facing angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%\
                       (angle0,phi0,diff0,score0)
                 print "    facing angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%\
                       (angle1,phi1,diff1,score1)
-                print "    facing total score=%.2f"%(score0*score1)
-            score = score0 * score1
-            self.record_conx_avg(cid, type, score)
+                print "    facing: instantaneous score=%.2f, avg=%.2f"%(score,self.get_conx_avg(cid,type))
         # we record our score in our running avg table
         return self.get_conx_avg(cid, type)
 
@@ -990,7 +1002,10 @@ class Conductor(object):
             max_dist = CELL_QUAL[type]
         else:
             max_dist = CELL_QUAL[DEFAULT]
-        score = max(0, 1 - float(cell.m_fromnearest) / max_dist)
+        if cell.m_fromnearest<0:
+            score=0
+        else:
+            score = max(0, 1 - float(cell.m_fromnearest) / max_dist)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
 
@@ -1065,7 +1080,10 @@ class Conductor(object):
             max_vel = CELL_QUAL[type]
         else:
             max_vel = CELL_QUAL[DEFAULT]
-        score = min(1, float(spd) / max_vel)
+        if spd>=max_vel:
+            score=1.0
+        else:
+            score=0.0
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
 
@@ -1086,7 +1104,10 @@ class Conductor(object):
             min_age = CELL_QUAL[type]
         else:
             min_age = CELL_QUAL[DEFAULT]
-        score = max(0, min(1, (float(age) / min_age)-1))
+        if min_age<=0:
+            score=1
+        else:
+            score = max(0, min(1, (float(age) / min_age)-1))
         # we record our score in our running avg table
         return self.record_cell_avg(uid, type, score)
 

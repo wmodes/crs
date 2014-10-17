@@ -204,6 +204,10 @@
     <control name="bGFiZWwxOA==" x="354" y="-33" w="128" h="25" color="red" type="labelh" text="Q29ubiBQYXJhbXM=" size="14" background="false" outline="false"/>
     <control name="bGFiZWwyMg==" x="474" y="-33" w="128" h="25" color="red" type="labelh" text="Q2VsbCBQYXJhbXM=" size="14" background="false" outline="false"/>
     <control name="bGFiZWwyOQ==" x="593" y="-33" w="128" h="25" color="red" type="labelh" text="U291bmQ=" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMQ==" x="437" y="897" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/save" type="toggle" local_off="true"/>
+    <control name="bGFiZWwx" x="447" y="879" w="25" h="80" color="purple" type="labelv" text="U2F2ZQ==" size="12" background="false" outline="false"/>
+    <control name="dG9nZ2xlMg==" x="378" y="898" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/load" type="toggle" local_off="true"/>
+    <control name="bGFiZWwy" x="388" y="880" w="25" h="80" color="purple" type="labelv" text="TG9hZA==" size="12" background="false" outline="false"/>
   </tabpage>
   <tabpage name="NA==" scalef="0.0" scalet="1.0">
     <control name="cm90YXJ5MTk=" x="144" y="108" w="50" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/cond/grouped/trigger" type="rotaryv" response="absolute" inverted="false" centered="false" norollover="true"/>
@@ -336,35 +340,30 @@
     <control name="bGFiZWwyNw==" x="593" y="-33" w="128" h="25" color="red" type="labelh" text="U291bmQ=" size="14" background="false" outline="false"/>
   </tabpage>
   <tabpage name="Ng==" scalef="0.0" scalet="1.0">
-    <control name="cm90YXJ5Mg==" x="39" y="76" w="151" h="151" color="red" scalef="1.0" scalet="3.99" osc_cs="/soundui/melody" type="rotaryv" response="absolute" inverted="false" centered="false" norollover="true"/>
+    <control name="ZmFkZXIx" x="632" y="584" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/events/grouped" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="cm90YXJ5Mg==" x="71" y="54" w="151" h="151" color="red" scalef="1.0" scalet="3.99" osc_cs="/soundui/melody" type="rotaryv" response="absolute" inverted="false" centered="false" norollover="true"/>
     <control name="bGFiZWw1" x="21" y="-33" w="80" h="25" color="red" type="labelh" text="U2V0dXA=" size="14" background="false" outline="false"/>
     <control name="bGFiZWwxMA==" x="139" y="-33" w="80" h="25" color="red" type="labelh" text="Q29ubmVjdGlvbnM=" size="14" background="false" outline="false"/>
     <control name="bGFiZWwxNQ==" x="263" y="-33" w="80" h="25" color="red" type="labelh" text="TGFzZXI=" size="14" background="false" outline="false"/>
     <control name="bGFiZWwyMA==" x="354" y="-33" w="128" h="25" color="red" type="labelh" text="Q29ubiBQYXJhbXM=" size="14" background="false" outline="false"/>
     <control name="bGFiZWwyNQ==" x="474" y="-33" w="128" h="25" color="red" type="labelh" text="Q2VsbCBQYXJhbXM=" size="14" background="false" outline="false"/>
     <control name="bGFiZWwyNg==" x="593" y="-33" w="128" h="25" color="green" type="labelh" text="U291bmQ=" size="14" background="false" outline="false"/>
-    <control name="bGFiZWwzMg==" x="17" y="139" w="199" h="20" color="purple" osc_cs="/soundui/melody/label" type="labelh" text="TWVsb2R5IE5hbWU=" size="15" background="false" outline="false"/>
+    <control name="bGFiZWwzMg==" x="49" y="117" w="199" h="20" color="purple" osc_cs="/soundui/melody/label" type="labelh" text="TWVsb2R5IE5hbWU=" size="15" background="false" outline="false"/>
     <control name="ZmFkZXIx" x="45" y="582" w="91" h="333" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/volume" type="faderv" response="absolute" inverted="true" centered="false"/>
     <control name="bGFiZWwzMw==" x="56" y="584" w="68" h="333" color="purple" type="labelv" text="TWFzdGVyIFZvbHVtZQ==" size="23" background="false" outline="false"/>
-    <control name="ZmFkZXIy" x="598" y="582" w="50" h="200" color="red" scalef="40.0" scalet="180.0" osc_cs="/soundui/tempo" type="faderv" response="absolute" inverted="true" centered="false"/>
-    <control name="bGFiZWwzNA==" x="609" y="642" w="25" h="80" color="purple" type="labelv" text="VGVtcG8=" size="14" background="false" outline="false"/>
-    <control name="ZmFkZXIz" x="414" y="289" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="/soundui/threshold" type="faderv" response="absolute" inverted="true" centered="false"/>
-    <control name="bGFiZWwzNQ==" x="424" y="350" w="25" h="80" color="purple" type="labelv" text="Tm90ZSBUaHJlc2hvbGQ=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIy" x="260" y="291" w="50" h="200" color="red" scalef="40.0" scalet="180.0" osc_cs="/soundui/tempo" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwzNA==" x="271" y="351" w="25" h="80" color="purple" type="labelv" text="VGVtcG8=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIz" x="152" y="289" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="/soundui/threshold" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwzNQ==" x="162" y="350" w="25" h="80" color="purple" type="labelv" text="Tm90ZSBUaHJlc2hvbGQ=" size="14" background="false" outline="false"/>
     <control name="dG9nZ2xlMQ==" x="676" y="835" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/soundui/record" type="toggle" local_off="false"/>
     <control name="bGFiZWwzNg==" x="674" y="847" w="46" h="20" color="purple" type="labelh" text="UmVjb3Jk" size="11" background="false" outline="false"/>
     <control name="ZmFkZXI0" x="196" y="582" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/ground/volume" type="faderv" response="absolute" inverted="true" centered="false"/>
     <control name="bGFiZWwzNw==" x="207" y="582" w="27" h="198" color="purple" type="labelv" text="T3ZlcmFsbA==" size="14" background="false" outline="false"/>
-    <control name="ZmFkZXI1" x="86" y="289" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/events/fusion" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="ZmFkZXI1" x="86" y="289" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="/soundui/trigger/fusion" type="faderv" response="absolute" inverted="true" centered="false"/>
     <control name="bGFiZWwzOQ==" x="97" y="349" w="25" h="80" color="purple" type="labelv" text="RnVzaW9u" size="14" background="false" outline="false"/>
-    <control name="ZmFkZXI2" x="151" y="289" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/events/touch" type="faderv" response="absolute" inverted="true" centered="false"/>
-    <control name="bGFiZWw0MA==" x="162" y="349" w="25" h="80" color="purple" type="labelv" text="VG91Y2g=" size="14" background="false" outline="false"/>
-    <control name="ZmFkZXI3" x="217" y="289" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/events/grouped" type="faderv" response="absolute" inverted="true" centered="false"/>
-    <control name="bGFiZWw0MQ==" x="228" y="349" w="25" h="80" color="purple" type="labelv" text="R3JvdXBlZA==" size="14" background="false" outline="false"/>
-    <control name="ZmFkZXI4" x="282" y="289" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/volume" type="faderv" response="absolute" inverted="true" centered="false"/>
-    <control name="bGFiZWw0Mg==" x="293" y="349" w="25" h="80" color="purple" type="labelv" text="VEJE" size="14" background="false" outline="false"/>
-    <control name="ZmFkZXI5" x="348" y="289" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/volume" type="faderv" response="absolute" inverted="true" centered="false"/>
-    <control name="bGFiZWw0Mw==" x="359" y="349" w="25" h="80" color="purple" type="labelv" text="VEJE" size="14" background="false" outline="false"/>
-    <control name="bGFiZWw0NA==" x="88" y="257" w="311" h="25" color="red" type="labelh" text="VHJpZ2dlciBMZXZlbHM=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI4" x="503" y="585" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/events/fusion" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="ZmFkZXI5" x="569" y="585" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/events/touch" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWw0NA==" x="87" y="255" w="115" h="25" color="red" type="labelh" text="VHJpZ2dlciBMZXZlbHM=" size="14" background="false" outline="false"/>
     <control name="ZmFkZXIxMA==" x="255" y="581" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/ground/voldrums" type="faderv" response="absolute" inverted="true" centered="false"/>
     <control name="bGFiZWw0NQ==" x="266" y="583" w="25" h="196" color="purple" type="labelv" text="RHJ1bXM=" size="14" background="false" outline="false"/>
     <control name="ZmFkZXIxMQ==" x="312" y="581" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/ground/volchords" type="faderv" response="absolute" inverted="true" centered="false"/>
@@ -372,7 +371,31 @@
     <control name="ZmFkZXIxMg==" x="370" y="583" w="50" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/ground/volbass" type="faderv" response="absolute" inverted="true" centered="false"/>
     <control name="bGFiZWw0Nw==" x="381" y="585" w="25" h="196" color="purple" type="labelv" text="QmFzcw==" size="14" background="false" outline="false"/>
     <control name="bGFiZWw0OA==" x="197" y="548" w="224" h="25" color="red" type="labelh" text="R3JvdW5kIFZvbHVtZXM=" size="14" background="false" outline="false"/>
-    <control name="bGFiZWw0OQ==" x="44" y="942" w="80" h="25" color="red" osc_cs="/ui/tempo" type="labelh" text="VGVtcG8=" size="14" background="true" outline="true"/>
-    <control name="bGFiZWw1MA==" x="134" y="942" w="80" h="25" color="red" osc_cs="/ui/beat" type="labelh" text="QmVhdA==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0OQ==" x="232" y="888" w="80" h="25" color="red" osc_cs="/ui/tempo" type="labelh" text="VGVtcG8=" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1MA==" x="322" y="888" w="80" h="25" color="red" osc_cs="/ui/beat" type="labelh" text="QmVhdA==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwx" x="580" y="642" w="25" h="80" color="purple" type="labelv" text="VG91Y2g=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwy" x="515" y="642" w="25" h="80" color="purple" type="labelv" text="RnVzaW9u" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwz" x="646" y="642" w="25" h="80" color="purple" type="labelv" text="R3JvdXBlZA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0" x="510" y="549" w="166" h="25" color="red" type="labelh" text="RXZlbnQgVm9sdW1lcw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1" x="222" y="258" w="115" h="25" color="red" type="labelh" text="VGVtcG8=" size="14" background="false" outline="false"/>
+    <control name="bGVkMQ==" x="436" y="72" w="20" h="20" color="red" scalef="0.0" scalet="1.0" type="led"/>
+    <control name="bXVsdGlmYWRlcjE=" x="367" y="289" w="386" h="200" color="red" scalef="0.0" scalet="157.0" osc_cs="/soundui/channel/volume" type="multifaderv" inverted="false" centered="false" number="16"/>
+    <control name="bGFiZWw2" x="365" y="230" w="388" h="25" color="red" type="labelh" text="Q2hhbm5lbHM=" size="14" background="false" outline="false"/>
+    <control name="bGVkMg==" x="371" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/1" type="led"/>
+    <control name="bGVkMw==" x="394" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/2" type="led"/>
+    <control name="bGVkNA==" x="418" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/3" type="led"/>
+    <control name="bGVkNQ==" x="442" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/4" type="led"/>
+    <control name="bGVkNg==" x="466" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/5" type="led"/>
+    <control name="bGVkNw==" x="490" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/6" type="led"/>
+    <control name="bGVkOA==" x="513" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/7" type="led"/>
+    <control name="bGVkOQ==" x="537" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/8" type="led"/>
+    <control name="bGVkMTA=" x="561" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/9" type="led"/>
+    <control name="bGVkMTE=" x="585" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/10" type="led"/>
+    <control name="bGVkMTI=" x="609" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/11" type="led"/>
+    <control name="bGVkMTM=" x="632" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/12" type="led"/>
+    <control name="bGVkMTQ=" x="656" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/13" type="led"/>
+    <control name="bGVkMTU=" x="680" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/14" type="led"/>
+    <control name="bGVkMTY=" x="704" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/15" type="led"/>
+    <control name="bGVkMTc=" x="728" y="266" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/soundui/activity/16" type="led"/>
   </tabpage>
 </layout>

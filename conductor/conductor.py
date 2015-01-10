@@ -325,6 +325,9 @@ class Conductor(object):
                     avg_trigger = CONX_AVG[DEFAULT]
 
                 # if value of attr is greater than zero
+                #   (the min here is to handle the edge case where the trigger
+                #    is lower than the CONX_MIN = .01 which causes it to
+                #    flutter)
                 if attr.m_value >= min(CONX_MIN,avg_trigger):
                     # if decay time of type is not zero (no decay)
                     if max_age:

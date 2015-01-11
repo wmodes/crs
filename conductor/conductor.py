@@ -238,7 +238,7 @@ class Conductor(object):
                 if attr.m_value < avg_trigger and since_update>max_age:
                     if dbug.LEV & dbug.COND: 
                         print "    Expired:%s-%s, value=%.2f,since_update=%.2f"%(cid,type,attr.m_value,since_update)
-                    attr.set_freshness(0.0);
+                    attr.set_freshness(0.0)
                     # send "del conx" osc msg
                     self.m_field.m_osc.nix_conx_attr(cid, type)
                     # delete attr and maybe conx
@@ -362,7 +362,7 @@ class Conductor(object):
                 if attr.m_value < avg_trigger and since_update>max_age:
                     if dbug.LEV & dbug.COND: 
                         print "    Expired:%s-%s, value=%.2f, minimum=%.2f, since_update=%.2f"%(uid,type,attr.m_value,min(CELL_MIN,avg_trigger),since_update)
-                    attr.set_freshness(0.0);
+                    attr.set_freshness(0.0)
                     # send "del cell" osc msg
                     self.m_field.m_osc.nix_cell_attr(uid, type)
                     # delete attr and maybe cell
@@ -579,7 +579,7 @@ class Conductor(object):
         if dist<max_dist:
             score=1.0
         else:
-            score=0.0;
+            score=0.0
 
         # we record our score in our running avg table to make it into a fraction of time that these 2 people were within max_dist of each other
         return self.record_conx_avg(cid, type, score)
@@ -917,7 +917,7 @@ class Conductor(object):
         if spd<max_vel:
             score=1.0
         else:
-            score=0.0;
+            score=0.0
     	avg=self.record_cell_avg(uid, type, score)
         if dbug.LEV & dbug.COND & dbug.MORE: 
             print "test_cell_static: uid=%s, spd=%.2f, max_vel=%.2f, score=%.2f,avg=%.2f"%(uid,spd,max_vel,score,avg)

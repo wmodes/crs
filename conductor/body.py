@@ -60,12 +60,12 @@ class Body(object):
 
     """
 
-    def __init__(self, field, id, x=None, y=None, ex=None, ey=None,
+    def __init__(self, field, b_id, x=None, y=None, ex=None, ey=None,
                  spd=None, espd=None, facing=None, efacing=None,
                  diam=None, sigmadiam=None, sep=None, sigmasep=None,
                  leftness=None, vis=None):
         self.m_field=field
-        self.m_id = id
+        self.m_id = b_id
         self.m_x = x
         self.m_y = y
         self.m_ex = ex

@@ -44,14 +44,14 @@ class Attr(object):
         m_freshness: Freshness of connection - fraction of max_age since last triggerred
     """
 
-    def __init__(self, type, id, value=None):
-        self.m_type = type
-        self.m_id = id
+    def __init__(self, a_type, a_id, value=None):
+        self.m_type = a_type
+        self.m_id = a_id
         self.m_origvalue = value
         self.m_createtime = time()
         self.m_value = value
         self.m_updatetime = time()
-        self.m_freshness = 1.0;
+        self.m_freshness = 1.0
         
     def update(self, value=None, aboveTrigger=False):
         if value is not None:
@@ -61,4 +61,4 @@ class Attr(object):
             self.m_freshness=1.0
 
     def set_freshness(self, value):
-        self.m_freshness=value;
+        self.m_freshness=value

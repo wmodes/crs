@@ -21,10 +21,10 @@ __license__ = "GNU GPL 3.0 or later"
 # installed modules
 
 # local modules
-from shared import config
+import config
 
 # local classes
-from shared import debug
+import debug
 
 # constants
 LOGFILE = config.logfile

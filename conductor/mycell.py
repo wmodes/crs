@@ -22,12 +22,12 @@ from time import time
 # installed modules
 
 # local modules
-from shared import config
+import config
 
 # local classes
 from journal import Journal
-from shared import debug
-from shared.cell import Cell
+import debug
+from cell import Cell
 
 # constants
 LOGFILE = config.logfile

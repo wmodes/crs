@@ -24,9 +24,9 @@ from OSC import OSCServer, OSCClient, OSCMessage
 from time import time
 
 # local modules
-from shared.oschandler import OSCHandler
-from shared import config
-from shared import debug
+from oschandler import OSCHandler
+import config
+import debug
 
 # local Classes
 

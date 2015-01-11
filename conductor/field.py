@@ -21,15 +21,15 @@ __license__ = "GNU GPL 3.0 or later"
 # installed modules
 
 # local modules
-from shared import config
-from shared import debug
+import config
+import debug
 from time import time
 
 # local classes
-from shared.cell import Cell
-from shared.connector import Connector
-from shared.group import Group
-from shared.event import Event
+from cell import Cell
+from connector import Connector
+from group import Group
+from event import Event
 
 # constants
 LOGFILE = config.logfile

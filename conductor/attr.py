@@ -24,7 +24,7 @@ from time import time
 # local modules
 
 # local classes
-from shared import debug
+import debug
 
 # constants
 

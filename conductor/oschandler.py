@@ -25,8 +25,8 @@ from OSC import OSCServer, OSCClient, OSCMessage
 #import pyglet
 
 # local modules
-from shared import config
-from shared import debug
+import config
+import debug
 
 # local Classes
 

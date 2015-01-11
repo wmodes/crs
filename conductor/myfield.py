@@ -21,11 +21,11 @@ __license__ = "GNU GPL 3.0 or later"
 # installed modules
 
 # local modules
-from shared import config
-from shared import debug
+import config
+import debug
 
 # local classes
-from shared.field import Field
+from field import Field
 from mycell import MyCell
 from myconnector import MyConnector
 

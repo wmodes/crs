@@ -23,13 +23,13 @@ from time import time
 # installed modules
 
 # local modules
-from shared import config
+import config
 
 # local classes
-from shared.attr import Attr
-from shared.body import Body
-from shared.leg import Leg
-from shared import debug
+from attr import Attr
+from body import Body
+from leg import Leg
+import debug
 
 # constants
 LOGFILE = config.logfile

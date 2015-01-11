@@ -2,8 +2,8 @@
 
 
 import main
-from conductor import Conductor
-from shared import config
+import Conductor
+import config
 import itertools
 import re
 

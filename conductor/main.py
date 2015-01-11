@@ -28,14 +28,14 @@ from time import time,sleep
 
 # installed modules
 # noinspection PyUnresolvedReferences
-sys.path.append('..')     # Add path to find shared and OSC
+sys.path.append('..')     # Add path to find OSC
 from OSC import OSCMessage
 
 # local modules
-from shared import config
+import config
 
 # local classes
-from shared import debug
+import debug
 from myfield import MyField
 from myoschandler import MyOSCHandler
 from conductor import Conductor

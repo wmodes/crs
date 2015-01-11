@@ -26,8 +26,8 @@ from cmath import phase,pi
 # installed modules
 
 # local modules
-from shared import config
-from shared import debug
+import config
+import debug
 
 # local classes
 

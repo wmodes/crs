@@ -218,47 +218,13 @@ class Conductor(object):
                         avg_trigger = CONX_AVG[type]
                     else:
                         avg_trigger = CONX_AVG[DEFAULT]
-                    if dbug.LEV & dbug.COND & dbug.MORE: 
-                        #if running_avg and avg_trigger:
-                        if running_avg >= min(avg_trigger,CONX_MIN):
-                            print "Conduct:update_conx:post_test:id:", \
-                                    "%s-%s %.2f"%(cid,type,running_avg), \
-                                    "(trigger:%.2f)"%avg_trigger
-                    # if running_avg is above trigger
-                    if running_avg >= avg_trigger:
-                        #if dbug.LEV & dbug.MORE: 
-                            #print "Conduct:update_conx:results:%s-%s,%s,%s"% \
-                                    #(cell0.m_id, cell1.m_id, type, running_avg)
-                        # if a connection/attr does not already exist already
-                        if not self.m_field.check_for_conx_attr(uid0, uid1, type):
-                            if dbug.LEV & dbug.COND: 
-                                print "Conduct:update_conx:triggered:id:", \
-                                    "%s-%s avg (%.3f) >="%(cid,type,running_avg), \
-                                    "trigger (%.3f)"%avg_trigger
-                        # create one
-                        self.m_field.update_conx_attr(cid, uid0, uid1, type, running_avg)
-                        #else:
-                            #if dbug.LEV & dbug.MORE: 
-                                #print "Conduct:update_conx:already there, bro"
-                    # if running_avg is under trigger value 
-                    else:
-                        if type in CONX_AGE:
-                            max_age = CONX_AGE[type]
-                        else:
-                            max_age = CONX_AGE[DEFAULT]
-                        #   AND decay time is zero, kill it
-                        if not max_age:
-                            if self.m_field.check_for_conx_attr(uid0, uid1, type):
-                                if dbug.LEV & dbug.COND: 
-                                    print "Conduct:update_conx:delete happening:",cid,type," avg(%.2f) < trigger (%.2f)"%(running_avg, avg_trigger)
-                                # send "del conx" osc msg
-                                self.m_field.m_osc.nix_conx_attr(cid, type)
-                                # delete attr and maybe conx
-                                self.m_field.del_conx_attr(cid, type)
-                                index = str(cid)+'-'+str(type)
-                                # actually we want to keep the avg
-                                #if index in self.m_avg_table:
-                                    #del self.m_avg_table[index]
+
+                    if (dbug.LEV & dbug.COND) and running_avg >= avg_trigger and not self.m_field.check_for_conx_attr(uid0, uid1, type): 
+                        print "Conduct:update_conx:triggered:id: %s-%s avg (%.3f) >= trigger (%.3f)"%(cid,type,running_avg,avg_trigger)
+
+                    if running_avg >= avg_trigger or self.m_field.check_for_conx_attr(uid0, uid1, type):
+                        # create or update connection
+                        self.m_field.update_conx_attr(cid, uid0, uid1, type, running_avg, running_avg>=avg_trigger)
 
     def record_conx_avg(self, id, type, sample):
         """Track Exponentially decaying weighted moving averages (ema) in an 
@@ -323,37 +289,15 @@ class Conductor(object):
                 else:
                     avg_trigger = CONX_AVG[DEFAULT]
 
-                # if value of attr is greater than zero
-                #   (the min here is to handle the edge case where the trigger
-                #    is lower than the CONX_MIN = .01 which causes it to
-                #    flutter)
-                if attr.m_value >= min(CONX_MIN,avg_trigger):
-                    # if decay time of type is not zero (no decay)
-                    if max_age:
-                        # HERE is where we calc the decay 
-                        # calc new value based on time and decay rate
-                        age = time() - attr.m_createtime
-                        since_update = time() - attr.m_updatetime
-                        # The following only works because value and
-                        # age/max_age are on the same scale, that is, they are
-                        # both unit values (0-1.0)
-                        newvalue = attr.m_origvalue*(1 - (since_update/max_age))
-                        # if new value is < 0, we'll set it to 0
-                        if newvalue <= 0:
-                            newvalue = 0
-                        # record the new value
-                        attr.decay_value(newvalue)
-                        if dbug.LEV & dbug.MORE: 
-                            print "    Aging:%s-%s"%(cid,type),\
-                                  "age:%.2f"%age,\
-                                  "max_age:%.2f"%max_age,\
-                                  "since_update:%.2f"%since_update,\
-                                  "orig_value:%.2f"%attr.m_origvalue,\
-                                  "new_value:%.2f"%attr.m_value
-                # the value of attr is zero, ie, it has decayed to nothin
-                else:
+                since_update = time() - attr.m_updatetime
+                if max_age>0:
+                    attr.set_freshness(1 - (since_update/max_age))
+                    
+                # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
+                if attr.m_value < avg_trigger and since_update>max_age:
                     if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f, since_update=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger),time()-attr.m_updatetime)
+                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f, since_update=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger),since_update)
+                    attr.set_freshness(0.0);
                     # send "del conx" osc msg
                     self.m_field.m_osc.nix_conx_attr(cid, type)
                     # delete attr and maybe conx
@@ -392,48 +336,13 @@ class Conductor(object):
                         avg_trigger = CELL_AVG[type]
                     else:
                         avg_trigger = CELL_AVG[DEFAULT]
-                    if dbug.LEV & dbug.COND & dbug.MORE: 
-                        #if running_avg and avg_trigger:
-                        if running_avg >= min(CONX_MIN,avg_trigger):
-                            print "Conduct:update_cell:post_test:id:", \
-                                    "%s-%s %.2f"%(uid,type,running_avg), \
-                                    "(trigger:%.2f)"%avg_trigger
-                    # if running_avg is above trigger
-                    if running_avg >= avg_trigger:
-                        #if dbug.LEV & dbug.MORE: 
-                            #print "Conduct:update_cell:results:%s-%s,%s,%s"% \
-                                    #(cell0.m_id, cell1.m_id, type, running_avg)
-                        # if a connection/attr does not already exist already
-                        if not self.m_field.check_for_cell_attr(uid, type):
-                            if dbug.LEV & dbug.COND: 
-                                print "Conduct:update_cell:triggered:id:", \
-                                    "%s-%s avg(%.2f) > "%(uid,type,running_avg), \
-                                    "trigger(%.2f)"%avg_trigger
-                        # update or create one
-                        self.m_field.update_cell_attr(uid, type, running_avg)
-                        #else:
-                            #if dbug.LEV & dbug.MORE: 
-                                #print "Conduct:update_cell:already there, bro"
-                    # if running_avg is under trigger value 
-                    else:
-                        if type in CELL_AGE:
-                            max_age = CELL_AGE[type]
-                        else:
-                            max_age = CELL_AGE[DEFAULT]
-                        #   AND decay time is zero, kill it
-                        if not max_age:
-                            #TODO: is uid avail here? XXX
-                            if self.m_field.check_for_cell_attr(uid, type):
-                                # send "del cell" osc msg
-                                self.m_field.m_osc.nix_cell_attr(uid, type)
-                                # delete attr and maybe cell
-                                self.m_field.del_cell_attr(uid, type)
-                                index = str(uid)+'-'+str(type)
-                                # actually we want to keep the avg
-                                #if index in self.m_avg_table:
-                                    #del self.m_avg_table[index]
-                                if dbug.LEV & dbug.COND: 
-                                    print "Conduct:update_cell:delete happening:",uid,type
+
+                    if (dbug.LEV & dbug.COND) and running_avg >= avg_trigger and not self.m_field.check_for_cell_attr(uid, type): 
+                        print "Conduct:update_cell:triggered:id: %s-%s avg(%.2f) > trigger (%.2f)"%(uid,type,running_avg,avg_trigger)
+
+                    if running_avg >= avg_trigger or self.m_field.check_for_cell_attr(uid, type): 
+                        # update or create
+                        self.m_field.update_cell_attr(uid, type, running_avg, running_avg>=avg_trigger)
 
     def record_cell_avg(self, id, type, sample):
         """Track Exponentially decaying weighted moving averages (ema) in an 
@@ -497,33 +406,16 @@ class Conductor(object):
                     avg_trigger = CELL_AVG[type]
                 else:
                     avg_trigger = CELL_AVG[DEFAULT]
-                # if value of attr is greater than zero
-                if attr.m_value >= min(CELL_MIN,avg_trigger):
-                    # if decay time of type is not zero (no decay)
-                    if max_age:
-                        # HERE is where we calc the decay
-                        # calc new value based on time and decay rate
-                        age = time() - attr.m_createtime
-                        since_update = time() - attr.m_updatetime
-                        # the following only works because value and 
-                        # age/max_age are both unit values (0-1.0)
-                        newvalue = attr.m_origvalue*(1 - (since_update/max_age))
-                        # if new value is < 0, we'll set it to 0
-                        if newvalue <= 0:
-                            newvalue = 0
-                        # record the new value
-                        attr.decay_value(newvalue)
-                        if dbug.LEV & dbug.MORE: 
-                            print "    Aging:%s-%s"%(uid,type),\
-                                  "age:%.2f"%age,\
-                                  "max_age:%.2f"%max_age,\
-                                  "since_update:%.2f"%since_update,\
-                                  "orig_value:%.2f"%attr.m_origvalue,\
-                                  "new_value:%.2f"%attr.m_value
-                # the value of attr is zero, ie, it has decayed to nothin
-                else:
+
+                since_update = time() - attr.m_updatetime
+                if max_age>0:
+                    attr.set_freshness(1-(since_update/max_age))
+
+                # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
+                if attr.m_value < avg_trigger and since_update>max_age:
                     if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f, minimum=%.2f"%(uid,type,attr.m_value,min(CELL_MIN,avg_trigger))
+                        print "    Expired:%s-%s, value=%.2f, minimum=%.2f, since_update=%.2f"%(uid,type,attr.m_value,min(CELL_MIN,avg_trigger),since_update)
+                    attr.set_freshness(0.0);
                     # send "del cell" osc msg
                     self.m_field.m_osc.nix_cell_attr(uid, type)
                     # delete attr and maybe cell

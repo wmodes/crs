@@ -41,24 +41,24 @@ class Attr(object):
         m_origvalue: A value associated with the attr
         m_value: A value associated with the attr
         m_timestamp: UTC unix time the event was created
-
+        m_freshness: Freshness of connection - fraction of max_age since last triggerred
     """
 
     def __init__(self, type, id, value=None):
         self.m_type = type
         self.m_id = id
         self.m_origvalue = value
-        self.m_value = value
         self.m_createtime = time()
+        self.m_value = value
         self.m_updatetime = time()
+        self.m_freshness = 1.0;
         
     def update(self, value=None, aboveTrigger=False):
         if value is not None:
             self.m_value = value
         if aboveTrigger:
             self.m_updatetime = time()
+            self.m_freshness=1.0
 
-    def decay_value(self, value=None):
-        """Essentially update without updating the tiemstamp."""
-        if value is not None:
-            self.m_value = value
+    def set_freshness(self, value):
+        self.m_freshness=value;

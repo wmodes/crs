@@ -200,6 +200,53 @@ class Conductor(object):
 
         if dbug.LEV & dbug.MORE: 
             print "Conduct:update_all_conx"
+
+        """Age and expire connectors.
+        Note that we should do this before we discover and create new
+        connections. That way they are not prematurly aged.
+
+        iterate over every connector
+            iterate over ever attr
+                if decay time of type is not zero (no decay)
+                    if value of attr is zero or less
+                        delete atrr and maybe conx
+                    else
+                        record the new value
+        """
+        # Make a copy so we don't run into problems when deleting connections
+        new_conx_dict = copy(self.m_field.m_conx_dict)
+        if len(new_conx_dict) and (dbug.LEV & dbug.COND & dbug.MORE):
+            print "Conduct:age_and_expire_conx"
+        # iterate over every connector
+        for cid,connector in new_conx_dict.iteritems():
+            new_attr_dict = copy(connector.m_attr_dict)
+            # iterate over ever attr
+            for type,attr in new_attr_dict.iteritems():
+                if type in CONX_AGE:
+                    max_age = CONX_AGE[type]
+                else:
+                    max_age = CONX_AGE[DEFAULT]
+                if type in CONX_AVG:
+                    avg_trigger = CONX_AVG[type]
+                else:
+                    avg_trigger = CONX_AVG[DEFAULT]
+
+                since_update = time() - attr.m_updatetime
+                if max_age>0:
+                    attr.set_freshness(1 - (since_update/max_age))
+                    
+                # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
+                if attr.m_value < avg_trigger and since_update>max_age:
+                    if dbug.LEV & dbug.COND: 
+                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f, since_update=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger),since_update)
+                    attr.set_freshness(0.0);
+                    # send "del conx" osc msg
+                    self.m_field.m_osc.nix_conx_attr(cid, type)
+                    # delete attr and maybe conx
+                    self.m_field.del_conx_attr(cid, type)
+                    index = str(cid)+'-'+str(type)
+
+        # Now add new connections
         for (cell0,cell1) in list(combinations(self.m_field.m_cell_dict.values(), 2)):
             uid0 = cell0.m_id
             uid1 = cell1.m_id
@@ -253,56 +300,7 @@ class Conductor(object):
         self.m_avg_table[index] = 0
         return 0
 
-    def age_expire_conx(self):
-        """Age and expire connectors.
-        
-        Note that we should do this before we discover and create new
-        connections. That way they are not prematurly aged.
-
-        iterate over every connector
-            iterate over ever attr
-                if decay time of type is not zero (no decay)
-                    if value of attr is zero or less
-                        delete atrr and maybe conx
-                    else
-                        record the new value
-
-        """
-        new_conx_dict = copy(self.m_field.m_conx_dict)
-        if len(new_conx_dict) and (dbug.LEV & dbug.COND & dbug.MORE):
-            print "Conduct:age_and_expire_conx"
-        # iterate over every connector
-        for cid,connector in new_conx_dict.iteritems():
-            new_attr_dict = copy(connector.m_attr_dict)
-            # iterate over ever attr
-            for type,attr in new_attr_dict.iteritems():
-                if type in CONX_AGE:
-                    max_age = CONX_AGE[type]
-                else:
-                    max_age = CONX_AGE[DEFAULT]
-                if type in CONX_AVG:
-                    avg_trigger = CONX_AVG[type]
-                else:
-                    avg_trigger = CONX_AVG[DEFAULT]
-
-                since_update = time() - attr.m_updatetime
-                if max_age>0:
-                    attr.set_freshness(1 - (since_update/max_age))
-                    
-                # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
-                if attr.m_value < avg_trigger and since_update>max_age:
-                    if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f,minimum=%.2f, since_update=%.2f"%(cid,type,attr.m_value,min(CONX_MIN,avg_trigger),since_update)
-                    attr.set_freshness(0.0);
-                    # send "del conx" osc msg
-                    self.m_field.m_osc.nix_conx_attr(cid, type)
-                    # delete attr and maybe conx
-                    self.m_field.del_conx_attr(cid, type)
-                    index = str(cid)+'-'+str(type)
-                    # actually we want to keep the avg
-                    #if index in self.m_avg_table:
-                        #del self.m_avg_table[index]
-
+    
 
     #
     # Cell housekeeping
@@ -324,6 +322,58 @@ class Conductor(object):
 
         if dbug.LEV & dbug.MORE: 
             print "Conduct:update_all_cells"
+
+        """Age and expire connectors.
+        Note that we should do this before we discover and create new
+        connections. That way they are not prematurly aged.
+
+        iterate over every connector
+            iterate over ever attr
+                if decay time of type is not zero (no decay)
+                    if value of attr is zero or less
+                        delete atrr and maybe cell
+                    else
+                        calculate new value based on time and decay rate
+                        if new value is < 0
+                            we'll set it to 0
+                        record the new value
+        """
+        new_cell_dict = copy(self.m_field.m_cell_dict)
+        if len(new_cell_dict) and (dbug.LEV & dbug.COND & dbug.MORE):
+            print "Conduct:age_and_expire_cell"
+        # iterate over every connector
+        for uid,connector in new_cell_dict.iteritems():
+            new_attr_dict = copy(connector.m_attr_dict)
+            # iterate over ever attr
+            for type,attr in new_attr_dict.iteritems():
+                if type in CELL_AGE:
+                    max_age = CELL_AGE[type]
+                else:
+                    max_age = CELL_AGE[DEFAULT]
+                if type in CELL_AVG:
+                    avg_trigger = CELL_AVG[type]
+                else:
+                    avg_trigger = CELL_AVG[DEFAULT]
+
+                since_update = time() - attr.m_updatetime
+                if max_age>0:
+                    attr.set_freshness(1-(since_update/max_age))
+
+                # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
+                if attr.m_value < avg_trigger and since_update>max_age:
+                    if dbug.LEV & dbug.COND: 
+                        print "    Expired:%s-%s, value=%.2f, minimum=%.2f, since_update=%.2f"%(uid,type,attr.m_value,min(CELL_MIN,avg_trigger),since_update)
+                    attr.set_freshness(0.0);
+                    # send "del cell" osc msg
+                    self.m_field.m_osc.nix_cell_attr(uid, type)
+                    # delete attr and maybe cell
+                    self.m_field.del_cell_attr(uid, type)
+                    # actually we want to keep the avg
+                    #if index in self.m_avg_table:
+                        #del self.m_avg_table[index]
+
+
+        # Now add new attributes, update existing ones
         for uid,cell in self.m_field.m_cell_dict.iteritems():
             if self.m_field.is_cell_good_to_go(uid):
                 for type, cell_test in self.cell_tests.iteritems():
@@ -368,58 +418,6 @@ class Conductor(object):
             return self.m_avg_table[index]
         self.m_avg_table[index] = 0
         return 0
-
-    def age_expire_cells(self):
-        """Age and expire connectors.
-        
-        Note that we should do this before we discover and create new
-        connections. That way they are not prematurly aged.
-
-        iterate over every connector
-            iterate over ever attr
-                if decay time of type is not zero (no decay)
-                    if value of attr is zero or less
-                        delete atrr and maybe cell
-                    else
-                        calculate new value based on time and decay rate
-                        if new value is < 0
-                            we'll set it to 0
-                        record the new value
-
-        """
-        new_cell_dict = copy(self.m_field.m_cell_dict)
-        if len(new_cell_dict) and (dbug.LEV & dbug.COND & dbug.MORE):
-            print "Conduct:age_and_expire_cell"
-        # iterate over every connector
-        for uid,connector in new_cell_dict.iteritems():
-            new_attr_dict = copy(connector.m_attr_dict)
-            # iterate over ever attr
-            for type,attr in new_attr_dict.iteritems():
-                if type in CELL_AGE:
-                    max_age = CELL_AGE[type]
-                else:
-                    max_age = CELL_AGE[DEFAULT]
-                if type in CELL_AVG:
-                    avg_trigger = CELL_AVG[type]
-                else:
-                    avg_trigger = CELL_AVG[DEFAULT]
-
-                since_update = time() - attr.m_updatetime
-                if max_age>0:
-                    attr.set_freshness(1-(since_update/max_age))
-
-                # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
-                if attr.m_value < avg_trigger and since_update>max_age:
-                    if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f, minimum=%.2f, since_update=%.2f"%(uid,type,attr.m_value,min(CELL_MIN,avg_trigger),since_update)
-                    attr.set_freshness(0.0);
-                    # send "del cell" osc msg
-                    self.m_field.m_osc.nix_cell_attr(uid, type)
-                    # delete attr and maybe cell
-                    self.m_field.del_cell_attr(uid, type)
-                    # actually we want to keep the avg
-                    #if index in self.m_avg_table:
-                        #del self.m_avg_table[index]
 
     # Gather or calculate whether conditions are met for connection
 

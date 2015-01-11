@@ -261,28 +261,12 @@ class OSCHandler(object):
         if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:",path,args,source
         if path == OSCPATH['track_minx']:
             self.m_xmin = args[0]
-            if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:set_scaling(",\
-                    (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-            # we might not have everything yet, but we udate with what we have
-            self.m_field.set_scaling(pmin_field=(self.m_xmin,self.m_field.m_ymin_field))
         elif path == OSCPATH['track_miny']:
             self.m_ymin = args[0]
-            if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:set_scaling(",\
-                    (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-            # we might not have everything yet, but we udate with what we have
-            self.m_field.set_scaling(pmin_field=(self.m_field.m_xmin_field,self.m_ymin))
         elif path == OSCPATH['track_maxx']:
             self.m_xmax = args[0]
-            if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:set_scaling(",\
-                    (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-            # we might not have everything yet, but we udate with what we have
-            self.m_field.set_scaling(pmax_field=(self.m_xmax,self.m_field.m_ymax_field))
         elif path == OSCPATH['track_maxy']:
             self.m_ymax = args[0]
-            if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:set_scaling(",\
-                    (self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-            # we might not have everything yet, but we udate with what we have
-            self.m_field.set_scaling(pmax_field=(self.m_field.m_xmax_field,self.m_ymax))
         elif path == OSCPATH['track_npeople']:
             self.m_field.check_people_count(args[0])
             return
@@ -295,10 +279,6 @@ class OSCHandler(object):
         elif path == OSCPATH['track_fps']:
             self.m_field.update(oscfps=args[0])
             return
-        #if self.m_xmin and self.m_ymin and self.m_xmax and self.m_ymax:
-            #print "set_scaling(",(self.m_xmin,self.m_ymin),",",(self.m_xmax,self.m_ymax),")"
-            #self.m_field.set_scaling((self.m_xmin,self.m_ymin),(self.m_xmax,self.m_ymax))
-            #self.m_field.updateScreen()
             
 
     def event_tracking_entry(self, path, tags, args, source):

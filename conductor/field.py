@@ -36,11 +36,6 @@ REPORT_FREQ = config.report_frequency
 GROUP_DIST = config.group_distance
 UNGROUP_DIST = config.ungroup_distance
 OSC_FPS = config.framerate
-XMIN_FIELD = config.xmin_field
-YMIN_FIELD = config.ymin_field
-XMAX_FIELD = config.xmax_field
-YMAX_FIELD = config.ymax_field
-
 MAX_LOST_PATIENCE = config.max_lost_patience
 
 # init debugging
@@ -84,11 +79,6 @@ class Field(object):
         # a dict of missing groups, indexed by gid
         self.m_suspect_groups = {}
         #self.allpaths = []
-        self.set_scaling((XMIN_FIELD,YMIN_FIELD),(XMAX_FIELD,YMAX_FIELD))
-        self.m_xmin_field = XMIN_FIELD
-        self.m_ymin_field = YMIN_FIELD
-        self.m_xmax_field = XMAX_FIELD
-        self.m_ymax_field = YMAX_FIELD
         self.m_giddist = GROUP_DIST
         self.m_ungroupdist = UNGROUP_DIST
         self.m_oscfps = OSC_FPS
@@ -116,28 +106,6 @@ class Field(object):
         self.m_scene = scene
         self.m_scene_variant = variant
         self.m_scene_value = value
-
-    # Scaling
-    def set_scaling(self,pmin_field=None,pmax_field=None):
-        """Set up scaling in the field.
-
-        A word about graphics scaling:
-         * The vision tracking system (our input data) measures in meters.
-
-         So we will keep eveything internally in centemeters (so we can use ints
-         instead of floats), and then convert it to the approriate units before 
-         ...but we will probably be changing this to meter floats
-
-         """
-
-        if pmin_field is not None:
-            self.m_xmin_field = pmin_field[0]
-            self.m_ymin_field = pmin_field[1]
-        if pmax_field is not None:
-            self.m_xmax_field = pmax_field[0]
-            self.m_ymax_field = pmax_field[1]
-        if dbug.LEV & dbug.MORE: print "Field dims:", (self.m_xmin_field,
-                self.m_ymin_field), (self.m_xmax_field, self.m_ymax_field)
 
     # Events
     #    /conductor/event [eid,"type",uid0,uid1,value,time]

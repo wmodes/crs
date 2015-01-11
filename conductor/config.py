@@ -237,66 +237,8 @@ connector_latitude = {
 }
 
 
-# visual configuration
-#
-graphic_modes = 3   # 1=screen; 2=osc; 3=etherdream
-#graphic_modes = 1 | 2   # 1=screen; 2=osc; 3=etherdream
-#draw_bodies = True
-draw_bodies = False
-
-# Line mode, one of 
-#   'direct', 'curve', 'simple', 'improved-simple', 'pathfinding', 'improved_pathfinding'
-linemode = 'curves'
-
-inverse=True
-if inverse:
-    default_bkgdcolor = (0, 0, 0, 1)    # black
-    default_guidecolor = (1,1,1)  # white
-    default_linecolor = (0,1,0)     # white
-    default_groupcolor = (0,0,0)     # differt
-    default_bodycolor = (.2,.2,.2)  # dk gray
-else:
-    default_bkgdcolor = (1, 1, 1, 1)    # white
-    default_guidecolor = (.1,.1,.1)  # dark dark gray
-    default_linecolor = (0,0,0)     # black
-    default_bodycolor = (.1,.1,.1)  # gray
-
-curve_segments = 12     # number of line segs in a curve
-fuzzy_area_for_cells = 1
-
-#minimum_connection_distance = 12000   # this is cm sq
-
-xmin_field = -16  # (m)
-ymin_field = 0  # (m)
-xmax_field = 16   # (m)
-ymax_field = 16  # (m)
-
-# etherdream
-#xmin_vector = -32768 #
-#ymin_vector = -32768
-#xmax_vector = 32768
-#ymax_vector = 32768
-# Brent's graphic system
-xmin_vector = -32768
-ymin_vector = -32768
-xmax_vector = 32768
-ymax_vector = 32768
-xmin_screen = 0
-ymin_screen = 0
-xmax_screen = 640
-ymax_screen = 480
-#xmax_screen = 1440
-#ymax_screen = 795
-
-default_margin=.03
-
-#path_unit = 20   # 20cm = about 8in
-#path_unit = 40   # 20cm = about 8in
-path_unit = .2    # 0.2m = 20 cm
-
 # Internal config
 #
-
 logfile="crs-visual.log"
 
 report_frequency = {
@@ -390,5 +332,4 @@ oscpath = {
     'ui_condglobal': "/ui/condglobal",  # global sensitivity for conx attr
     'ui_cellglobal': "/ui/cellglobal",  # global sensitivity for cell attr
     'ui_condparam': "/ui/cond/",
-
 }

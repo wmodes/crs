@@ -265,12 +265,12 @@ class Field(object):
                 return True
         return False
 
-    def update_cell_attr(self, uid, type, value):
+    def update_cell_attr(self, uid, type, value, aboveTrigger=False):
         """Update an attribute to a cell, creating it if it doesn't exist."""
         self.check_for_missing_cell(uid)
         if dbug.LEV & dbug.MORE: 
-            print "Field:update_cell_attr:",uid, type, value
-        self.m_cell_dict[uid].update_attr(type, value)
+            print "Field:update_cell_attr:",uid, type, value,aboveTrigger
+        self.m_cell_dict[uid].update_attr(type, value,aboveTrigger)
 
     def del_cell_attr(self, uid, type):
         """Delete an attribute to a cell."""
@@ -413,7 +413,7 @@ class Field(object):
             return False
         return True
 
-    def update_conx_attr(self, cid, uid0, uid1, type, value):
+    def update_conx_attr(self, cid, uid0, uid1, type, value, aboveTrigger=False):
         """Update an attribute to a connector, creating it if it doesn't exist."""
         self.check_for_missing_cell(uid0)
         self.check_for_missing_cell(uid1)
@@ -421,7 +421,7 @@ class Field(object):
         connector = self.m_conx_dict[cid]
         if dbug.LEV & dbug.MORE: 
             print "Field:update_conx_attr:",connector.m_id,type,value
-        connector.update_attr(type, value)
+        connector.update_attr(type, value, aboveTrigger)
 
     def del_conx_attr(self, cid, type):
         """Delete an attribute to a connector, removing the connector if the

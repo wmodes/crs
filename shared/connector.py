@@ -92,11 +92,12 @@ class Connector(object):
         if frame is not None:
             self.m_frame = frame
 
-    def update_attr(self, type, value):
+    def update_attr(self, type, value, aboveTrigger=False):
         """Update attr, create it if needed."""
         if type in self.m_attr_dict:
-            self.m_attr_dict[type].update(value)
+            self.m_attr_dict[type].update(value,aboveTrigger)
         else:
+            assert(aboveTrigger)   # Must be above trigger if this is the first time it is being updated
             self.m_attr_dict[type] = Attr(type, self.m_id, value)
 
     def check_for_attr(self, type):

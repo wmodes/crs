@@ -51,11 +51,12 @@ class Attr(object):
         self.m_value = value
         self.m_createtime = time()
         self.m_updatetime = time()
-
-    def update(self, value=None):
+        
+    def update(self, value=None, aboveTrigger=False):
         if value is not None:
             self.m_value = value
-        self.m_updatetime = time()
+        if aboveTrigger:
+            self.m_updatetime = time()
 
     def decay_value(self, value=None):
         """Essentially update without updating the tiemstamp."""

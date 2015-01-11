@@ -167,11 +167,12 @@ class Cell(object):
     def add_attr(self, type, value):
         self.m_attr_dict[type] = Attr(type, self.m_id, value)
 
-    def update_attr(self, type, value):
+    def update_attr(self, type, value,aboveTrigger=False):
         if type not in self.m_attr_dict:
+            assert(aboveTrigger)	   # Must be above trigger if we are creating it
             self.m_attr_dict[type] = Attr(type, self.m_id, value)
         else:
-            self.m_attr_dict[type].update(value)
+            self.m_attr_dict[type].update(value,aboveTrigger)
 
     def del_attr(self, type):
         if type in self.m_attr_dict:

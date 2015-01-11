@@ -138,7 +138,6 @@ cell_latitude = {
 }
 
 
-connector_avg_min = 0.01    # below this and we consider it zero
 connector_avg_triggers = {
     # what avg value triggers the connection
     # 0 = no avg triggers

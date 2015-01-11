@@ -192,13 +192,10 @@ class Conductor(object):
 
         iterate over all the pair combos in the cell dictionary:
           do each test and save the result
-          if the avg is above the trigger
-              if a connection does not exist already
-                  create a connection
-              else
-                  update the value?
-        anything else? they should be picked up when the conductor does its
-        regular reports
+          if a connection does not exist already and the avg is above the trigger
+            create a connection
+          if a connection exists
+            update the value
         """
 
         if dbug.LEV & dbug.MORE: 
@@ -220,8 +217,10 @@ class Conductor(object):
                         avg_trigger = CONX_AVG[DEFAULT]
 
                     if (dbug.LEV & dbug.COND) and running_avg >= avg_trigger and not self.m_field.check_for_conx_attr(uid0, uid1, type): 
+    					# Debug message for new connections only
                         print "Conduct:update_conx:triggered:id: %s-%s avg (%.3f) >= trigger (%.3f)"%(cid,type,running_avg,avg_trigger)
 
+                    # Update all existing connections, and create new ones if triggered
                     if running_avg >= avg_trigger or self.m_field.check_for_conx_attr(uid0, uid1, type):
                         # create or update connection
                         self.m_field.update_conx_attr(cid, uid0, uid1, type, running_avg, running_avg>=avg_trigger)
@@ -266,9 +265,6 @@ class Conductor(object):
                     if value of attr is zero or less
                         delete atrr and maybe conx
                     else
-                        calculate new value based on time and decay rate
-                        if new value is < 0
-                            we'll set it to 0
                         record the new value
 
         """
@@ -340,6 +336,7 @@ class Conductor(object):
                     if (dbug.LEV & dbug.COND) and running_avg >= avg_trigger and not self.m_field.check_for_cell_attr(uid, type): 
                         print "Conduct:update_cell:triggered:id: %s-%s avg(%.2f) > trigger (%.2f)"%(uid,type,running_avg,avg_trigger)
 
+                    # Update all existing attributes, and create new ones if triggered
                     if running_avg >= avg_trigger or self.m_field.check_for_cell_attr(uid, type): 
                         # update or create
                         self.m_field.update_cell_attr(uid, type, running_avg, running_avg>=avg_trigger)

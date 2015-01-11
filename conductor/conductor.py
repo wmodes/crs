@@ -33,32 +33,24 @@ import debug
 
 # constants
 
-LOGFILE = config.logfile
-
 OSCPATH = config.oscpath
 
 FRAMERATE = config.framerate
 
 DEFAULT = 'default'
-DEFAULT_MIN = 'default-min'
-DEFAULT_MAX = 'default-max'
 
-CELL_MIN = config.cell_avg_min
 CELL_AVG = config.cell_avg_triggers
 CELL_MEM = config.cell_memory_time
 CELL_QUAL = config.cell_qualifying_triggers
 CELL_AGE = config.cell_max_age
-CELL_LAT = config.cell_latitude
 
 CONX_AVG = config.connector_avg_triggers
 CONX_MEM = config.connector_memory_time
 CONX_QUAL = config.connector_qualifying_triggers
 CONX_AGE = config.connector_max_age
-CONX_LAT = config.connector_latitude
 
 # init debugging
 dbug = debug.Debug()
-
 
 class Conductor(object):
     """An object representing the conductor.

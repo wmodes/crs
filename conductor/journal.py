@@ -27,7 +27,6 @@ import config
 import debug
 
 # constants
-LOGFILE = config.logfile
 
 # init debugging
 dbug = debug.Debug()

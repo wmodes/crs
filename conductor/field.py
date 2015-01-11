@@ -32,7 +32,6 @@ from group import Group
 from event import Event
 
 # constants
-LOGFILE = config.logfile
 REPORT_FREQ = config.report_frequency
 GROUP_DIST = config.group_distance
 UNGROUP_DIST = config.ungroup_distance

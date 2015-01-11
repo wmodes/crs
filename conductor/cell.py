@@ -33,7 +33,6 @@ from journal import Journal
 import debug
 
 # constants
-LOGFILE = config.logfile
 
 MAX_LEGS = config.max_legs
 DEF_DIAM = config.default_diam

@@ -28,16 +28,9 @@ from attr import Attr
 import debug
 
 # constants
-LOGFILE = config.logfile
-
-MAX_LEGS = config.max_legs
-DEF_DIAM = config.default_diam
-DIAM_PAD = config.diam_padding     # increased diam of circle around bodies
 
 # init debugging
 dbug = debug.Debug()
-
-
 
 class Connector(object):
 

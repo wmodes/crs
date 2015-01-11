@@ -69,7 +69,6 @@ diam_padding = .25      # 1/4 meter
 group_distance = 100
 ungroup_distance = 150
 
-cell_avg_min = 0.01    # below this and we consider it zero
 cell_avg_triggers = {
     # what avg value triggers the connection
     # You can think of this as how much of the time do you expect them to be
@@ -132,11 +131,6 @@ cell_qualifying_triggers = {
     'timein': 60,   # sec
     'fast':2,
 }
-
-cell_latitude = {
-    # all as percentage variance
-}
-
 
 connector_avg_triggers = {
     # what avg value triggers the connection
@@ -230,12 +224,6 @@ connector_qualifying_triggers = {
     'touch': .33,    # m
     'tag': .33,   # m
 }
-
-connector_latitude = {
-    # all as percentage variance
-    'heading': 10,
-}
-
 
 # Internal config
 #

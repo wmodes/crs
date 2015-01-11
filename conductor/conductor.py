@@ -353,7 +353,7 @@ class Conductor(object):
                 # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
                 if attr.m_value < avg_trigger and since_update>max_age:
                     if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f, minimum=%.2f, since_update=%.2f"%(uid,type,attr.m_value,min(CELL_MIN,avg_trigger),since_update)
+                        print "    Expired:%s-%s, value=%.2f, trigger=%.2f,since_update=%.2f"%(uid,type,attr.m_value,avg_trigger,since_update)
                     attr.set_freshness(0.0)
                     # send "del cell" osc msg
                     self.m_field.m_osc.nix_cell_attr(uid, type)

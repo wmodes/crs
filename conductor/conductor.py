@@ -619,7 +619,7 @@ class Conductor(object):
         Meets the following conditions:
             1. If cells do not share a connections
             2. If cells are not in a group with each other
-            3. If dist of cells are > nearby_min and < nearby_max
+            3. If dist of cells are > nearby-min and < nearby-max
         Returns:
             value: how nearby are they? 1.0 = close
         """
@@ -643,7 +643,7 @@ class Conductor(object):
         max_dist = CONX_QUAL['nearby-max']
         if cell_dist < min_dist or cell_dist > max_dist:
             return 0
-        # nearby_max = 0; nearby_min = 1.0
+        # nearby-max = 0; nearby-min = 1.0
         return 1.0 - ((cell_dist-min_dist) / (max_dist-min_dist))
 
     def test_conx_strangers(self, cid, type, cell0, cell1):
@@ -664,10 +664,10 @@ class Conductor(object):
         # If the gid is not-zero and cell->m_gid the same for each cell
         age0 = time() - cell0.m_createtime 
         age1 = time() - cell1.m_createtime 
-        if not 'conx_strangers_min' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'conx_strangers_min'
+        if not 'strangers-min' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'strangers-min'
             return 0
-        min_age = CONX_QUAL['conx_strangers_min']
+        min_age = CONX_QUAL['strangers-min']
         if age0 < min_age or age1 < min_age:
             score = 0.01
         else:
@@ -780,9 +780,9 @@ class Conductor(object):
 
         Meets the following conditions:
             [1. Is it even possible? check if geo->fromnearest for both cells is 
-                between fusion_min and fusion_max - UNNECESSARY]
+                between fusion-min and fusion-max - UNNECESSARY]
             2. Are they not in a group together already? Are cell's m_gid different?
-            3. Is distance between fusion_min and fusion_max?
+            3. Is distance between fusion-min and fusion-max?
         Returns:
             1.0 - ((cell_dist-min_dist) /
                       (max_dist-min_dist))
@@ -791,13 +791,13 @@ class Conductor(object):
         if cell0.m_gid and cell0.m_gid == cell1.m_gid:
             return 0
         cell_dist = self.dist(cell0, cell1)
-        # Is distance between fusion_min and fusion_max?
-        if not 'fusion_min' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'fusion_min'
+        # Is distance between fusion-min and fusion-max?
+        if not 'fusion-min' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'fusion-min'
             return 0
         min_dist = CONX_QUAL['fusion-min']
-        if not 'fusion_max' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'fusion_max'
+        if not 'fusion-max' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'fusion-max'
             return 0
         max_dist = CONX_QUAL['fusion-max']
         if cell_dist > max_dist or \

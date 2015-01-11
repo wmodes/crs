@@ -478,10 +478,10 @@ class Conductor(object):
         # we normalize this dist where 
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
-        if type in CONX_QUAL:
-            max_dist = CONX_QUAL[type]
-        else:
-            max_dist = CONX_QUAL[DEFAULT_MAX]
+        if not type in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% type
+            return 0
+        max_dist = CONX_QUAL[type]
         score = max(0, 1 - float(dist) / max_dist)
         # we record our score in our running avg table
         return self.record_conx_avg(cid, type, score)
@@ -527,10 +527,10 @@ class Conductor(object):
         # we calculate a score
         # score = 1 if the values are exactly the same
         # score = 0 if the values are very different
-        if 'coord-min' in CONX_QUAL:
-            min_spd = CONX_QUAL['coord-min']
-        else:
-            min_spd = CONX_QUAL[DEFAULT_MIN]
+        if not 'coord-min' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'coord-min'
+            return 0
+        min_spd = CONX_QUAL['coord-min']
         spd0 = sqrt(cell0.m_vx**2+cell0.m_vy**2)
         spd1 = sqrt(cell1.m_vx**2+cell1.m_vy**2)
         if spd0 < min_spd or spd1 < min_spd:
@@ -575,10 +575,10 @@ class Conductor(object):
         # we normalize this dist where 
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
-        if type in CONX_QUAL:
-            max_dist = CONX_QUAL[type]
-        else:
-            max_dist = CONX_QUAL[DEFAULT_MAX]
+        if not type in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% type
+            return 0
+        max_dist = CONX_QUAL[type]
         if dist<max_dist:
             score=1.0
         else:
@@ -633,14 +633,14 @@ class Conductor(object):
             return 0
         # If dist of cells are < nearby_dist
         cell_dist = self.dist(cell0, cell1)
-        if 'nearby-min' in CONX_QUAL:
-            min_dist = CONX_QUAL['nearby-min']
-        else:
-            min_dist = CONX_QUAL[DEFAULT_MIN]
-        if 'nearby-max' in CONX_QUAL:
-            max_dist = CONX_QUAL['nearby-max']
-        else:
-            max_dist = CONX_QUAL[DEFAULT_MAX]
+        if not 'nearby-min' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'nearby-min'
+            return 0
+        min_dist = CONX_QUAL['nearby-min']
+        if not 'nearby-max' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'nearby-max'
+            return 0
+        max_dist = CONX_QUAL['nearby-max']
         if cell_dist < min_dist or cell_dist > max_dist:
             return 0
         # nearby_max = 0; nearby_min = 1.0
@@ -664,10 +664,10 @@ class Conductor(object):
         # If the gid is not-zero and cell->m_gid the same for each cell
         age0 = time() - cell0.m_createtime 
         age1 = time() - cell1.m_createtime 
-        if 'conx_strangers_min' in CONX_QUAL:
-            min_age = CONX_QUAL['conx_strangers_min']
-        else:
-            min_age = CONX_QUAL[DEFAULT_MIN]
+        if not 'conx_strangers_min' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'conx_strangers_min'
+            return 0
+        min_age = CONX_QUAL['conx_strangers_min']
         if age0 < min_age or age1 < min_age:
             score = 0.01
         else:
@@ -720,10 +720,10 @@ class Conductor(object):
             angle0 = cell0.m_body.m_facing%360
             angle1 = cell1.m_body.m_facing%360
             # get min qualifying angle
-            if type in CONX_QUAL:
-                min_angle = CONX_QUAL[type]
-            else:
-                min_angle = CONX_QUAL[DEFAULT]
+            if not type in CONX_QUAL:
+                print "ERROR: No connector_qualifying_triggers set for type '%s'"% type
+                return 0
+            min_angle = CONX_QUAL[type]
             # calculate the angle from cell0 to cell1
             # FIXME: Tracker is sending the "facing away" angle rather than
             # facing -- later when it is fixed, we can remove "+ 180"
@@ -792,14 +792,14 @@ class Conductor(object):
             return 0
         cell_dist = self.dist(cell0, cell1)
         # Is distance between fusion_min and fusion_max?
-        if 'fusion-min' in CONX_QUAL:
-            min_dist = CONX_QUAL['fusion-min']
-        else:
-            min_dist = CONX_QUAL[DEFAULT_MIN]
-        if 'fusion-max' in CONX_QUAL:
-            max_dist = CONX_QUAL['fusion-max']
-        else:
-            max_dist = CONX_QUAL[DEFAULT_MAX]
+        if not 'fusion_min' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'fusion_min'
+            return 0
+        min_dist = CONX_QUAL['fusion-min']
+        if not 'fusion_max' in CONX_QUAL:
+            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'fusion_max'
+            return 0
+        max_dist = CONX_QUAL['fusion-max']
         if cell_dist > max_dist or \
                cell_dist < min_dist:
             return 0
@@ -889,10 +889,10 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         # how close is this person to others?
-        if type in CELL_QUAL:
-            max_dist = CELL_QUAL[type]
-        else:
-            max_dist = CELL_QUAL[DEFAULT]
+        if not type in CELL_QUAL:
+            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            return 0
+        max_dist = CELL_QUAL[type]
         if cell.m_fromnearest<0:
             score=0
         else:
@@ -913,10 +913,10 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if type in CELL_QUAL:
-            max_vel = CELL_QUAL[type]
-        else:
-            max_vel = CELL_QUAL[DEFAULT]
+        if not type in CELL_QUAL:
+            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            return 0
+        max_vel = CELL_QUAL[type]
         if spd<max_vel:
             score=1.0
         else:
@@ -940,10 +940,10 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if type in CELL_QUAL:
-            min_vel = CELL_QUAL[type]
-        else:
-            min_vel = CELL_QUAL[DEFAULT]
+        if not type in CELL_QUAL:
+            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            return 0
+        min_vel = CELL_QUAL[type]
         if spd>min_vel:
             score=1.0
         else:
@@ -967,10 +967,10 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if type in CELL_QUAL:
-            max_vel = CELL_QUAL[type]
-        else:
-            max_vel = CELL_QUAL[DEFAULT]
+        if not type in CELL_QUAL:
+            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            return 0
+        max_vel = CELL_QUAL[type]
         if spd>=max_vel:
             score=1.0
         else:
@@ -991,10 +991,10 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         age = time() - cell.m_createtime 
-        if type in CELL_QUAL:
-            min_age = CELL_QUAL[type]
-        else:
-            min_age = CELL_QUAL[DEFAULT]
+        if not type in CELL_QUAL:
+            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            return 0
+        min_age = CELL_QUAL[type]
         if min_age<=0:
             score=1
         else:

@@ -125,7 +125,6 @@ cell_max_age = {
 
 cell_qualifying_triggers = {
     # in meters unless otherwise specified
-    'default': 2, # totally arbitrary since default dist is meaningless
     # cell values
     'interactive': 3,
     'static': 0.2,  # m/s
@@ -216,8 +215,6 @@ connector_max_age = {
 
 connector_qualifying_triggers = {
     # in meters, unless otherwise specified
-    'default-min': 1, # totally arbitrary since default dist is meaningless
-    'default-max': 3, # totally arbitrary since default dist is meaningless
     # connector values
     'friends': 3,
     'coord-min': 1,   # m/s

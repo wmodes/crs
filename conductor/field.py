@@ -68,8 +68,6 @@ class Field(object):
     
     """
 
-    cellClass = Cell
-    connectorClass = Connector
     groupClass = Group
 
     def __init__(self):
@@ -224,7 +222,7 @@ class Field(object):
         if not id in self.m_cell_dict:
             # note1: we access the cell class indirectly for local subclassing
             # note2: pass self since we want a back reference to field instance
-            cell = self.cellClass(self, id)
+            cell = Cell(self, id)
             # add to the cell list
             self.m_cell_dict[id] = cell
             self.m_our_cell_count += 1
@@ -386,8 +384,7 @@ class Field(object):
             # Note1: Connector class takes care of storing the cells as well as
             #   telling each of the two cells that they now have a connector
             # Note2: we pass self since we want a back reference to field instance
-            connector = self.connectorClass(self, cid, cell0, cell1,
-                                            frame=self.m_frame)
+            connector = Connector(self, cid, cell0, cell1,frame=self.m_frame)
             self.m_conx_dict[cid] = connector
         return connector
 
@@ -592,3 +589,17 @@ class Field(object):
         new_cell_dict = self.m_cell_dict.copy()
         for uid,cell in new_cell_dict.iteritems():
             self.check_for_lost_cell(uid)
+
+    def record_history(self, type, uid0, uid1, value, time):
+        """Record symetrical cell history."""
+        self.m_cell_dict[uid0].record_history(type, uid1, value, time)
+        self.m_cell_dict[uid1].record_history(type, uid0, value, time)
+
+    def get_history(self, uid0, uid1):
+        """What history do these cells have?"""
+        return self.m_cell_dict[uid0].get_history(uid0, uid1)
+
+    def have_history(self, uid0, uid1):
+        """Do these cells have history?"""
+        return self.m_cell_dict[uid0].have_history(uid0, uid1)
+

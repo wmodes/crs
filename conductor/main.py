@@ -36,7 +36,7 @@ import config
 
 # local classes
 import debug
-from myfield import MyField
+from field import Field
 from myoschandler import MyOSCHandler
 from conductor import Conductor
 
@@ -84,7 +84,7 @@ def main():
     CYCLETIME = 1/25.0
 
     # initialize stuff
-    field = MyField()
+    field = Field()
     osc = MyOSCHandler()
     conductor = Conductor()
     field.update(osc=osc)

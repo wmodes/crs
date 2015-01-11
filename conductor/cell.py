@@ -29,6 +29,7 @@ import config
 from attr import Attr
 from body import Body
 from leg import Leg
+from journal import Journal
 import debug
 
 # constants
@@ -112,6 +113,7 @@ class Cell(object):
         self.m_createtime = time()
         self.m_updatetime = time()
         self.m_frame = frame
+        self.m_history = []
 
     def update(self, x=None, y=None, vx=None, vy=None, major=None, 
                     minor=None, gid=None, gsize=None, visible=None,     
@@ -216,4 +218,25 @@ class Cell(object):
             # we may not need this because the connector calls the same thing
             # for it's two cells, including this one
             #self.del_connector(connector)
+
+    def record_history(self, type, uid1, value, time):
+        self.m_history.append(Journal(type, self.m_id, uid1, value, time))
+
+    def get_history(self, uid0, uid1):
+        shared_history = []
+        for entry in self.m_history:
+            if entry.uid1 == uid1:
+                shared_history.append(entry)
+        return shared_history
+
+    def have_history(self, uid0, uid1):
+        for entry in self.m_history:
+            if entry.uid == uid1:
+                return True
+        return False
+
+    def age(self, uid):
+        """Returns the age of a cell in seconds."""
+        return time() - self.m_updatetime
+
 

@@ -554,10 +554,10 @@ class OSCHandler(object):
 
 if __name__ == "__main__":
         
-    from myfieldelements import MyField
+    from field import MyField
 
     # initialize field
-    field = MyField()
+    field = Field()
     #field.init_screen()
 
     #osc = OSCHandler(field)

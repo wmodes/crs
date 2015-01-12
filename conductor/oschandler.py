@@ -19,6 +19,7 @@ __license__ = "GNU GPL 3.0 or later"
 
 # core modules
 import types
+from time import time
 
 # installed modules
 from OSC import OSCServer, OSCClient, OSCMessage
@@ -26,18 +27,15 @@ from OSC import OSCServer, OSCClient, OSCMessage
 
 # local modules
 import config
-import debug
-
-# local Classes
+import logging
 
 # Constants
-
 OSCTIMEOUT = config.osctimeout
 OSCPATH = config.oscpath
 REPORT_FREQ = config.report_frequency
 
-# init debugging
-dbug = debug.Debug()
+# init logging
+logger=logging.getLogger(__name__)
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
@@ -52,14 +50,16 @@ class OSCHandler(object):
     def __init__(self, osc_server, osc_clients, field=None):
         self.m_field = field
         self.m_run = True
-
+        self.m_downClients={}
+        self.m_missingHandlers={}
+        
         try:
             (name, host, port) = osc_server[0]
         except:
-            print "System:Unable to create OSC handler with server=",osc_server
+            logger.fatal("System:Unable to create OSC handler with server="+str(osc_server),exc_info=True)
             sys.exit(1)
         self.m_oscserver = OSCServer( (host, port) )
-        print "System:init server: %s:%s"%(host, port)
+        logger.info( "Initializing server at %s:%s"%(host, port))
         self.m_oscserver.timeout = OSCTIMEOUT
         self.m_oscserver.print_tracebacks = True
 
@@ -70,15 +70,15 @@ class OSCHandler(object):
                 (oldname, oldhost, oldport) = osc_clients[j]
                 if host == oldhost and port == oldport:
                     self.m_osc_clients[name] = self.m_osc_clients[oldname]
-                    print "System:init %s:same as %s"%(name,oldname)
+                    logger.warning( "%s same as %s"%(name,oldname))
                     break
             if not name in self.m_osc_clients:
                 try:
                     self.m_osc_clients[name] = OSCClient()
                 except:
-                    print "System:Unable to create OSC handler with client=",(name,host,port)
+                    logger.error( "Unable to create OSC handler for client %s at %s:%s"%(name,host,port),exc_info=True)
                 self.m_osc_clients[name].connect( (host, port) )
-                print "System:init %s: %s:%s"%(name,host,port)
+                logger.info( "Connecting to %s at %s:%s"%(name,host,port))
             self.send_to(name,OSCPATH['ping'],[0])
 
         self.m_xmin = 0
@@ -162,7 +162,7 @@ class OSCHandler(object):
         # tags will contain 'fff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
-        if dbug.LEV & dbug.MSGS: print ("Now do something with", user,args[2],args[0],1-args[1]) 
+        logger.debug("user_callback( "+str(user)+" "+str(tags)+" "+str(args)+" "+str(source))
 
     def quit_callback(self, path, tags, args, source):
         # don't do this at home (or it'll quit blender)
@@ -176,11 +176,13 @@ class OSCHandler(object):
         """Send OSC Message to one client."""
         try:
             self.m_osc_clients[clientkey].send(OSCMessage(path,args))
-            if (dbug.LEV & dbug.MSGS) and args:
-                print "OSC:Send to %s: %s %s" % (clientkey,path,args)
+            if args:
+                logger.debug( "Send to %s: %s %s" % (clientkey,path,args))
         except:
-            if dbug.LEV & dbug.MSGS:
-                print "OSC:Send:Unable to reach host",clientkey
+            lastError=self.m_downClients.get(clientkey,0)
+            if time()-lastError >30:
+                logger.warning("send_to: Unable to reach host %s (will suppress this warning for 30 seconds)"%(clientkey),exc_info=False)
+                self.m_downClients[clientkey]=time()
             return False
         return True
 
@@ -210,7 +212,9 @@ class OSCHandler(object):
     #
 
     def default_handler(self, path, tags, args, source):
-        if dbug.LEV & dbug.MORE: print "OSC:default_handler:No handler registered for ", path
+        if not self.m_missingHandlers.get(path,False):
+            logger.warning( "default_handler:No handler registered for "+path)
+            self.m_missingHandlers[path]=True
         return None
 
     def event_ping(self, path, tags, args, source):
@@ -219,19 +223,17 @@ class OSCHandler(object):
             return
         ping_code = args[0]
         source_ip = source[0]
-        if dbug.LEV & dbug.MSGS:
-            print "OSC:ping from %s:code:%s" % (source_ip, ping_code)
+        logger.debug( "ping from %s:code:%s" % (source_ip, ping_code))
         for clientkey, client in self.m_osc_clients.iteritems():
             target_ip = client.address()[0]
             if target_ip == source_ip:
                 try:
                     self.sendto(clientkey, OSCPATH('ack'), ping_code)
                 except:
-                    if dbug.LEV & dbug.MSGS:
-                        print "OSC:event_ping:unable to ack to", clientkey
+                    logger.warning("event_ping:unable to ack to "+str(clientkey),exc_info=False)
 
     def event_ack(self, path, tags, args, source):
-        if dbug.LEV & dbug.MSGS: print "OSC:event_ack:code",args[0]
+        logger.debug( "event_ack:code "+str(args[0]))
         return None
 
     #
@@ -247,7 +249,7 @@ class OSCHandler(object):
 
         """
         #frame = args[0]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_track_start"
+        logger.info( "event_track_start")
 
     def event_tracking_set(self, path, tags, args, source):
         """Tracking subsystem is setting params.
@@ -258,7 +260,7 @@ class OSCHandler(object):
             npeople - number of people currently present
 
         """
-        if dbug.LEV & dbug.MSGS: print "OSC:event_track_set:",path,args,source
+        logger.debug( "event_track_set:"+str(path)+" "+str(args)+" "+str(source))
         if path == OSCPATH['track_minx']:
             self.m_xmin = args[0]
         elif path == OSCPATH['track_miny']:
@@ -292,12 +294,12 @@ class OSCHandler(object):
             target - UID of target
             channel - channel number assigned
         """
-        #print "OSC:event_track_entry:",path,args,source
+        #print "event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
         frame = args[0]
         time = args[1]
         id = args[2]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_track_entry:cell:",id
+        logging.getLogger("cells").info("entry of cell "+str(id))
         self.m_field.create_cell(id)
 
     def event_tracking_exit(self, path, tags, args, source):
@@ -309,11 +311,11 @@ class OSCHandler(object):
              target - UID of target
 
         """
-        #print "OSC:event_track_exit:",path,args,source
+        #print "event_track_exit:",path,args,source
         frame = args[0]
         time = args[1]
         id = args[2]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_track_exit:cell:",id
+        logging.getLogger("cells").info("exit of cell "+str(id))
         #print "BEFORE: cells:",self.m_field.m_cell_dict
         #print "BEFORE: conx:",self.m_field.m_conx_dict
         self.m_field.del_cell(id)
@@ -362,12 +364,11 @@ class OSCHandler(object):
         leftness = args[16]
         vis = args[17]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_track_body:no uid",id,"in registered cell list"
+            logger.info( "event_track_body:no uid "+str(id)+" in registered cell list")
         if frame%REPORT_FREQ['debug'] == 0:
-            if dbug.LEV & dbug.MSGS: 
-                print "    OSC:event_track_body:id:",id,"pos:", (x, y), "data:", \
+            logger.debug(" ".join(map(str,[ "    event_track_body:id:",id,"pos:", (x, y), "data:", \
                         ex, ey, spd, espd, facing, efacing, diam, sigmadiam, \
-                        sep, sigmasep, leftness, vis
+                        sep, sigmasep, leftness, vis])))
         self.m_field.update_body(id, x, y, ex, ey, spd, espd, facing, efacing, 
                            diam, sigmadiam, sep, sigmasep, leftness, vis)
 
@@ -403,11 +404,10 @@ class OSCHandler(object):
         eheading = args[11]
         vis = args[12]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_track_leg:no uid",id,"in registered cell list"
+            logger.info( "event_track_leg:no uid "+str(id)+" in registered cell list")
         if frame%REPORT_FREQ['debug'] == 0:
-            if dbug.LEV & dbug.MSGS: 
-                print "    OSC:event_track_leg:id:", id, "leg:", leg, "pos:", (x,y), \
-                "data:", ex, ey, spd, espd, heading, eheading, vis
+            logger.debug(" ".join(map(str,["    event_track_leg:id:", id, "leg:", leg, "pos:", (x,y), \
+                "data:", ex, ey, spd, espd, heading, eheading, vis])))
         self.m_field.update_leg(id, leg, nlegs, x, y, ex, ey, spd, espd, 
                                    heading, eheading, vis)
 
@@ -434,7 +434,7 @@ class OSCHandler(object):
         time = args[1]
         id = args[2]
         if id not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_track_update:no uid",id,"in registered cell list"
+            logger.info( "event_track_update:no uid "+str(id)+" in registered cell list")
         x = args[3]       # comes in meters
         y = args[4]
         vx = args[5]
@@ -444,12 +444,11 @@ class OSCHandler(object):
         gid = args[9]
         gsize = args[10]
         channel = args[11]
-        #print "OSC:event_track_update:",path,args,source
+        #print "event_track_update:",path,args,source
         if frame%REPORT_FREQ['debug'] == 0:
-            #print "OSC:event_track_update:",path,args,source
-            if dbug.LEV & dbug.MSGS: 
-                print " OSC:event_track_update:id:",id,"pos:", (x, y), "data:", \
-                        vx, vy, major, minor, gid, gsize
+            #print "event_track_update:",path,args,source
+            logger.debug(" ".join(map(str,[ " event_track_update:id:",id,"pos:", (x, y), "data:", \
+                        vx, vy, major, minor, gid, gsize])))
         self.m_field.update_cell(id, x, y, vx, vy, major, minor, gid, gsize, 
                                  frame=frame)
 
@@ -477,11 +476,9 @@ class OSCHandler(object):
         y = args[5]
         diam = args[6]
         if gid not in self.m_field.m_group_dict:
-            if dbug.LEV & dbug.MSGS: print "OSC:event_track_group:no gid",gid,"in group list"
-        if frame%REPORT_FREQ['debug'] == 0:
-            if dbug.LEV & dbug.MSGS: 
-                print "    OSC:event_track_group:gid:",gid, "pos:", (x, y), "data:", \
-                        gsize, duration, diam
+            logger.info( "event_track_group:no gid "+str(gid)+" in group list")
+#        if frame%REPORT_FREQ['debug'] == 0:
+        logger.debug(" ".join(map(str,["    event_track_group:gid:",gid, "pos:", (x, y), "data:",gsize, duration, diam])))
         self.m_field.update_group(gid, gsize, duration, x, y, diam)
 
     def event_tracking_geo(self, path, tags, args, source):
@@ -505,12 +502,10 @@ class OSCHandler(object):
         fromnearest = args[3]
         fromexit = args[4]
         if uid not in self.m_field.m_cell_dict:
-            if dbug.LEV & dbug.MSGS: 
-                print "OSC:event_track_geo:no uid",uid,"in registered cell list"
+            logger.info("event_track_geo:no uid "+str(uid)+" in registered cell list")
         if frame%REPORT_FREQ['debug'] == 0:
-            if dbug.LEV & dbug.MSGS: 
-                print "    OSC:event_track_geo:uid:",uid, "data:", \
-                        fromcenter, fromnearest, fromexit
+            logger.debug(" ".join(map(str,["    event_track_geo:uid:",uid, "data:", \
+                        fromcenter, fromnearest, fromexit])))
         self.m_field.update_geo(uid, fromcenter, fromnearest, fromexit)
 
     def event_tracking_frame(self, path, tags, args, source):
@@ -519,17 +514,16 @@ class OSCHandler(object):
         args:
             frame - frame number
         """
-        #print "OSC:event_track_frame:",path,args,source
+        #print "event_track_frame:",path,args,source
         frame = args[0]
         self.m_field.update(frame=frame)
         if frame%REPORT_FREQ['debug'] == 0:
-            #print "OSC:event_track_update:",frame
-            if dbug.LEV & dbug.MSGS: print "    OSC:event_track_frame::",frame
+            logger.debug( "event_track_frame::"+str(frame))
         return None
 
     def event_tracking_stop(self, path, tags, args, source):
         """Tracking has stopped."""
-        if dbug.LEV & dbug.MSGS: print "OSC:event_track_stop:",path,args,source
+        logger.info(" ".join(map(str,["event_tracking_stop: ",path,args,source])))
         return None
 
 if __name__ == "__main__":

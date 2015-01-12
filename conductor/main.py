@@ -24,6 +24,9 @@ import os.path
 import sys
 import warnings
 import logging
+import logging.config
+import json
+
 from time import time,sleep
 
 # installed modules
@@ -35,28 +38,39 @@ from OSC import OSCMessage
 import config
 
 # local classes
-import debug
 from field import Field
 from myoschandler import MyOSCHandler
 from conductor import Conductor
 
 # constants
-LOGFILE = config.logfile
 FRAMERATE = config.framerate
 
-# init debugging
-dbug = debug.Debug()
-
-# create logger
-logger = logging.getLogger(__appname__)
-logging.basicConfig(filename=LOGFILE,level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-warnings.filterwarnings('ignore')
+# init logging
+def setup_logging(default_path='logging.json',     default_level=logging.INFO,env_key='LOG_CFG'):
+    """Setup logging configuration
+    """
+    path = default_path
+    value = os.getenv(env_key, None)
+    if value:
+        path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = json.load(f)
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
+        
 
 def main():
+    # Configure logging
+    setup_logging()
+
+    # create logger
+    logger = logging.getLogger(__name__)
+
     # initialize stuff
     field = Field()
+    
     osc = MyOSCHandler()
     conductor = Conductor()
     field.update(osc=osc)
@@ -64,7 +78,7 @@ def main():
     conductor.update(field=field)
 
     if os.path.isfile('settings.py'):
-        print "Loading settings from settings.py"
+        logger.info( "Loading settings from settings.py")
         execfile('settings.py')
 
     keep_running = True

@@ -17,12 +17,12 @@ __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
 # core modules
+import logging
 
 # installed modules
 
 # local modules
 import config
-import debug
 from time import time
 
 # local classes
@@ -38,8 +38,8 @@ UNGROUP_DIST = config.ungroup_distance
 OSC_FPS = config.framerate
 MAX_LOST_PATIENCE = config.max_lost_patience
 
-# init debugging
-dbug = debug.Debug()
+# init logging
+logger=logging.getLogger(__name__)
 
 # TODO: Delete anything here that is specific to visualsys
 class Field(object):
@@ -100,7 +100,7 @@ class Field(object):
         if frame is not None:
             self.m_frame = frame
             if frame%REPORT_FREQ['debug'] == 0:
-                print "Field:update:frame:",frame
+                logger.debug( "update:frame:"+str(frame))
 
     def update_scene(self, scene, variant, value):
         self.m_scene = scene
@@ -133,24 +133,19 @@ class Field(object):
                 group = self.groupClass(self, gid)
                 # add to the group list
                 self.m_group_dict[gid] = group
-                if dbug.LEV & dbug.FIELD: 
-                    print "Field:create_group:Group",gid,"created"
+                logger.debug( "group "+str(gid)+" created")
                 #self.m_our_group_count += 1
-                #if dbug.LEV & dbug.FIELD:
-                    #print "Field:create_group:count:",self.m_our_group_count
+                #logger.debug("create_group:count:"+str(self.m_our_group_count))
             # whether it is new or already existed,
             # let's make sure it is no longer suspect
             if gid in self.m_suspect_groups:
-                if dbug.LEV & dbug.FIELD: 
-                    print "Field:create_group:Group",gid,\
-                          "was suspected lost but is now above suspicion"
+                logger.debug("create_group:Group" + str(gid)+"was suspected lost but is now above suspicion")
                 del self.m_suspect_groups[gid]
 
     def update_group(self, gid, gsize=None, duration=None, x=None, y=None,
                      diam=None):
         """Create group if it doesn't exist, update its info."""
-        if dbug.LEV & dbug.MORE: 
-            print "Field:update_group:Group",gid
+        logger.debug( "update_group:Group "+str(gid))
         if gid:
             self.check_for_missing_group(gid)
             self.m_group_dict[gid].update(gsize, duration, x, y, diam)
@@ -193,18 +188,18 @@ class Field(object):
             # add to the cell list
             self.m_cell_dict[id] = cell
             self.m_our_cell_count += 1
-            if dbug.LEV & dbug.FIELD: print "Field:create_cell:count:",self.m_our_cell_count
+            logger.debug("create_cell:count:"+str(self.m_our_cell_count))
         # but if it already exists
         else:
             # let's make sure it is no longer suspect
             if id in self.m_suspect_cells:
-                if dbug.LEV & dbug.FIELD: print "Field:create_cell:Cell",id,"was suspected lost but is now above suspicion"
+                logger.debug("create_cell:Cell "+str(id)+" was suspected lost but is now above suspicion")
                 del self.m_suspect_cells[id]
 
     def update_cell(self, id, x=None, y=None, vx=None, vy=None, major=None, 
                     minor=None, gid=None, gsize=None, visible=None, frame=None):
         """ Update a cells information."""
-        if dbug.LEV & dbug.MORE: print "Field:update_cell:Cell",id
+        #logger.debug("update_cell:Cell "+str(id))
         self.check_for_missing_cell(id)
         # if group param is provided 
         # if it is zero, that is okay and noteworthy (means no group)
@@ -215,11 +210,9 @@ class Field(object):
             # this is redundant but okay
             self.m_cell_dict[id].m_gid = gid
             # if non-zero, add cell to cell_dict in group
-            if gid:
+            if gid and id not in self.m_group_dict[gid].m_cell_dict:
                 self.m_group_dict[gid].m_cell_dict[id] = self.m_cell_dict[id]
-                if dbug.LEV & dbug.FIELD & dbug.MORE: 
-                    print "Field:update_cell:Cell",id,"added to group", \
-                            self.m_cell_dict[id].m_gid
+                logger.debug("cell "+str(id)+" added to group "+str(self.m_cell_dict[id].m_gid))
         self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize,
                                     visible=visible, frame=frame)
 
@@ -233,8 +226,7 @@ class Field(object):
     def update_cell_attr(self, uid, type, value, aboveTrigger=False):
         """Update an attribute to a cell, creating it if it doesn't exist."""
         self.check_for_missing_cell(uid)
-        if dbug.LEV & dbug.MORE: 
-            print "Field:update_cell_attr:",uid, type, value,aboveTrigger
+        logger.debug(" ".join(map(str,["updating cell  ",uid, type, value,aboveTrigger])))
         self.m_cell_dict[uid].update_attr(type, value,aboveTrigger)
 
     def del_cell_attr(self, uid, type):
@@ -243,8 +235,7 @@ class Field(object):
             cell = self.m_cell_dict[uid]
             if type in cell.m_attr_dict:
                 cell.del_attr(type)
-                if dbug.LEV & dbug.FIELD: 
-                    print "Field:del_cell_attr:del_attr:",uid,type
+                logger.debug( "del_cell_attr:del_attr:"+str(uid)+" "+str(type))
 
     def update_geo(self, id, fromcenter=None, fromnearest=None, fromexit=None):
         """Update geo info for cell."""
@@ -282,8 +273,7 @@ class Field(object):
         if id in self.m_cell_dict:
             #cell.cell_disconnect()
             # delete from the cell master list of cells
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:del_cell:deleting",id
+            logger.debug("deleting cell "+str(id))
             # Solution 1: Delete the conx along with the cell
             new_conx_dict = self.m_cell_dict[id].m_conx_dict.copy()
             for cid,conx in new_conx_dict.iteritems():
@@ -295,15 +285,14 @@ class Field(object):
                 del self.m_suspect_cells[id]
             else:
                 self.m_our_cell_count -= 1
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:del_cell:count:",self.m_our_cell_count
+            logger.debug( "del_cell:count:"+str(self.m_our_cell_count))
 
     def check_people_count(self,reported_count):
         self.m_reported_cell_count = reported_count
         our_count = self.m_our_cell_count
-        if dbug.LEV & dbug.FIELD: print "Field:check_people_count:count:",our_count,"- Reported:",self.m_reported_cell_count
+        logger.debug("check_people_count:count:"+str(our_count)+"- Reported:"+str(self.m_reported_cell_count))
         if reported_count != our_count:
-            if dbug.LEV & dbug.FIELD: print "Field:check_people_count:Count mismatch"
+            logger.warning("check_people_count:Count mismatch")
             self.suspect_all_cells()
             self.m_out_cell_count = 0
 
@@ -315,14 +304,14 @@ class Field(object):
         """
         self.m_suspect_cells[id] = 1
         self.m_our_cell_count -= 1
-        if dbug.LEV & dbug.FIELD: print "Field:suspect_cell:count:",self.m_our_cell_count
+        logger.debug("suspect_cell:count:"+str(self.m_our_cell_count))
 
     def suspect_all_cells(self):
-        if dbug.LEV & dbug.FIELD: print "Field:suspect_all_cells"
+        logger.debug("suspect_all_cells")
         for id in self.m_cell_dict:
             self.suspect_cell(id)
         self.m_our_cell_count = 0
-        if dbug.LEV & dbug.FIELD: print "Field:suspect_cell:count:",self.m_our_cell_count
+        logger.debug("suspect_cell:count:"+str(self.m_our_cell_count))
 
     # Connectors
 
@@ -357,7 +346,7 @@ class Field(object):
 
     def update_connector(self, id, frame=None):
         """ Update a connector's information."""
-        if dbug.LEV & dbug.MORE: print "Field:update_conx:Cell",id
+        logger.debug("update_conx:Cell "+str(id))
         if id in self.m_conx_dict:
             self.m_conx_dict[id].update(frame=self.m_frame)
 
@@ -383,8 +372,7 @@ class Field(object):
         self.check_for_missing_cell(uid1)
         self.check_for_missing_conx(cid, uid0, uid1)
         connector = self.m_conx_dict[cid]
-        if dbug.LEV & dbug.MORE: 
-            print "Field:update_conx_attr:",connector.m_id,type,value
+        logger.debug("updating connection "+str(connector.m_id)+" "+str(type)+" to "+str(value))
         connector.update_attr(type, value, aboveTrigger)
 
     def del_conx_attr(self, cid, type):
@@ -394,12 +382,10 @@ class Field(object):
             connector = self.m_conx_dict[cid]
             if type in connector.m_attr_dict:
                 connector.del_attr(type)
-                if dbug.LEV & dbug.FIELD: 
-                    print "Field:del_conx_attr:del_attr:",cid,type
+                logger.debug( "del_conx_attr:del_attr:"+str(cid)+" "+str(type))
             if not len(connector.m_attr_dict):
                 self.del_connector(cid)
-                if dbug.LEV & dbug.FIELD: 
-                    print "Field:del_conx_attr:del_conx:",cid
+                logger.debug("del_conx_attr:del_conx:"+str(cid))
 
     # Checks and housekeeping
 
@@ -418,19 +404,17 @@ class Field(object):
         if gid:
             # and if group does not already exist
             if gid not in self.m_group_dict:
+                logger.info("group "+str(gid)+" was missed/lost and is being (re)created")
                 self.create_group(gid)
                 # create_group already does this.
                 # remove from suspect list
                 #if gid in self.m_suspect_groups:
                     #del self.m_suspect_groups[gid]
-                if dbug.LEV & dbug.FIELD: print "Field:group_check:Group",gid,\
-                            "was lost and has been recreated"
             # if group exists, but is on suspect list
             elif gid in self.m_suspect_groups:
                 # remove from suspect list
                 del self.m_suspect_groups[gid]
-                if dbug.LEV & dbug.FIELD: print "Field:group_check:Group",gid,\
-                            "was suspected lost but is now above suspicion"
+                logger.debug("group "+str(gid)+" was suspected lost but is now above suspicion")
 
     def check_for_new_group(self, id, gid):
         """If this is a new group, disconnect the old one."""
@@ -470,16 +454,14 @@ class Field(object):
             # remove from suspect list
             if id in self.m_suspect_cells:
                 del self.m_suspect_cells[id]
-            if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
-                        "was lost and has been recreated"
+            logger.info("cell_check:Cell "+str(id)+" was missed/lost and has been (re)created")
         # if cell exists, but is on suspect list
         elif id in self.m_suspect_cells:
             # remove from suspect list
             del self.m_suspect_cells[id]
             # increment count
             self.m_our_cell_count += 1
-            if dbug.LEV & dbug.FIELD: print "Field:cell_check:Cell",id,\
-                        "was suspected lost but is now above suspicion"
+            logger.debug("cell_check:Cell "+str(id)+" was suspected lost but is now above suspicion")
 
     def check_for_missing_conx(self, cid, uid0, uid1):
         """Check for missing or suspect conx, handle it.
@@ -543,10 +525,7 @@ class Field(object):
     def check_for_lost_cell(self, uid):
         time_since_last_update = time() - self.m_cell_dict[uid].m_updatetime
         if time_since_last_update > MAX_LOST_PATIENCE:
-            if dbug.LEV & dbug.FIELD: 
-                print "Field:renderCell:Cell",\
-                    "%d is suspected lost for %.2f sec"%\
-                    (uid,time_since_last_update)
+            logger.info("deleting cell %d that has been lost for %.2f sec"%(uid,time_since_last_update))
             self.del_cell(uid)
 
     def check_for_abandoned_cells(self):

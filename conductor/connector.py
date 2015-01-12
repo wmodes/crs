@@ -16,21 +16,15 @@ __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
-# core modules
-
-# installed modules
-
 # local modules
 import config
+import logging
 
 # local classes
 from attr import Attr
-import debug
 
-# constants
-
-# init debugging
-dbug = debug.Debug()
+# init logging
+logger=logging.getLogger(__name__)
 
 class Connector(object):
 
@@ -72,13 +66,11 @@ class Connector(object):
         uid1 = self.m_cell1.m_id
         if uid0 in self.m_field.m_cell_dict:
             if self.m_cell0 != self.m_field.m_cell_dict[uid0]:
-                if dbug.LEV & dbug.DATA:
-                    print "Connector:conx_update:Conx",self.m_id,"needed refresh"
+                logger.debug( "conx_update:Conx "+str(self.m_id)+" needed refresh")
                 self.m_cell0 = self.m_field.m_cell_dict[uid0]
         if uid1 in self.m_field.m_cell_dict:
             if self.m_cell1 != self.m_field.m_cell_dict[uid1]:
-                if dbug.LEV & dbug.DATA:
-                    print "Connector:conx_update:Conx",self.m_id,"needed refresh"
+                logger.debug( "conx_update:Conx "+str(self.m_id)+" needed refresh")
                 self.m_cell1 = self.m_field.m_cell_dict[uid1]
         if visible is not None:
             self.m_visible = visible
@@ -108,8 +100,8 @@ class Connector(object):
         To actually delete it, remove it from the list of connectors in the Field
         class.
         """
-        if dbug.LEV & dbug.DATA: print "Connector:conx_disconnect_thyself:Disconnecting ",self.m_id,"between",\
-                self.m_cell0.m_id,"and",self.m_cell1.m_id
+        logger.debug(" ".join(map(str,["disconnecting",self.m_id,"between",\
+                self.m_cell0.m_id,"and",self.m_cell1.m_id])))
         # for simplicity's sake, we do the work rather than passing to
         # the object to do the work
         # delete the connector from its two cells

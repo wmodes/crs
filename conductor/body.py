@@ -16,20 +16,8 @@ __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
-# core modules
-
-# installed modules
-
 # local modules
 import config
-
-# local classes
-import debug
-
-# constants
-
-# init debugging
-dbug = debug.Debug()
 
 class Body(object):
     """Represents a leg within a cell.

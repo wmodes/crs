@@ -17,22 +17,11 @@ __author__  = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
-# core modules
-
-# installed modules
-
 # local modules
 import config
 
 # local classes
 from attr import Attr
-import debug
-
-# constants
-
-# init debugging
-dbug = debug.Debug()
-
 
 class Group(object):
     """Represents a grouping of cells.

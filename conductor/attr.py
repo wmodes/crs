@@ -19,19 +19,6 @@ __license__ = "GNU GPL 3.0 or later"
 # core modules
 from time import time
 
-# installed modules
-
-# local modules
-
-# local classes
-import debug
-
-# constants
-
-# init debugging
-dbug = debug.Debug()
-
-
 class Attr(object):
     """Represents an attribute that is attached to a cell or connector.
 

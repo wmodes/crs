@@ -20,19 +20,8 @@ __license__ = "GNU GPL 3.0 or later"
 # core modules
 from time import time
 
-# installed modules
-
 # local modules
 import config
-
-# local classes
-import debug
-
-# constants
-
-# init debugging
-dbug = debug.Debug()
-
 
 class Event(object):
     """Represents a grouping of cells.

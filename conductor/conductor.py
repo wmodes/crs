@@ -27,7 +27,7 @@ from cmath import phase,pi
 
 # local modules
 import config
-import debug
+import logging
 
 # local classes
 
@@ -49,8 +49,8 @@ CONX_MEM = config.connector_memory_time
 CONX_QUAL = config.connector_qualifying_triggers
 CONX_AGE = config.connector_max_age
 
-# init debugging
-dbug = debug.Debug()
+# init logging
+logger=logging.getLogger(__name__)
 
 class Conductor(object):
     """An object representing the conductor.
@@ -189,8 +189,7 @@ class Conductor(object):
             update the value
         """
 
-        if dbug.LEV & dbug.MORE: 
-            print "Conduct:update_all_conx"
+        #logger.debug("update_all_conx")
 
         """Age and expire connectors.
         Note that we should do this before we discover and create new
@@ -206,8 +205,7 @@ class Conductor(object):
         """
         # Make a copy so we don't run into problems when deleting connections
         new_conx_dict = copy(self.m_field.m_conx_dict)
-        if len(new_conx_dict) and (dbug.LEV & dbug.COND & dbug.MORE):
-            print "Conduct:age_and_expire_conx"
+
         # iterate over every connector
         for cid,connector in new_conx_dict.iteritems():
             new_attr_dict = copy(connector.m_attr_dict)
@@ -228,8 +226,7 @@ class Conductor(object):
                     
                 # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
                 if attr.m_value < avg_trigger and since_update>max_age:
-                    if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f,since_update=%.2f"%(cid,type,attr.m_value,since_update)
+                    logger.info("expired connection %s %s: value=%.2f,since_update=%.2f"%(cid,type,attr.m_value,since_update))
                     attr.set_freshness(0.0)
                     # send "del conx" osc msg
                     self.m_field.m_osc.nix_conx_attr(cid, type)
@@ -254,9 +251,9 @@ class Conductor(object):
                     else:
                         avg_trigger = CONX_AVG[DEFAULT]
 
-                    if (dbug.LEV & dbug.COND) and running_avg >= avg_trigger and not self.m_field.check_for_conx_attr(uid0, uid1, type): 
+                    if running_avg >= avg_trigger and not self.m_field.check_for_conx_attr(uid0, uid1, type): 
     					# Debug message for new connections only
-                        print "Conduct:update_conx:triggered:id: %s-%s avg (%.3f) >= trigger (%.3f)"%(cid,type,running_avg,avg_trigger)
+                        logger.info("triggerred connection %s %s: avg (%.3f) >= trigger (%.3f)"%(cid,type,running_avg,avg_trigger))
 
                     # Update all existing connections, and create new ones if triggered
                     if running_avg >= avg_trigger or self.m_field.check_for_conx_attr(uid0, uid1, type):
@@ -311,8 +308,7 @@ class Conductor(object):
         regular reports
         """
 
-        if dbug.LEV & dbug.MORE: 
-            print "Conduct:update_all_cells"
+        #logger.debug( "update_all_cells")
 
         """Age and expire connectors.
         Note that we should do this before we discover and create new
@@ -330,8 +326,7 @@ class Conductor(object):
                         record the new value
         """
         new_cell_dict = copy(self.m_field.m_cell_dict)
-        if len(new_cell_dict) and (dbug.LEV & dbug.COND & dbug.MORE):
-            print "Conduct:age_and_expire_cell"
+
         # iterate over every connector
         for uid,connector in new_cell_dict.iteritems():
             new_attr_dict = copy(connector.m_attr_dict)
@@ -352,8 +347,7 @@ class Conductor(object):
 
                 # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
                 if attr.m_value < avg_trigger and since_update>max_age:
-                    if dbug.LEV & dbug.COND: 
-                        print "    Expired:%s-%s, value=%.2f, trigger=%.2f,since_update=%.2f"%(uid,type,attr.m_value,avg_trigger,since_update)
+                    logger.info("expired cell %s %s: value=%.2f, trigger=%.2f,since_update=%.2f"%(uid,type,attr.m_value,avg_trigger,since_update))
                     attr.set_freshness(0.0)
                     # send "del cell" osc msg
                     self.m_field.m_osc.nix_cell_attr(uid, type)
@@ -374,8 +368,8 @@ class Conductor(object):
                     else:
                         avg_trigger = CELL_AVG[DEFAULT]
 
-                    if (dbug.LEV & dbug.COND) and running_avg >= avg_trigger and not self.m_field.check_for_cell_attr(uid, type): 
-                        print "Conduct:update_cell:triggered:id: %s-%s avg(%.2f) > trigger (%.2f)"%(uid,type,running_avg,avg_trigger)
+                    if running_avg >= avg_trigger and not self.m_field.check_for_cell_attr(uid, type): 
+                        logger.info("triggered cell %s attribute %s: avg (%.2f) > trigger (%.2f)"%(uid,type,running_avg,avg_trigger))
 
                     # Update all existing attributes, and create new ones if triggered
                     if running_avg >= avg_trigger or self.m_field.check_for_cell_attr(uid, type): 
@@ -468,7 +462,7 @@ class Conductor(object):
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
         if not type in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% type
+            logger.error("No connector_qualifying_triggers set for type '%s'"% type)
             return 0
         max_dist = CONX_QUAL[type]
         score = max(0, 1 - float(dist) / max_dist)
@@ -516,8 +510,9 @@ class Conductor(object):
         # we calculate a score
         # score = 1 if the values are exactly the same
         # score = 0 if the values are very different
+        logger=logging.getLogger(__name__+".coord")
         if not 'coord-min' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'coord-min'
+            logger.error("No connector_qualifying_triggers set for type '%s'"% 'coord-min')
             return 0
         min_spd = CONX_QUAL['coord-min']
         spd0 = sqrt(cell0.m_vx**2+cell0.m_vy**2)
@@ -527,8 +522,7 @@ class Conductor(object):
         else:
             score=min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
         avgscore=self.record_conx_avg(cid, type, score)
-        if dbug.LEV & dbug.COND & dbug.MORE: 
-            print "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f"%(spd0,cell0.m_vx,cell0.m_vy,spd1,cell1.m_vx,cell1.m_vy,score,avgscore)
+        logger.debug( "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f"%(spd0,cell0.m_vx,cell0.m_vy,spd1,cell1.m_vx,cell1.m_vy,score,avgscore))
 
         # we record our score in our running avg table
         return avgscore
@@ -565,7 +559,7 @@ class Conductor(object):
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
         if not type in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% type
+            logger.error("No connector_qualifying_triggers set for type '%s'"% type)
             return 0
         max_dist = CONX_QUAL[type]
         if dist<max_dist:
@@ -623,11 +617,11 @@ class Conductor(object):
         # If dist of cells are < nearby_dist
         cell_dist = self.dist(cell0, cell1)
         if not 'nearby-min' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'nearby-min'
+            logger.error("No connector_qualifying_triggers set for type '%s'"% 'nearby-min')
             return 0
         min_dist = CONX_QUAL['nearby-min']
         if not 'nearby-max' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'nearby-max'
+            logger.error("No connector_qualifying_triggers set for type '%s'"% 'nearby-max')
             return 0
         max_dist = CONX_QUAL['nearby-max']
         if cell_dist < min_dist or cell_dist > max_dist:
@@ -654,7 +648,7 @@ class Conductor(object):
         age0 = time() - cell0.m_createtime 
         age1 = time() - cell1.m_createtime 
         if not 'strangers-min' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'strangers-min'
+            logger.error("No connector_qualifying_triggers set for type '%s'"% 'strangers-min')
             return 0
         min_age = CONX_QUAL['strangers-min']
         if age0 < min_age or age1 < min_age:
@@ -710,7 +704,7 @@ class Conductor(object):
             angle1 = cell1.m_body.m_facing%360
             # get min qualifying angle
             if not type in CONX_QUAL:
-                print "ERROR: No connector_qualifying_triggers set for type '%s'"% type
+                logger.error("No connector_qualifying_triggers set for type '%s'"% type)
                 return 0
             min_angle = CONX_QUAL[type]
             # calculate the angle from cell0 to cell1
@@ -745,16 +739,15 @@ class Conductor(object):
                 score1=0.0
             score = score0 * score1
             self.record_conx_avg(cid, type, score)
-            if dbug.LEV & dbug.COND & dbug.MORE: 
-                if score0 * score1:
-                    print "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"
-                else:
-                    print "facing:Frame:",self.m_field.m_frame,", CID:", cid
-                print "    facing angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%\
-                      (angle0,phi0,diff0,score0)
-                print "    facing angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%\
-                      (angle1,phi1,diff1,score1)
-                print "    facing: instantaneous score=%.2f, avg=%.2f"%(score,self.get_conx_avg(cid,type))
+            if score0 * score1:
+                msg=" ".join(map(str,[ "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"]))
+            else:
+                msg=" ".join(map(str,[ "facing:Frame:",self.m_field.m_frame,", CID:", cid]))
+            msg=msg+ "    facing angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%(angle0,phi0,diff0,score0)
+            msg=msg+ "    facing angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%(angle1,phi1,diff1,score1)
+            msg=msg+ "    facing: instantaneous score=%.2f, avg=%.2f"%(score,self.get_conx_avg(cid,type))
+            logging.getLogger(__name__+".facing").debug(msg)
+            
         # we record our score in our running avg table
         return self.get_conx_avg(cid, type)
 
@@ -782,11 +775,11 @@ class Conductor(object):
         cell_dist = self.dist(cell0, cell1)
         # Is distance between fusion-min and fusion-max?
         if not 'fusion-min' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'fusion-min'
+            logging.error("No connector_qualifying_triggers set for type '%s'"% 'fusion-min')
             return 0
         min_dist = CONX_QUAL['fusion-min']
         if not 'fusion-max' in CONX_QUAL:
-            print "ERROR: No connector_qualifying_triggers set for type '%s'"% 'fusion-max'
+            logging.error("No connector_qualifying_triggers set for type '%s'"% 'fusion-max')
             return 0
         max_dist = CONX_QUAL['fusion-max']
         if cell_dist > max_dist or \
@@ -879,7 +872,7 @@ class Conductor(object):
         # we calculate a score
         # how close is this person to others?
         if not type in CELL_QUAL:
-            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            logging.error("No cell_qualifying_triggers set for type '%s'"% type)
             return 0
         max_dist = CELL_QUAL[type]
         if cell.m_fromnearest<0:
@@ -903,7 +896,7 @@ class Conductor(object):
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
         if not type in CELL_QUAL:
-            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            loggin.error("No cell_qualifying_triggers set for type '%s'"% type)
             return 0
         max_vel = CELL_QUAL[type]
         if spd<max_vel:
@@ -911,8 +904,7 @@ class Conductor(object):
         else:
             score=0.0
     	avg=self.record_cell_avg(uid, type, score)
-        if dbug.LEV & dbug.COND & dbug.MORE: 
-            print "test_cell_static: uid=%s, spd=%.2f, max_vel=%.2f, score=%.2f,avg=%.2f"%(uid,spd,max_vel,score,avg)
+        logging.getLogger(__name__+".static").debug("test_cell_static: uid=%s, spd=%.2f, max_vel=%.2f, score=%.2f,avg=%.2f"%(uid,spd,max_vel,score,avg))
         # we record our score in our running avg table
         return avg
 
@@ -930,7 +922,7 @@ class Conductor(object):
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
         if not type in CELL_QUAL:
-            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            logger.error("No cell_qualifying_triggers set for type '%s'"% type)
             return 0
         min_vel = CELL_QUAL[type]
         if spd>min_vel:
@@ -938,8 +930,8 @@ class Conductor(object):
         else:
             score=0.0
         avg=self.record_cell_avg(uid, type, score)
-        if dbug.LEV & dbug.COND & dbug.MORE: 
-            print "test_cell_kinetic: uid=%s, spd=%.2f, min_vel=%.2f, score=%.2f, avg=%.2f"%(uid,spd,min_vel,score,avg)
+        logging.getLogger(__name__+".kinetic").debug("test_cell_kinetic: uid=%s, spd=%.2f, min_vel=%.2f, score=%.2f, avg=%.2f"%(uid,spd,min_vel,score,avg))
+        
         # we record our score in our running avg table
         return avg
 
@@ -957,7 +949,7 @@ class Conductor(object):
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
         if not type in CELL_QUAL:
-            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            logging.error("No cell_qualifying_triggers set for type '%s'"% type)
             return 0
         max_vel = CELL_QUAL[type]
         if spd>=max_vel:
@@ -981,7 +973,7 @@ class Conductor(object):
         # we calculate a score
         age = time() - cell.m_createtime 
         if not type in CELL_QUAL:
-            print "ERROR: No cell_qualifying_triggers set for type '%s'"% type
+            logging.error("No cell_qualifying_triggers set for type '%s'"% type)
             return 0
         min_age = CELL_QUAL[type]
         if min_age<=0:

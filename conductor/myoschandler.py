@@ -26,7 +26,7 @@ from time import time
 # local modules
 from oschandler import OSCHandler
 import config
-import debug
+import logging
 
 # local Classes
 
@@ -95,9 +95,8 @@ EVENT_TYPES = [
 ]
 
 
-# init debugging
-dbug = debug.Debug()
-
+# init logging
+logger=logging.getLogger(__name__)
 
 class MyOSCHandler(OSCHandler):
 
@@ -111,14 +110,12 @@ class MyOSCHandler(OSCHandler):
         # build up connection array
         for host in OSC_IPS:
             if host == IAM:
-                print "System:Config server:",(host,OSC_IPS[host],
-                        OSC_PORTS[host])
+                logger.info("setting server for %s to %s: %s"%(host,OSC_IPS[host],OSC_PORTS[host]))
                 osc_server = [('server', OSC_IPS[host], OSC_PORTS[host])]
             elif host == 'localhost' or host == 'default':
                 continue
             else:
-                print "System:Config client:",(host,OSC_IPS[host],
-                        OSC_PORTS[host])
+                logger.info("setting client for %s to %s:%s"%(host,OSC_IPS[host],OSC_PORTS[host]))
                 osc_clients.append((host, OSC_IPS[host], OSC_PORTS[host]))
 
         self.eventfunc = {
@@ -151,18 +148,16 @@ class MyOSCHandler(OSCHandler):
 
     def event_conduct_dump(self, path, tags, args, source):
         source_ip = source[0]
-        if dbug.LEV & dbug.MSGS:
-            print "OSC:dump req:from", source_ip
+        logger.debug( "dump req:from"+str(source_ip))
         for clientkey, client in self.m_osc_clients.iteritems():
             target_ip = client.address()[0]
             if target_ip == source_ip:
                 try:
                     #TODO: Decide what we dump and dump it
                     #self.sendto(clientkey, OSCPATH('ping'), ping_code)
-                    print "OSC:dump_req:from", clientkey
+                    logger.debug( "dump to "+str(clientkey))
                 except:
-                    if dbug.LEV & dbug.MSGS:
-                        print "OSC:dump_req:unable to reach", clientkey
+                    logger.warning( "dump:unable to reach "+str(clientkey),exc_info=False)
 
     def event_ui_condglobal(self, path, tags, args, source):
         """Receive condglobal from UI.
@@ -172,11 +167,11 @@ class MyOSCHandler(OSCHandler):
             frame - frame number
             cg - conx global
         """
-        #print "OSC:event_track_entry:",path,args,source
+        #print "event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
         #frame = args[0]
         cg = args[0]
-        if dbug.LEV & dbug.COND: print "OSC:event_ui_condglobal:cg =",cg
+        logger.debug("event_ui_condglobal:cg ="+str(cg))
         self.m_conductor.update(condglobal=cg)
 
     def event_ui_cellglobal(self, path, tags, args, source):
@@ -187,11 +182,11 @@ class MyOSCHandler(OSCHandler):
             frame - frame number
             cg - cell global
         """
-        #print "OSC:event_track_entry:",path,args,source
+        #print "event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
         #frame = args[0]
         cg = args[0]
-        if dbug.LEV & dbug.MSGS: print "OSC:event_ui_cellglobal:cg =",cg
+        logger.debug("event_ui_cellglobal:cg ="+str(cg))
         self.m_conductor.update(cellglobal=cg)
 
     def event_ui_condparam(self, path, tags, args, source):
@@ -203,7 +198,7 @@ class MyOSCHandler(OSCHandler):
             param - conductor param
             value - value to change to
         """
-        #print "OSC:event_track_entry:",path,args,source
+        #print "event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
         #frame = args[0]
         pathsplit = path.split('/')
@@ -214,8 +209,7 @@ class MyOSCHandler(OSCHandler):
         #type = args[0]
         #param = args[1]
         #value = args[2]
-        if dbug.LEV & dbug.COND: print "OSC:event_ui_condparam:",\
-            "type=%s,param=%s,value=%.2f"%(type,param,value)
+        logger.debug("event_ui_condparam: type=%s,param=%s,value=%.2f"%(type,param,value))
         if type in CELL_ATTR_TYPES:
             self.m_conductor.update_cell_param(type,param, value)
         elif type in CONX_ATTR_TYPES:
@@ -365,7 +359,7 @@ class MyOSCHandler(OSCHandler):
 
     def send_conx_downstream(self, cid, type, uid0, uid1, value, freshness, duration):
         if type in HAPPENING_TYPES:
-            print "send:",   [HAPPEN, type, cid, uid0, uid1, value, duration]
+            logger.debug( "send:"+str( [HAPPEN, type, cid, uid0, uid1, value, duration]))
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
                     [HAPPEN, type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
         elif type in EVENT_TYPES:

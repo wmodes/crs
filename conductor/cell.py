@@ -30,17 +30,15 @@ from attr import Attr
 from body import Body
 from leg import Leg
 from journal import Journal
-import debug
+import logging
 
 # constants
-
 MAX_LEGS = config.max_legs
 DEF_DIAM = config.default_diam
 DIAM_PAD = config.diam_padding     # increased diam of circle around bodies
 
-# init debugging
-dbug = debug.Debug()
-
+# init logging
+logger = logging.getLogger(__name__)
 
 class Cell(object):
     """Represents one person/object on the floor.
@@ -192,7 +190,7 @@ class Cell(object):
         To actually delete it, remove it from the list of cells in the Field
         class.
         """
-        if dbug.LEV & dbug.DATA: print "Cell:cell_disconnect:Disconnecting ",self.m_id
+        logger.debug( "cell_disconnect  "+str(self.m_id))
         # we make a copy because we can't iterate over the dict if we are
         # deleting stuff from it!
         new_conx_dict = self.m_conx_dict.copy()

@@ -35,7 +35,8 @@
         "conductor.coord": { "level": "INFO" },
 	"field":{ "level": "INFO" },
 	"connector":{ "level": "INFO" },
-	"cells":{ "level": "INFO" }
+	"cells":{ "level": "INFO" },
+	"oscplotter":{"level":"INFO"}
     },
 
     "root": {

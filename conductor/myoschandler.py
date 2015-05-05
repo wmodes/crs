@@ -106,6 +106,8 @@ class MyOSCHandler(OSCHandler):
         self.m_conductor = conductor
         osc_server = []
         osc_clients = []
+        self.cidkeys={}
+        self.lastcid=1
 
         # build up connection array
         for host in OSC_IPS:
@@ -358,6 +360,12 @@ class MyOSCHandler(OSCHandler):
     # On-Call Messages
 
     def send_conx_downstream(self, cid, type, uid0, uid1, value, freshness, duration):
+        key=cid+type
+        if key not in self.cidkeys:
+            self.cidkeys[key]=self.lastcid
+            self.lastcid=self.lastcid+1
+        cc=self.cidkeys[key]
+        cid="%d"%cc
         if type in HAPPENING_TYPES:
             logger.debug( "send:"+str( [HAPPEN, type, cid, uid0, uid1, value, duration]))
             self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],

@@ -285,7 +285,7 @@ class Field(object):
         if reported_count != our_count:
             logger.warning("check_people_count:Count mismatch")
             self.suspect_all_cells()
-            self.m_out_cell_count = 0
+            self.m_our_cell_count = 0
 
     def suspect_cell(self, id):
         """Hide a cell.

@@ -18,12 +18,10 @@ __license__ = "GNU GPL 3.0 or later"
 
 # core modules
 import logging
-
-# installed modules
+from time import time
 
 # local modules
 import config
-from time import time
 
 # local classes
 from cell import Cell

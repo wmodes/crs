@@ -20,6 +20,7 @@ __license__ = "GNU GPL 3.0 or later"
 # core modules
 import types
 from time import time
+import socket
 
 # installed modules
 from OSC import OSCServer, OSCClient, OSCMessage
@@ -29,6 +30,7 @@ from OSC import OSCServer, OSCClient, OSCMessage
 import config
 import logging
 
+# Auto-configuration of hosts
 hostname=socket.gethostname()
 print "hostname=",hostname
 hostname="localhost"
@@ -42,6 +44,7 @@ else:
     OSC_IPS = config.osc_ips_local
     OSC_PORTS = config.osc_ports_prod
 
+# Cell and connection types
 CELL_ATTR_TYPES = [
     'dance',
     'interactive',
@@ -83,7 +86,6 @@ EVENT_TYPES = [
     'tag',
 ]
 
-
 # init logging
 logger=logging.getLogger(__name__)
 
@@ -109,8 +111,6 @@ class OSCHandler(object):
         self.m_ymin = 0
         self.m_xmax = 0
         self.m_ymax = 0
-
-        
 
         # Setup OSC server and clients
         osc_server = []
@@ -189,8 +189,7 @@ class OSCHandler(object):
         		self.m_oscserver.addMsgHandler("/ui/cond/"+type+"/"+param,self.event_ui_condparam)
 
         # add a method to an instance of the class
-        self.m_oscserver.handle_timeout = types.MethodType(handle_timeout, 
-                                                           self.m_oscserver)
+        self.m_oscserver.handle_timeout = types.MethodType(handle_timeout, self.m_oscserver)
 
         # this registers a 'default' handler (for unmatched messages), 
         # an /'error' handler, an '/info' handler.
@@ -259,10 +258,6 @@ class OSCHandler(object):
         for clientkey, client in self.m_osc_clients.iteritems():
             self.send_to(clientkey, path, args)
 
-    def honey_im_home(self):
-        """Broadcast a hello message to the network."""
-        pass
-
     #
     # General INCOMING
     #
@@ -298,23 +293,16 @@ class OSCHandler(object):
 
     def event_tracking_start(self, path, tags, args, source):
         """Tracking system is starting.
-
         Sent before first /pf/update message for that target
-        args:
-            no args
-
         """
-        #frame = args[0]
         logger.info( "event_track_start")
 
     def event_tracking_set(self, path, tags, args, source):
         """Tracking subsystem is setting params.
-
         Send value of various parameters.
         args:
             minx, miny, maxx, maxy - bounds of PF in units
             npeople - number of people currently present
-
         """
         logger.debug( "event_track_set:"+str(path)+" "+str(args)+" "+str(source))
         if path =="/pf/set/minx":
@@ -337,7 +325,6 @@ class OSCHandler(object):
 
     def event_tracking_entry(self, path, tags, args, source):
         """Event when person enters field.
-
         Sent before first /pf/update message for that target
         args:
             frame - frame number
@@ -356,12 +343,10 @@ class OSCHandler(object):
 
     def event_tracking_exit(self, path, tags, args, source):
         """Event when person exits field.
-
         args:
              frame - frame number
              t - time of frame (elapsed time in seconds since beginning of run)
              target - UID of target
-
         """
         #print "event_track_exit:",path,args,source
         frame = args[0]
@@ -376,7 +361,6 @@ class OSCHandler(object):
 
     def event_tracking_body(self, path, tags, args, source):
         """Information about people's movement within field.
-
         Update position of target.
         args:
             frame - frame number 
@@ -426,7 +410,6 @@ class OSCHandler(object):
 
     def event_tracking_leg(self, path, tags, args, source):
         """Information about individual leg movement within field.
-
         Update position of leg.
         args:
             frame - frame number 
@@ -465,7 +448,6 @@ class OSCHandler(object):
 
     def event_tracking_update(self, path, tags, args, source):
         """Information about people's movement within field.
-
         Update position of target.
         args:
             /pf/update frame t target x y vx vy major minor groupid groupsize channel
@@ -506,7 +488,6 @@ class OSCHandler(object):
 
     def event_tracking_group(self, path, tags, args, source):
         """Information about people's movement within field.
-
         Update info about group
         /pf/group frame gid gsize duration centroidX centroidY diameter
         args:
@@ -535,7 +516,6 @@ class OSCHandler(object):
 
     def event_tracking_geo(self, path, tags, args, source):
         """Information about people's movement within field.
-
         Update info about group
         /pf/geo frame target fromcenter fromothers fromexit
         args:
@@ -562,7 +542,6 @@ class OSCHandler(object):
 
     def event_tracking_frame(self, path, tags, args, source):
         """New frame event.
-
         args:
             frame - frame number
         """
@@ -602,7 +581,6 @@ class OSCHandler(object):
 
     def event_ui_condglobal(self, path, tags, args, source):
         """Receive condglobal from UI.
-
         Sent from UI.
         args:
             frame - frame number
@@ -617,7 +595,6 @@ class OSCHandler(object):
 
     def event_ui_cellglobal(self, path, tags, args, source):
         """Receive cellglobal from UI.
-
         Sent from UI.
         args:
             frame - frame number
@@ -632,7 +609,6 @@ class OSCHandler(object):
 
     def event_ui_condparam(self, path, tags, args, source):
         """Receive condparam from UI.
-
         Sent from UI.
         args:
             type - type of attr
@@ -666,7 +642,6 @@ class OSCHandler(object):
     def honey_im_home(self):
         """Broadcast a hello message to the network."""
         self.send_to_all_clients('/conductor/start',[])
-
 
     # Regular Reports
 
@@ -738,7 +713,6 @@ class OSCHandler(object):
         
     def send_rollcall(self):
         """Sends the currently highlighted cells via OSC.
-        
         /conductor/rollcall [uid,action,numconx]
         """
         for id,cell in self.m_field.m_cell_dict.iteritems():
@@ -751,7 +725,6 @@ class OSCHandler(object):
 
     def send_cell_attrs(self):
         """Sends the current attributes of visible cells.
-        
         /conductor/attr ["type",uid,value,time]
         """
         for uid, cell in self.m_field.m_cell_dict.iteritems():
@@ -763,7 +736,6 @@ class OSCHandler(object):
 
     def send_conx_attr(self):
         """Sends the current descriptions of connectors.
-        
         /conductor/conx [cid,"type",uid0,uid1,value,time]
         """
         for cid,conx in self.m_field.m_conx_dict.iteritems():
@@ -775,7 +747,6 @@ class OSCHandler(object):
 
     def send_group_attrs(self):
         """Sends the current attributes of visible groups.
-        
         /conductor/gattr ["type",gid,value,time]
         """
         for gid,group in self.m_field.m_group_dict.iteritems():
@@ -787,7 +758,6 @@ class OSCHandler(object):
 
     def send_events(self):
         """Sends notification of ongoing events.
-        
         /conductor/event ["type",uid0,uid1,value,time]
         """
         for id,event in self.m_field.m_event_dict.iteritems():

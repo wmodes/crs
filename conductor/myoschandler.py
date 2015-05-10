@@ -47,10 +47,7 @@ else:
 
 # Constants
 
-OSCTIMEOUT = config.osctimeout
 REPORT_FREQ = config.report_frequency
-PERSIST = 'persistent'
-HAPPEN = 'happening'
 
 CELL_ATTR_TYPES = [
     'dance',
@@ -359,15 +356,15 @@ class MyOSCHandler(OSCHandler):
         cc=self.cidkeys[key]
         cid="%d"%cc
         if type in HAPPENING_TYPES:
-            logger.debug( "send:"+str( [HAPPEN, type, cid, uid0, uid1, value, duration]))
+            logger.debug( "send:"+str( ["happening", type, cid, uid0, uid1, value, duration]))
             self.m_field.m_osc.send_downstream("/conductor/conx",
-                    [HAPPEN, type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
+                    ["happening", type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
         elif type in EVENT_TYPES:
             self.m_field.m_osc.send_downstream("/conductor/event",
                     [type, cid, uid0, uid1, 1.0*value])
         else:
             self.m_field.m_osc.send_downstream("/conductor/conx",
-                    [PERSIST, type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
+                    ["persistent", type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
 
     def nix_cell_attr(self, uid, type):
         """Sends OSC messages to announce the removal of cell attr.

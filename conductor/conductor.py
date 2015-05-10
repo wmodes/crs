@@ -33,8 +33,6 @@ import logging
 
 # constants
 
-OSCPATH = config.oscpath
-
 FRAMERATE = config.framerate
 
 DEFAULT = 'default'

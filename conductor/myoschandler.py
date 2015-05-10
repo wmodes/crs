@@ -48,7 +48,6 @@ else:
 # Constants
 
 OSCTIMEOUT = config.osctimeout
-OSCPATH = config.oscpath
 REPORT_FREQ = config.report_frequency
 PERSIST = 'persistent'
 HAPPEN = 'happening'
@@ -109,7 +108,6 @@ class MyOSCHandler(OSCHandler):
         self.cidkeys={}
         self.lastcid=1
 
-        # build up connection array
         for host in OSC_IPS:
             if host == IAM:
                 logger.info("setting server for %s to %s: %s"%(host,OSC_IPS[host],OSC_PORTS[host]))
@@ -120,25 +118,20 @@ class MyOSCHandler(OSCHandler):
                 logger.info("setting client for %s to %s:%s"%(host,OSC_IPS[host],OSC_PORTS[host]))
                 osc_clients.append((host, OSC_IPS[host], OSC_PORTS[host]))
 
-        self.eventfunc = {
-            # to conductor
-            'conduct_dump': self.event_conduct_dump,
-            # global sensitivity for conx attr
-            'ui_condglobal': self.event_ui_condglobal,
-            # global sensitivity for cell attr
-            'ui_cellglobal': self.event_ui_cellglobal,
-            'ui_condparam': self.event_ui_condparam,
-        }
+        super(MyOSCHandler, self).__init__(osc_server,osc_clients, field)
 
-        self.eventfunc_enum = {}
+
+        # to conductor
+        self.m_oscserver.addMsgHandler( "/conductor/dump",self.event_conduct_dump)
+        # global sensitivity for conx attr
+        self.m_oscserver.addMsgHandler( "/ui/condglobal",self.event_ui_condglobal)
+        # global sensitivity for cell attr
+        self.m_oscserver.addMsgHandler( "/ui/cellglobal",self.event_ui_cellglobal)
+
         for type in CELL_ATTR_TYPES + CONX_ATTR_TYPES:
             for param in ("trigger", "memory", "maxage","qual","qualmin","qualmax"):
-                self.eventfunc_enum.update({
-                    OSCPATH['ui_condparam']+type+'/'+param: self.event_ui_condparam
-                })
+        		self.m_oscserver.addMsgHandler("/ui/cond/"+type+"/"+param,self.event_ui_condparam)
 
-        super(MyOSCHandler, self).__init__(osc_server,
-                osc_clients, field)
 
     def update(self, field=None, conductor=None):
         self.m_field = field
@@ -156,7 +149,7 @@ class MyOSCHandler(OSCHandler):
             if target_ip == source_ip:
                 try:
                     #TODO: Decide what we dump and dump it
-                    #self.sendto(clientkey, OSCPATH('ping'), ping_code)
+                    #self.sendto(clientkey, '/ping', ping_code)
                     logger.debug( "dump to "+str(clientkey))
                 except:
                     logger.warning( "dump:unable to reach "+str(clientkey),exc_info=False)
@@ -226,7 +219,7 @@ class MyOSCHandler(OSCHandler):
 
     def honey_im_home(self):
         """Broadcast a hello message to the network."""
-        self.send_to_all_clients(OSCPATH['conduct_start'],[])
+        self.send_to_all_clients('/conductor/start',[])
 
 
     # Regular Reports
@@ -308,8 +301,7 @@ class MyOSCHandler(OSCHandler):
             else:
                 action = "hidden"
             #TODO: Should the connector count only show visble connectors?
-            self.m_field.m_osc.send_downstream(OSCPATH['conduct_rollcall'],
-                    [id, action, len(cell.m_conx_dict)])
+            self.m_field.m_osc.send_downstream("/conductor/rollcall",[id, action, len(cell.m_conx_dict)])
 
     def send_cell_attrs(self):
         """Sends the current attributes of visible cells.
@@ -320,8 +312,8 @@ class MyOSCHandler(OSCHandler):
             if cell.m_visible:
                 for type, attr in cell.m_attr_dict.iteritems():
                     duration = time() - attr.m_createtime
-                    self.m_field.m_osc.send_downstream(OSCPATH['conduct_attr'],
-                            [type, uid, attr.m_value, attr.m_freshness, duration])
+                    self.m_field.m_osc.send_downstream("/conductor/attr",
+			            [type, uid, attr.m_value, attr.m_freshness, duration])
 
     def send_conx_attr(self):
         """Sends the current descriptions of connectors.
@@ -344,7 +336,7 @@ class MyOSCHandler(OSCHandler):
             if group.m_visible:
                 for type,attr in group.m_attr_dict.iteritems():
                     duration = time() - attr.m_createtime
-                    self.m_field.m_osc.send_downstream(OSCPATH['conduct_gattr'],
+                    self.m_field.m_osc.send_downstream("/conductor/gattr",
                             [type, gid, attr.m_value, attr.m_freshness,duration])
 
     def send_events(self):
@@ -354,7 +346,7 @@ class MyOSCHandler(OSCHandler):
         """
         for id,event in self.m_field.m_event_dict.iteritems():
             duration = time() - event.createtime
-            self.m_field.m_osc.send_downstream(OSCPATH['conduct_event'],
+            self.m_field.m_osc.send_downstream("/conductor/event",
                     [event.m_type, event.m_uid0, event.m_uid1, event.m_value, 1.0, duration])
 
     # On-Call Messages
@@ -368,13 +360,13 @@ class MyOSCHandler(OSCHandler):
         cid="%d"%cc
         if type in HAPPENING_TYPES:
             logger.debug( "send:"+str( [HAPPEN, type, cid, uid0, uid1, value, duration]))
-            self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
+            self.m_field.m_osc.send_downstream("/conductor/conx",
                     [HAPPEN, type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
         elif type in EVENT_TYPES:
-            self.m_field.m_osc.send_downstream(OSCPATH['conduct_event'],
+            self.m_field.m_osc.send_downstream("/conductor/event",
                     [type, cid, uid0, uid1, 1.0*value])
         else:
-            self.m_field.m_osc.send_downstream(OSCPATH['conduct_conx'],
+            self.m_field.m_osc.send_downstream("/conductor/conx",
                     [PERSIST, type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
 
     def nix_cell_attr(self, uid, type):
@@ -386,7 +378,7 @@ class MyOSCHandler(OSCHandler):
             if type in cell.m_attr_dict:
                 attr = cell.m_attr_dict[type]
                 duration = time() - attr.m_createtime
-                self.m_field.m_osc.send_downstream(OSCPATH['conduct_attr'],
+                self.m_field.m_osc.send_downstream("/conductor/attr",
                         [type, uid, attr.m_value,0.0, duration])
 
     def nix_conx_attr(self, cid, type):
@@ -413,5 +405,5 @@ class MyOSCHandler(OSCHandler):
                 duration = time() - attr.m_createtime
                 self.send_conx_downstream(cid, type, conx.m_cell0.m_id,
                         conx.m_cell1.m_id, conx.m_value,0.0, duration)
-            self.m_field.m_osc.send_downstream(OSCPATH['conduct_conxbreak'],
+            self.m_field.m_osc.send_downstream("/conductor/conxbreak",
                     [cid, conx.m_cell0.m_id, conx.m_cell1.m_id])

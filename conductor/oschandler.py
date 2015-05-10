@@ -31,7 +31,6 @@ import logging
 
 # Constants
 OSCTIMEOUT = config.osctimeout
-OSCPATH = config.oscpath
 REPORT_FREQ = config.report_frequency
 
 # init logging
@@ -79,63 +78,40 @@ class OSCHandler(object):
                     logger.error( "Unable to create OSC handler for client %s at %s:%s"%(name,host,port),exc_info=True)
                 self.m_osc_clients[name].connect( (host, port) )
                 logger.info( "Connecting to %s at %s:%s"%(name,host,port))
-            self.send_to(name,OSCPATH['ping'],[0])
+            self.send_to(name,"/ping",[0])
 
         self.m_xmin = 0
         self.m_ymin = 0
         self.m_xmax = 0
         self.m_ymax = 0
 
-        """
-        self.eventfunc = update({
-            # common
-            'ping': self.event_ping,
-            'ack': self.event_ack,
-        })
-        """
+        # common
+        self.m_oscserver.addMsgHandler("/ping",self.event_ping)
+        self.m_oscserver.addMsgHandler( "/ack",self.event_ack)
 
-        self.eventfunc.update({
-            # common
-            'ping': self.event_ping,
-            'ack': self.event_ack,
-
-            # from tracker
-            'track_start': self.event_tracking_start,
-            'track_stop': self.event_tracking_stop,
-            'track_entry': self.event_tracking_entry,
-            'track_exit': self.event_tracking_exit,
-            'track_frame': self.event_tracking_frame,
-            'track_minx': self.event_tracking_set,
-            'track_miny': self.event_tracking_set,
-            'track_maxx': self.event_tracking_set,
-            'track_maxy': self.event_tracking_set,
-            'track_npeople': self.event_tracking_set,
-            'track_groupdist': self.event_tracking_set,
-            'track_ungroupdist': self.event_tracking_set,
-            'track_fps': self.event_tracking_set,
-            'track_update': self.event_tracking_update,
-            'track_leg': self.event_tracking_leg,
-            'track_body': self.event_tracking_body,
-            'track_group': self.event_tracking_group,
-            'track_geo': self.event_tracking_geo,
-        })
+        # from tracker
+        self.m_oscserver.addMsgHandler("/pf/started",self.event_tracking_start)
+        self.m_oscserver.addMsgHandler("/pf/stopped",self.event_tracking_stop)
+        self.m_oscserver.addMsgHandler("/pf/entry",self.event_tracking_entry)
+        self.m_oscserver.addMsgHandler("/pf/exit",self.event_tracking_exit)
+        self.m_oscserver.addMsgHandler("/pf/frame",self.event_tracking_frame)
+        self.m_oscserver.addMsgHandler("/pf/set/minx",self.event_tracking_set)
+        self.m_oscserver.addMsgHandler("/pf/set/miny",self.event_tracking_set)
+        self.m_oscserver.addMsgHandler("/pf/set/maxx",self.event_tracking_set)
+        self.m_oscserver.addMsgHandler("/pf/set/maxy",self.event_tracking_set)
+        self.m_oscserver.addMsgHandler("/pf/set/npeople",self.event_tracking_set)
+        self.m_oscserver.addMsgHandler("/pf/set/groupdist",self.event_tracking_set)
+        self.m_oscserver.addMsgHandler("/pf/set/ungroupdist",self.event_tracking_set)
+        self.m_oscserver.addMsgHandler("/pf/set/fps",self.event_tracking_set)
+        self.m_oscserver.addMsgHandler("/pf/update",self.event_tracking_update)
+        self.m_oscserver.addMsgHandler("/pf/leg",self.event_tracking_leg)
+        self.m_oscserver.addMsgHandler("/pf/body",self.event_tracking_body)
+        self.m_oscserver.addMsgHandler("/pf/group",self.event_tracking_group)
+        self.m_oscserver.addMsgHandler("/pf/geo",self.event_tracking_geo)
 
         # add a method to an instance of the class
         self.m_oscserver.handle_timeout = types.MethodType(handle_timeout, 
                                                            self.m_oscserver)
-
-        # How to make this match partial paths? 
-        # Esp /ui/cond/type/param match /ui/cond/
-        for i in self.eventfunc:
-            self.m_oscserver.addMsgHandler(OSCPATH[i], self.eventfunc[i])
-
-        # We are enumerating paths
-        # Esp /ui/cond/type/param match /ui/cond/
-        try:
-            for path in self.eventfunc_enum:
-                self.m_oscserver.addMsgHandler(path, self.eventfunc_enum[path])
-        except NameError:
-            pass
 
         # this registers a 'default' handler (for unmatched messages), 
         # an /'error' handler, an '/info' handler.
@@ -227,7 +203,7 @@ class OSCHandler(object):
             target_ip = client.address()[0]
             if target_ip == source_ip:
                 try:
-                    self.sendto(clientkey, OSCPATH('ack'), ping_code)
+                    self.sendto(clientkey, "/ack", ping_code)
                 except:
                     logger.warning("event_ping:unable to ack to "+str(clientkey),exc_info=False)
 
@@ -260,24 +236,24 @@ class OSCHandler(object):
 
         """
         logger.debug( "event_track_set:"+str(path)+" "+str(args)+" "+str(source))
-        if path == OSCPATH['track_minx']:
+        if path =="/pf/set/minx":
             self.m_xmin = args[0]
-        elif path == OSCPATH['track_miny']:
+        elif path == "/pf/set/miny":
             self.m_ymin = args[0]
-        elif path == OSCPATH['track_maxx']:
+        elif path == "/pf/set/maxx":
             self.m_xmax = args[0]
-        elif path == OSCPATH['track_maxy']:
+        elif path == "/pf/set/maxy":
             self.m_ymax = args[0]
-        elif path == OSCPATH['track_npeople']:
+        elif path == "/pf/set/npeople":
             self.m_field.check_people_count(args[0])
             return
-        elif path == OSCPATH['track_groupdist']:
+        elif path == "/pf/set/groupdist":
             self.m_field.update(groupdist=args[0])
             return
-        elif path == OSCPATH['track_ungroupdist']:
+        elif path == "/pf/set/ungroupdist":
             self.m_field.update(ungroupdist=args[0])
             return
-        elif path == OSCPATH['track_fps']:
+        elif path == "/pf/set/fps":
             self.m_field.update(oscfps=args[0])
             return
             

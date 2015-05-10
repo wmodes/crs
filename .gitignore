@@ -21,3 +21,5 @@ TouchOSC/crs1_hold.touchosc
 conductor/errors.log
 
 conductor/profile.out
+
+conductor/debug.log

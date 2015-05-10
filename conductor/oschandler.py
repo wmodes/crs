@@ -246,16 +246,12 @@ class OSCHandler(object):
             self.m_ymax = args[0]
         elif path == "/pf/set/npeople":
             self.m_field.check_people_count(args[0])
-            return
         elif path == "/pf/set/groupdist":
             self.m_field.update(groupdist=args[0])
-            return
         elif path == "/pf/set/ungroupdist":
             self.m_field.update(ungroupdist=args[0])
-            return
         elif path == "/pf/set/fps":
             self.m_field.update(oscfps=args[0])
-            return
             
 
     def event_tracking_entry(self, path, tags, args, source):

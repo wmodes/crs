@@ -31,13 +31,6 @@ from connector import Connector
 from group import Group
 from event import Event
 
-# constants
-REPORT_FREQ = config.report_frequency
-GROUP_DIST = config.group_distance
-UNGROUP_DIST = config.ungroup_distance
-OSC_FPS = config.framerate
-MAX_LOST_PATIENCE = config.max_lost_patience
-
 # init logging
 logger=logging.getLogger(__name__)
 
@@ -79,9 +72,9 @@ class Field(object):
         # a dict of missing groups, indexed by gid
         self.m_suspect_groups = {}
         #self.allpaths = []
-        self.m_giddist = GROUP_DIST
-        self.m_ungroupdist = UNGROUP_DIST
-        self.m_oscfps = OSC_FPS
+        self.m_giddist = config.group_distance
+        self.m_ungroupdist = config.ungroup_distance
+        self.m_oscfps = config.framerate
         self.m_frame = 0
         self.m_scene = None
         self.m_scene_variant = None
@@ -99,7 +92,7 @@ class Field(object):
             self.m_osc = osc
         if frame is not None:
             self.m_frame = frame
-            if frame%REPORT_FREQ['debug'] == 0:
+            if frame%config.report_frequency['debug'] == 0:
                 logger.debug( "update:frame:"+str(frame))
 
     def update_scene(self, scene, variant, value):
@@ -524,7 +517,7 @@ class Field(object):
 
     def check_for_lost_cell(self, uid):
         time_since_last_update = time() - self.m_cell_dict[uid].m_updatetime
-        if time_since_last_update > MAX_LOST_PATIENCE:
+        if time_since_last_update > config.max_lost_patience:
             logger.info("deleting cell %d that has been lost for %.2f sec"%(uid,time_since_last_update))
             self.del_cell(uid)
 

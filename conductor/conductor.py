@@ -29,14 +29,7 @@ from cmath import phase,pi
 import config
 import logging
 
-# local classes
-
-# constants
-
-FRAMERATE = config.framerate
-
-DEFAULT = 'default'
-
+# constants to make program text cleaner
 CELL_AVG = config.cell_avg_triggers
 CELL_MEM = config.cell_memory_time
 CELL_QUAL = config.cell_qualifying_triggers
@@ -212,11 +205,11 @@ class Conductor(object):
                 if type in CONX_AGE:
                     max_age = CONX_AGE[type]
                 else:
-                    max_age = CONX_AGE[DEFAULT]
+                    max_age = CONX_AGE["default"]
                 if type in CONX_AVG:
                     avg_trigger = CONX_AVG[type]
                 else:
-                    avg_trigger = CONX_AVG[DEFAULT]
+                    avg_trigger = CONX_AVG["default"]
 
                 since_update = time() - attr.m_updatetime
                 if max_age>0:
@@ -247,7 +240,7 @@ class Conductor(object):
                     if type in CONX_AVG:
                         avg_trigger = CONX_AVG[type]
                     else:
-                        avg_trigger = CONX_AVG[DEFAULT]
+                        avg_trigger = CONX_AVG["default"]
 
                     if running_avg >= avg_trigger and not self.m_field.check_for_conx_attr(uid0, uid1, type): 
     					# Debug message for new connections only
@@ -265,9 +258,9 @@ class Conductor(object):
         if type in CONX_MEM:
             mem_time = CONX_MEM[type]
         else:
-            mem_time = CONX_MEM[DEFAULT]
+            mem_time = CONX_MEM["default"]
         if mem_time:
-            k = 1 - 1/(FRAMERATE*float(mem_time))
+            k = 1 - 1/(config.framerate*float(mem_time))
             if index in self.m_avg_table:
                 old_avg = self.m_avg_table[index]
             else:
@@ -333,11 +326,11 @@ class Conductor(object):
                 if type in CELL_AGE:
                     max_age = CELL_AGE[type]
                 else:
-                    max_age = CELL_AGE[DEFAULT]
+                    max_age = CELL_AGE["default"]
                 if type in CELL_AVG:
                     avg_trigger = CELL_AVG[type]
                 else:
-                    avg_trigger = CELL_AVG[DEFAULT]
+                    avg_trigger = CELL_AVG["default"]
 
                 since_update = time() - attr.m_updatetime
                 if max_age>0:
@@ -364,7 +357,7 @@ class Conductor(object):
                     if type in CELL_AVG:
                         avg_trigger = CELL_AVG[type]
                     else:
-                        avg_trigger = CELL_AVG[DEFAULT]
+                        avg_trigger = CELL_AVG["default"]
 
                     if running_avg >= avg_trigger and not self.m_field.check_for_cell_attr(uid, type): 
                         logger.info("triggered cell %s attribute %s: avg (%.2f) > trigger (%.2f)"%(uid,type,running_avg,avg_trigger))
@@ -381,15 +374,15 @@ class Conductor(object):
         if type in CELL_MEM:
             time = CELL_MEM[type]
         else:
-            time = CELL_MEM[DEFAULT]
+            time = CELL_MEM["default"]
         if index in self.m_avg_table:
             old_avg = self.m_avg_table[index]
         else:
             old_avg = 0
-        if float(time)*FRAMERATE<=1:
+        if float(time)*config.framerate<=1:
             self.m_avg_table[index] = sample
         else:
-            k = 1 - 1/(FRAMERATE*float(time))
+            k = 1 - 1/(config.framerate*float(time))
             self.m_avg_table[index] = k*old_avg + (1-k)*sample
         return self.m_avg_table[index]
 

@@ -42,9 +42,6 @@ from field import Field
 from oschandler import OSCHandler
 from conductor import Conductor
 
-# constants
-FRAMERATE = config.framerate
-
 # init logging
 def setup_logging(default_path='logging.json',     default_level=logging.INFO,env_key='LOG_CFG'):
     """Setup logging configuration
@@ -101,7 +98,7 @@ def main():
         else:
             # Still on the same frame, sleep for a fraction of the frame time to not hog CPU
             #field.m_osc.send_laser('/conductor/sleep',[field.m_frame])    # Useful for debugging -- can see in OSC stream when this process was sleeping
-            sleep((1.0/FRAMERATE)/10)
+            sleep((1.0/config.framerate)/10)
 
         keep_running = osc.m_run & field.m_still_running
 

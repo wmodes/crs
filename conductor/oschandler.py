@@ -29,10 +29,6 @@ from OSC import OSCServer, OSCClient, OSCMessage
 import config
 import logging
 
-# Constants
-REPORT_FREQ = config.report_frequency
-
-import socket
 hostname=socket.gethostname()
 print "hostname=",hostname
 hostname="localhost"
@@ -421,7 +417,7 @@ class OSCHandler(object):
         vis = args[17]
         if id not in self.m_field.m_cell_dict:
             logger.info( "event_track_body:no uid "+str(id)+" in registered cell list")
-        if frame%REPORT_FREQ['debug'] == 0:
+        if frame%config.report_frequency['debug'] == 0:
             logger.debug(" ".join(map(str,[ "    event_track_body:id:",id,"pos:", (x, y), "data:", \
                         ex, ey, spd, espd, facing, efacing, diam, sigmadiam, \
                         sep, sigmasep, leftness, vis])))
@@ -461,7 +457,7 @@ class OSCHandler(object):
         vis = args[12]
         if id not in self.m_field.m_cell_dict:
             logger.info( "event_track_leg:no uid "+str(id)+" in registered cell list")
-        if frame%REPORT_FREQ['debug'] == 0:
+        if frame%config.report_frequency['debug'] == 0:
             logger.debug(" ".join(map(str,["    event_track_leg:id:", id, "leg:", leg, "pos:", (x,y), \
                 "data:", ex, ey, spd, espd, heading, eheading, vis])))
         self.m_field.update_leg(id, leg, nlegs, x, y, ex, ey, spd, espd, 
@@ -501,7 +497,7 @@ class OSCHandler(object):
         gsize = args[10]
         channel = args[11]
         #print "event_track_update:",path,args,source
-        if frame%REPORT_FREQ['debug'] == 0:
+        if frame%config.report_frequency['debug'] == 0:
             #print "event_track_update:",path,args,source
             logger.debug(" ".join(map(str,[ " event_track_update:id:",id,"pos:", (x, y), "data:", \
                         vx, vy, major, minor, gid, gsize])))
@@ -533,7 +529,7 @@ class OSCHandler(object):
         diam = args[6]
         if gid not in self.m_field.m_group_dict:
             logger.info( "event_track_group:no gid "+str(gid)+" in group list")
-#        if frame%REPORT_FREQ['debug'] == 0:
+#        if frame%config.report_frequency['debug'] == 0:
         logger.debug(" ".join(map(str,["    event_track_group:gid:",gid, "pos:", (x, y), "data:",gsize, duration, diam])))
         self.m_field.update_group(gid, gsize, duration, x, y, diam)
 
@@ -559,7 +555,7 @@ class OSCHandler(object):
         fromexit = args[4]
         if uid not in self.m_field.m_cell_dict:
             logger.info("event_track_geo:no uid "+str(uid)+" in registered cell list")
-        if frame%REPORT_FREQ['debug'] == 0:
+        if frame%config.report_frequency['debug'] == 0:
             logger.debug(" ".join(map(str,["    event_track_geo:uid:",uid, "data:", \
                         fromcenter, fromnearest, fromexit])))
         self.m_field.update_geo(uid, fromcenter, fromnearest, fromexit)
@@ -573,7 +569,7 @@ class OSCHandler(object):
         #print "event_track_frame:",path,args,source
         frame = args[0]
         self.m_field.update(frame=frame)
-        if frame%REPORT_FREQ['debug'] == 0:
+        if frame%config.report_frequency['debug'] == 0:
             logger.debug( "event_track_frame::"+str(frame))
         return None
 
@@ -677,17 +673,17 @@ class OSCHandler(object):
     def send_regular_reports(self):
         """Send all the reports that are send every cycle."""
         frame = self.m_field.m_frame
-        if frame%REPORT_FREQ['rollcall'] == 0:
+        if frame%config.report_frequency['rollcall'] == 0:
             self.send_rollcall()
-        if frame%REPORT_FREQ['attrs'] == 0:
+        if frame%config.report_frequency['attrs'] == 0:
             self.send_cell_attrs()
-        if frame%REPORT_FREQ['conxs'] == 0:
+        if frame%config.report_frequency['conxs'] == 0:
             self.send_conx_attr()
-        if frame%REPORT_FREQ['gattrs'] == 0:
+        if frame%config.report_frequency['gattrs'] == 0:
             self.send_group_attrs()
-        if frame%REPORT_FREQ['events'] == 0:
+        if frame%config.report_frequency['events'] == 0:
             self.send_events()
-        if frame%REPORT_FREQ['uisettings'] == 0:
+        if frame%config.report_frequency['uisettings'] == 0:
             self.send_uisettings()
 
     def send_uisettings(self):

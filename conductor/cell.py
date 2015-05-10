@@ -32,11 +32,6 @@ from leg import Leg
 from journal import Journal
 import logging
 
-# constants
-MAX_LEGS = config.max_legs
-DEF_DIAM = config.default_diam
-DIAM_PAD = config.diam_padding     # increased diam of circle around bodies
-
 # init logging
 logger = logging.getLogger(__name__)
 
@@ -81,18 +76,18 @@ class Cell(object):
         self.m_vx = vx
         self.m_vy = vy
         if major is None:
-            self.m_major = DEF_DIAM
-            self.m_body_diam = DEF_DIAM
-            self.m_diam = DEF_DIAM + DIAM_PAD
+            self.m_major = config.default_diam
+            self.m_body_diam = config.default_diam
+            self.m_diam = config.default_diam + config.diam_padding
         else:
             self.m_major = major
             self.m_body_diam = major
-            self.m_diam = major + DIAM_PAD
+            self.m_diam = major + config.diam_padding
         self.m_minor = minor
         self.m_gid = gid
         self.m_gsize = gsize
         #TODO: Move this to graphics engine
-        self.m_diam = self.m_body_diam + DIAM_PAD
+        self.m_diam = self.m_body_diam + config.diam_padding
         if visible is None:
             self.m_visible = True
         #
@@ -102,7 +97,7 @@ class Cell(object):
         self.m_body = Body(field, id)
         # create an array of leg instances
         self.m_leglist = []
-        for i in range(MAX_LEGS):
+        for i in range(config.max_legs):
             self.m_leglist.append(Leg(field, id, i))
         self.m_fromcenter = 0
         self.m_fromnearest = 0
@@ -127,7 +122,7 @@ class Cell(object):
         if major is not None:
             self.m_major = major
             self.m_body_diam = major
-            self.m_diam = major + DIAM_PAD
+            self.m_diam = major + config.diam_padding
         if minor is not None:
             self.m_minor = minor
         if gid is not None:

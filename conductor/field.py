@@ -77,7 +77,8 @@ class Field(object):
         self.m_scene = None
         self.m_scene_variant = None
         self.m_scene_value = None
-
+        self.m_osc = None
+        
     def update(self, groupdist=None, ungroupdist=None, oscfps=None,
                osc=None, frame=None):
         if groupdist is not None:

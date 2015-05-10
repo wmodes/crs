@@ -39,7 +39,7 @@ import config
 
 # local classes
 from field import Field
-from myoschandler import MyOSCHandler
+from oschandler import OSCHandler
 from conductor import Conductor
 
 # constants
@@ -71,7 +71,7 @@ def main():
     # initialize stuff
     field = Field()
     
-    osc = MyOSCHandler()
+    osc = OSCHandler()
     conductor = Conductor()
     field.update(osc=osc)
     osc.update(field=field, conductor=conductor)

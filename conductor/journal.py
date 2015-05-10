@@ -18,6 +18,7 @@ __license__ = "GNU GPL 3.0 or later"
 
 # local modules
 import config
+from time import time
 
 class Journal(object):
     """Journal entry for storing history of cells.
@@ -29,10 +30,10 @@ class Journal(object):
         m_time: Length of this connection
         m_timestamp: When this journal entry was made
     """
-    def __init__(self, type, uid0, uid1, value, time):
-        self.m_type = type
+    def __init__(self, jtype, uid0, uid1, value, jtime):
+        self.m_type = jtype
         self.m_uid0 = uid0 # The uid of this cell
         self.m_uid1 = uid1 # The uid of the other cell
         self.m_value = value
-        self.m_time = time
+        self.m_time = jtime
         self.m_timestamp = time()

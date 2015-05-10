@@ -401,6 +401,7 @@ class MyOSCHandler(OSCHandler):
                 self.send_conx_downstream(cid, type, conx.m_cell0.m_id,
                         conx.m_cell1.m_id, attr.m_value, 0.0,duration)
 
+    # TODO - FIXME - this is never called; do we need it at all?
     def nix_conxs(self, cid):                
         """Sends OSC messages to announce the removal of a connection.
         

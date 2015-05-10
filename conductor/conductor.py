@@ -896,7 +896,7 @@ class Conductor(object):
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
         if not type in CELL_QUAL:
-            loggin.error("No cell_qualifying_triggers set for type '%s'"% type)
+            logging.error("No cell_qualifying_triggers set for type '%s'"% type)
             return 0
         max_vel = CELL_QUAL[type]
         if spd<max_vel:

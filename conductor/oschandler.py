@@ -279,7 +279,7 @@ class OSCHandler(object):
             target_ip = client.address()[0]
             if target_ip == source_ip:
                 try:
-                    self.sendto(clientkey, "/ack", ping_code)
+                    self.send_to(clientkey, "/ack", ping_code)
                 except:
                     logger.warning("event_ping:unable to ack to "+str(clientkey),exc_info=False)
 

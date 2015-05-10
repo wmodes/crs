@@ -193,7 +193,6 @@ class OSCHandler(object):
 
     def send_downstream(self, path, args):
         """Send OSC Message to one client."""
-        self.send_to('visual', path, args)
         self.send_to('sound', path, args)
         self.send_to('recorder', path, args)
         self.send_to('laser', path, args)

@@ -11,7 +11,6 @@ max_lost_patience = 2   # (sec)
 osc_ips_local = {
     'default': "UNSPECIFIED",
     'localhost': "127.0.0.1",
-    'visual': "127.0.0.1",
     'conductor': "127.0.0.1",
     'tracking': "127.0.0.1",
     'sound': "127.0.0.1",
@@ -23,7 +22,6 @@ osc_ips_local = {
 osc_ips_prod = {
     'default': "UNSPECIFIED",
     'localhost': "192.168.0.31",
-    'visual': "localhost",
     'conductor': "localhost",
     'tracking': "localhost",
     'sound': "192.168.0.29",
@@ -35,7 +33,6 @@ osc_ips_prod = {
 osc_ports_local = {
     'default': -1,
     'localhost': 7010,
-    'visual': 7012,
     'conductor': 7011,
     'tracking': 7770,
     'sound': 7010,
@@ -259,30 +256,6 @@ oscpath = {
     'track_group': "/pf/group",
     'track_geo': "/pf/geo",
 
-    # Visual subsystem
-    #
-    # Outgoing from the visual subsys
-    'visual_start': "/visual/start",
-    'visual_stop': "/visual/stop",
-
-    # Laser subsystem
-    #
-    # Outgoing to the laser engine
-    'graph_start': "/laser/start",
-    'graph_stop': "/laser/stop",
-    'graph_line': "/laser/line",
-    'graph_cubic': "/laser/bezier/cubic",
-    'graph_arc': "/laser/arc",
-    'graph_color': "/laser/set/color",
-    'graph_density': "/laser/set/density",
-    'graph_attr': "/laser/set/attribute",
-    'graph_pps': "/laser/set/pps",
-    'graph_update': "/laser/update",
-    'graph_begin_conx':"/laser/conx/begin",
-    'graph_end_conx':"/laser/conx/end",
-    'graph_begin_cell':"/laser/cell/begin",
-    'graph_end_cell':"/laser/cell/end",
-    
     # Conductor subsystem
     #
     # Incoming to the conductor

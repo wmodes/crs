@@ -335,12 +335,6 @@ class Field(object):
             self.m_conx_dict[cid] = connector
         return connector
 
-    def update_connector(self, id, frame=None):
-        """ Update a connector's information."""
-        logger.debug("update_conx:Cell "+str(id))
-        if id in self.m_conx_dict:
-            self.m_conx_dict[id].update(frame=self.m_frame)
-
     def del_connector(self, cid):
         if cid in self.m_conx_dict:
             # make sure the cells that this connector is attached to, delete

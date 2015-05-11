@@ -99,8 +99,8 @@ class Connector(object):
         To actually delete it, remove it from the list of connectors in the Field
         class.
         """
-        logger.debug(" ".join(map(str,["disconnecting",self.m_id,"between",\
-                self.m_cell0.m_id,"and",self.m_cell1.m_id])))
+        logger.debug(" ".join([str(x) for x in ["disconnecting",self.m_id,"between",
+                                                self.m_cell0.m_id,"and",self.m_cell1.m_id]]))
         # for simplicity's sake, we do the work rather than passing to
         # the object to do the work
         # delete the connector from its two cells

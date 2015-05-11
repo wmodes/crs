@@ -718,9 +718,9 @@ class Conductor(object):
             score = score0 * score1
             self.record_conx_avg(cid, atype, score)
             if score0 * score1:
-                msg=" ".join(map(str,[ "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"]))
+                msg=" ".join([str(x) for x in [ "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"]])
             else:
-                msg=" ".join(map(str,[ "facing:Frame:",self.m_field.m_frame,", CID:", cid]))
+                msg=" ".join([str(x) for x in [ "facing:Frame:",self.m_field.m_frame,", CID:", cid]])
             msg=msg+ "    facing angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%(angle0,phi0,diff0,score0)
             msg=msg+ "    facing angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%(angle1,phi1,diff1,score1)
             msg=msg+ "    facing: instantaneous score=%.2f, avg=%.2f"%(score,self.get_conx_avg(cid,atype))

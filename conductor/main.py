@@ -46,8 +46,8 @@ def setup_logging(default_path='logging.json',     default_level=logging.INFO,en
         path = value
     if os.path.exists(path):
         with open(path, 'rt') as f:
-            config = json.load(f)
-        logging.config.dictConfig(config)
+            tmpconfig = json.load(f)
+        logging.config.dictConfig(tmpconfig)
     else:
         logging.basicConfig(level=default_level)
         

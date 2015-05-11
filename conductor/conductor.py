@@ -212,11 +212,11 @@ class Conductor(object):
                 since_update = time() - attr.m_updatetime
                 if max_age > 0:
                     attr.set_freshness(1 - (since_update/max_age))
-                    logger.info("expired connection %s %s: value=%.2f,since_update=%.2f"%(cid,type,attr.m_value,since_update))
 
                 # Check if we should remove this attribute
                 # (when they are no longer triggered and it has been at least max_age since a trigger).
                 if attr.m_value < avg_trigger and since_update > max_age:
+                    logger.info("expired connection %s %s: value=%.2f,since_update=%.2f",cid, atype, attr.m_value, since_update)
                     attr.set_freshness(0.0)
                     # send "del conx" osc msg
                     self.m_field.m_osc.nix_conx_attr(cid, atype)
@@ -490,7 +490,7 @@ class Conductor(object):
         # we calculate a score
         # score = 1 if the values are exactly the same
         # score = 0 if the values are very different
-        logger=logging.getLogger(__name__+".coord")
+        tmplogger = logging.getLogger(__name__+".coord")
         if not 'coord-min' in CONX_QUAL:
             logger.error("No connector_qualifying_triggers set for type '%s'", 'coord-min')
             return 0

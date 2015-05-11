@@ -102,12 +102,12 @@ class Field(object):
     # Events
     #    /conductor/event [eid,"type",uid0,uid1,value,time]
 
-    def update_event(self, eid, uid0=None, uid1=None, value=None, time=None):
+    def update_event(self, eid, uid0=None, uid1=None, value=None, etime=None):
         """Create event if it doesn't exist, update its info."""
         if eid not in self.m_event_dict:
-            self.m_event_dict[eid] = Event(self, eid, uid0, uid1, value, time)
+            self.m_event_dict[eid] = Event(self, eid, uid0, uid1, value, etime)
         else:
-            self.m_event_dict[eid].update(uid0, uid1, value, time)
+            self.m_event_dict[eid].update(uid0, uid1, value, etime)
 
     def del_event(self,eid):
         if eid in self.m_event_dict:

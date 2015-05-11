@@ -22,17 +22,11 @@ __license__ = "GNU GPL 3.0 or later"
 # core modules
 import os.path
 import sys
-import warnings
 import logging
 import logging.config
 import json
 
 from time import time,sleep
-
-# installed modules
-# noinspection PyUnresolvedReferences
-sys.path.append('..')     # Add path to find OSC
-from OSC import OSCMessage
 
 # local modules
 import config

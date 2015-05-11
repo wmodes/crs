@@ -20,9 +20,6 @@ __license__ = "GNU GPL 3.0 or later"
 # core modules
 from time import time
 
-# local modules
-import config
-
 class Event(object):
     """Represents a grouping of cells.
 

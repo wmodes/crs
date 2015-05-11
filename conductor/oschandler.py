@@ -21,9 +21,11 @@ __license__ = "GNU GPL 3.0 or later"
 import types
 from time import time
 import socket
+import sys
 
 # installed modules
-from OSC import OSCServer, OSCClient, OSCMessage
+sys.path.append('..')
+from OSC import OSCServer, OSCClient, OSCMessage, OSCClientError
 #import pyglet
 
 # local modules

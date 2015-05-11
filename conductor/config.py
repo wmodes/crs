@@ -217,7 +217,6 @@ report_frequency = {
     'attrs': 5,
     'conxs': 5,
     'gattrs': 5,
-    'events': 1,
     'uisettings':50,
 }
 osctimeout = 0

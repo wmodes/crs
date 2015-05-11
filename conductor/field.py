@@ -102,16 +102,27 @@ class Field(object):
     # Events
     #    /conductor/event [eid,"type",uid0,uid1,value,time]
 
-    def update_event(self, eid, uid0=None, uid1=None, value=None, etime=None):
+    def new_event(self, eid, uid0, uid1, etype, value):
         """Create event if it doesn't exist, update its info."""
-        if eid not in self.m_event_dict:
-            self.m_event_dict[eid] = Event(self, eid, uid0, uid1, value, etime)
-        else:
-            self.m_event_dict[eid].update(uid0, uid1, value, etime)
+        assert eid not in self.m_event_dict
+        event = Event(self, eid, etype, uid0, uid1, value)
+        self.m_event_dict[eid]=event		# Save it for checking to prevent refiring too soon (TODO)
+        self.m_osc.send_event(event)					# Send immediately (not in send_regular_reports)
 
+    def find_or_delete_event(self,uid0, uid1, etype,maxlife):
+        """Find an event, deleting matching events older than maxlife """
+        for eid,evt in self.m_event_dict.iteritems():
+            if evt.m_uid0==uid0 and evt.m_uid1==uid1 and evt.m_type==etype:
+                if time()-evt.m_createtime > maxlife:
+                    self.del_event(eid)
+                    return None
+                return eid
+        return None
+    
     def del_event(self,eid):
-        if eid in self.m_event_dict:
-            del self.m_event_dict[eid]
+        """Delete event so it can be fired again"""
+        logger.info("delete event "+str(eid));
+        del self.m_event_dict[eid]
 
     # Groups
     #    /pf/group samp gid gsize duration centroidX centroidY diameter

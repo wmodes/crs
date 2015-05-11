@@ -107,17 +107,20 @@ class Conductor(object):
             # Happenings
             #
             'fusion': self.test_conx_fusion,
-            #'transfer': self.test_conx_transfer,
+            #'transfer': self.test_conx_transfer
+            }
+        self.event_tests = {
             #
             # Events
             #
-            'touch': self.test_conx_touch,
-            'tag': self.test_conx_tag,
-        }
+            'touch': self.test_event_touch,
+            'tag': self.test_event_tag
+            }
 
         self.m_avg_table = {}
         self.m_dist_table = {}
-
+        self.m_current_eid=1
+        
     def update(self, field=None, condglobal=None, cellglobal=None):
         if field != None:
             self.m_field = field
@@ -248,7 +251,21 @@ class Conductor(object):
                     if running_avg >= avg_trigger or self.m_field.check_for_conx_attr(uid0, uid1, atype):
                         # create or update connection
                         self.m_field.update_conx_attr(cid, uid0, uid1, atype, running_avg, running_avg >= avg_trigger)
+                for etype, event_test in self.event_tests.iteritems():
+                    if etype in CONX_AGE:
+                        max_age = CONX_AGE[etype]
+                    else:
+                        max_age = 5
 
+                    score = event_test(cid, etype, cell0, cell1)
+                    if score > 0:
+                        eid=self.m_field.find_or_delete_event(uid0, uid1, etype,max_age)
+                        if eid==None:
+                            eid=self.m_current_eid
+                            self.m_current_eid+=1
+                            logger.info("triggerred event %s %s between %d and %d with score %.3f, maxage=%.2f",eid, etype, uid0, uid1, score,max_age)
+                            self.m_field.new_event(eid, uid0, uid1, etype, score)
+                            
     def record_conx_avg(self, uid, atype, sample):
         """Track Exponentially decaying weighted moving averages (ema) in an indexed dict."""
         index = str(uid)+'-'+str(atype)
@@ -773,28 +790,32 @@ class Conductor(object):
     # Event Tests
     #
 
-    def test_conx_touch(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
+    def test_event_touch(self, cid, atype, cell0, cell1):
         """Are these two people touching?
-
-        **Not Implemented
-
         Evaluates the folllowing criteria
             1. Is distance between cells < contact_dist
             score = 1.0 if dist is within physical threshold
         Returns:
-            The exponentially decaying weighted moving average
+            score
         """
         # we calculate a score
         # we get the distance between cells
         dist = self.m_dist_table[cid]
-        if dist < CONX_QUAL[atype]:
-            return 1.0
+        relvel=[cell0.m_vx-cell1.m_vx,cell0.m_vy-cell1.m_vy]	# Net velocity of cell0
+        relpos=[cell1.m_x-cell0.m_x,cell1.m_y-cell0.m_y]			# Net position of cell1 relative to cell0
+        relspeed=(relvel[0]*relpos[0]+relvel[1]*relpos[1])/sqrt(relpos[0]*relpos[0]+relpos[1]*relpos[1])
+        if dist < CONX_QUAL[atype] and relspeed>0:
+            if relspeed>1.0:
+                score = 1.0
+            else:
+                score = relspeed
         else:
-            return 0.0
-        # we (don't) record our score in our running avg table
-        #return self.record_conx_avg(cid, atype, score)
+            score = 0.0
+        # tmplogger = logging.getLogger(__name__+".touch")
+        # tmplogger.info( "touch: cid=%s, pos0=(%.2f,%.2f), pos1=(%.2f, %.2f), vel0= (%.2f,%.2f), vel1= (%.2f,%.2f), relspeed=%.3f, dist=%.3f,score=%.3f", cid, cell0.m_x, cell0.m_y, cell1.m_x, cell1.m_y, cell0.m_vx, cell0.m_vy, cell1.m_vx, cell1.m_vy, relspeed, dist, score)
+        return score
 
-    def test_conx_tag(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
+    def test_event_tag(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Did one of these individuals tag the other?
 
         **Not Yes Implemented

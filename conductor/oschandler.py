@@ -478,7 +478,7 @@ class OSCHandler(object):
             #print "event_track_update:",path,args,source
             logger.debug(" ".join([str(msgpart) for msgpart in [ " event_track_update:id:",uid,"pos:", (x, y), "data:", \
                         vx, vy, major, minor, gid, gsize]]))
-        self.m_field.update_cell(uid, x, y, vx, vy, major, minor, gid, gsize, 
+        self.m_field.update_cell(uid, x, y, vx, vy, major, minor, gid, gsize,
                                  frame=frame)
 
     def event_tracking_group(self, path, tags, args, source):
@@ -648,8 +648,6 @@ class OSCHandler(object):
             self.send_conx_attr()
         if frame%config.report_frequency['gattrs'] == 0:
             self.send_group_attrs()
-        if frame%config.report_frequency['events'] == 0:
-            self.send_events()
         if frame%config.report_frequency['uisettings'] == 0:
             self.send_uisettings()
 
@@ -748,14 +746,10 @@ class OSCHandler(object):
                     self.m_field.m_osc.send_downstream("/conductor/gattr",
                             [atype, gid, attr.m_value, attr.m_freshness,duration])
 
-    def send_events(self):
-        """Sends notification of ongoing events.
-        /conductor/event ["type",uid0,uid1,value,time]
+    def send_event(self,event):
+        """Sends notification of an event
         """
-        for event in self.m_field.m_event_dict.itervalues():
-            duration = time() - event.createtime
-            self.m_field.m_osc.send_downstream("/conductor/event",
-                    [event.m_type, event.m_uid0, event.m_uid1, event.m_value, 1.0, duration])
+        self.m_field.m_osc.send_downstream("/conductor/event",[event.m_type, event.m_id, event.m_uid0, event.m_uid1, event.m_value])
 
     # On-Call Messages
 

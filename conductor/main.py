@@ -37,7 +37,7 @@ from oschandler import OSCHandler
 from conductor import Conductor
 
 # init logging
-def setup_logging(default_path='logging.json',     default_level=logging.INFO,env_key='LOG_CFG'):
+def setup_logging(default_path='logging.json',     default_level=logging.DEBUG,env_key='LOG_CFG'):
     """Setup logging configuration
     """
     path = default_path
@@ -74,6 +74,7 @@ def main():
 
     keep_running = True
     lastframe = None
+    lasttime = 0
     while keep_running:
         # call user script
         osc.each_frame()

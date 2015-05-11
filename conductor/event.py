@@ -34,19 +34,19 @@ class Event(object):
 
     """
 
-    def __init__(self, field, id, type=None, uid0=None, uid1=None, value=None):
+    def __init__(self, field, eid, etype=None, uid0=None, uid1=None, value=None):
         self.m_field=field
-        self.m_id = id
-        self.m_type = type
+        self.m_id = eid
+        self.m_type = etype
         self.m_uid0 = uid0
         self.m_uid1 = uid1
         self.m_value = value
         self.m_createtime = time()
         self.m_timestamp = time()
 
-    def update(self, type=None, uid0=None, uid1=None, value=None):
-        if type is not None:
-            self.m_type = type
+    def update(self, etype=None, uid0=None, uid1=None, value=None):
+        if etype is not None:
+            self.m_type = etype
         if uid0 is not None:
             self.m_uid0 = uid0
         if uid1 is not None:

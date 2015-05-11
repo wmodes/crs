@@ -42,10 +42,10 @@ class Connector(object):
 
     """
 
-    def __init__(self, field, id, cell0, cell1, frame=None):
+    def __init__(self, field, uid, cell0, cell1, frame=None):
         # process passed params
         self.m_field=field
-        self.m_id = id
+        self.m_id = uid
         self.m_cell0 = cell0
         self.m_cell1 = cell1
         self.m_attr_dict = {}
@@ -76,22 +76,22 @@ class Connector(object):
         if frame is not None:
             self.m_frame = frame
 
-    def update_attr(self, type, value, aboveTrigger=False):
+    def update_attr(self, ctype, value, aboveTrigger=False):
         """Update attr, create it if needed."""
-        if type in self.m_attr_dict:
-            self.m_attr_dict[type].update(value,aboveTrigger)
+        if ctype in self.m_attr_dict:
+            self.m_attr_dict[ctype].update(value,aboveTrigger)
         else:
-            self.m_attr_dict[type] = Attr(type, self.m_id, value)
             assert aboveTrigger   # Must be above trigger if this is the first time it is being updated
+            self.m_attr_dict[ctype] = Attr(ctype, self.m_id, value)
 
-    def check_for_attr(self, type):
-        if type in self.m_attr_dict:
+    def check_for_attr(self, ctype):
+        if ctype in self.m_attr_dict:
             return True
         return False
 
-    def del_attr(self, type):
-        if type in self.m_attr_dict:
-            del self.m_attr_dict[type]
+    def del_attr(self, ctype):
+        if ctype in self.m_attr_dict:
+            del self.m_attr_dict[ctype]
 
     def conx_disconnect_thyself(self):
         """Disconnect cells this connector refs & this connector ref'd by them.

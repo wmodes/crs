@@ -126,7 +126,7 @@ class Conductor(object):
         if cellglobal != None:
             self.m_cellglobal = cellglobal
 
-    def update_cell_param(self, type,param, value):
+    def update_cell_param(self, atype, param, value):
         mod_array = None
         if param == "trigger":
             mod_array = CELL_AVG
@@ -139,9 +139,9 @@ class Conductor(object):
         elif param == "qual":
             mod_array = CELL_QUAL
         if mod_array is not None:
-            mod_array[type] = value
-    def update_conx_param(self, type,param, value):
+            mod_array[atype] = value
 
+    def update_conx_param(self, atype, param, value):
         mod_array = None
         if param == "trigger":
             mod_array = CONX_AVG
@@ -155,12 +155,12 @@ class Conductor(object):
             mod_array = CONX_QUAL
         elif param == "qualmax":
             mod_array = CONX_QUAL
-            type=type+"-max"
+            atype = atype+"-max"
         elif param == "qualmin":
             mod_array = CONX_QUAL
-            type=type+"-min"
+            atype = atype+"-min"
         if mod_array is not None:
-            mod_array[type] = value
+            mod_array[atype] = value
 
 
     #
@@ -199,13 +199,13 @@ class Conductor(object):
         for cid, connector in new_conx_dict.iteritems():
             new_attr_dict = copy(connector.m_attr_dict)
             # iterate over ever attr
-            for type,attr in new_attr_dict.iteritems():
-                if type in CONX_AGE:
-                    max_age = CONX_AGE[type]
+            for atype, attr in new_attr_dict.iteritems():
+                if atype in CONX_AGE:
+                    max_age = CONX_AGE[atype]
                 else:
                     max_age = CONX_AGE["default"]
-                if type in CONX_AVG:
-                    avg_trigger = CONX_AVG[type]
+                if atype in CONX_AVG:
+                    avg_trigger = CONX_AVG[atype]
                 else:
                     avg_trigger = CONX_AVG["default"]
 
@@ -219,10 +219,9 @@ class Conductor(object):
                 if attr.m_value < avg_trigger and since_update > max_age:
                     attr.set_freshness(0.0)
                     # send "del conx" osc msg
-                    self.m_field.m_osc.nix_conx_attr(cid, type)
+                    self.m_field.m_osc.nix_conx_attr(cid, atype)
                     # delete attr and maybe conx
-                    self.m_field.del_conx_attr(cid, type)
-                    index = str(cid)+'-'+str(type)
+                    self.m_field.del_conx_attr(cid, atype)
 
         # Now add new connections
         for (cell0, cell1) in list(combinations(self.m_field.m_cell_dict.values(), 2)):
@@ -234,27 +233,27 @@ class Conductor(object):
                 cid = self.m_field.get_cid(uid0, uid1)
                 # calc distance once
                 self.m_dist_table[cid] = self.dist(cell0, cell1)
-                for type,conx_test in self.conx_tests.iteritems():
-                    running_avg = conx_test(cid, type, cell0, cell1)
-                    if type in CONX_AVG:
-                        avg_trigger = CONX_AVG[type]
+                for atype, conx_test in self.conx_tests.iteritems():
+                    running_avg = conx_test(cid, atype, cell0, cell1)
+                    if atype in CONX_AVG:
+                        avg_trigger = CONX_AVG[atype]
                     else:
                         avg_trigger = CONX_AVG["default"]
 
-                    if running_avg >= avg_trigger and not self.m_field.check_for_conx_attr(uid0, uid1, type): 
+                    if running_avg >= avg_trigger and not self.m_field.check_for_conx_attr(uid0, uid1, atype):
     					# Debug message for new connections only
-                        logger.info("triggerred connection %s %s: avg (%.3f) >= trigger (%.3f)"%(cid,type,running_avg,avg_trigger))
+                        logger.info("triggerred connection %s %s: avg (%.3f) >= trigger (%.3f)",cid, atype, running_avg, avg_trigger)
 
                     # Update all existing connections, and create new ones if triggered
-                    if running_avg >= avg_trigger or self.m_field.check_for_conx_attr(uid0, uid1, type):
+                    if running_avg >= avg_trigger or self.m_field.check_for_conx_attr(uid0, uid1, atype):
                         # create or update connection
-    def record_conx_avg(self, id, type, sample):
-        index = str(id)+'-'+str(type)
-        if type in CONX_MEM:
-            mem_time = CONX_MEM[type]
                         self.m_field.update_conx_attr(cid, uid0, uid1, atype, running_avg, running_avg >= avg_trigger)
 
+    def record_conx_avg(self, uid, atype, sample):
         """Track Exponentially decaying weighted moving averages (ema) in an indexed dict."""
+        index = str(uid)+'-'+str(atype)
+        if atype in CONX_MEM:
+            mem_time = CONX_MEM[atype]
         else:
             mem_time = CONX_MEM["default"]
         if mem_time:
@@ -268,9 +267,9 @@ class Conductor(object):
             self.m_avg_table[index] = sample
         return self.m_avg_table[index]
 
-    def get_conx_avg(self, id, type):
-        index = str(id)+'-'+str(type)
+    def get_conx_avg(self, uid, atype):
         """Retreive Exponentially decaying weighted moving averages (ema) in an indexed dict."""
+        index = str(uid)+'-'+str(atype)
         if index in self.m_avg_table:
             return self.m_avg_table[index]
         self.m_avg_table[index] = 0
@@ -315,13 +314,13 @@ class Conductor(object):
         for uid, connector in new_cell_dict.iteritems():
             new_attr_dict = copy(connector.m_attr_dict)
             # iterate over ever attr
-            for type,attr in new_attr_dict.iteritems():
-                if type in CELL_AGE:
-                    max_age = CELL_AGE[type]
+            for atype, attr in new_attr_dict.iteritems():
+                if atype in CELL_AGE:
+                    max_age = CELL_AGE[atype]
                 else:
                     max_age = CELL_AGE["default"]
-                if type in CELL_AVG:
-                    avg_trigger = CELL_AVG[type]
+                if atype in CELL_AVG:
+                    avg_trigger = CELL_AVG[atype]
                 else:
                     avg_trigger = CELL_AVG["default"]
 
@@ -330,13 +329,13 @@ class Conductor(object):
                     attr.set_freshness(1-(since_update/max_age))
 
                 # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
-                    logger.info("expired cell %s %s: value=%.2f, trigger=%.2f,since_update=%.2f"%(uid,type,attr.m_value,avg_trigger,since_update))
                 if attr.m_value < avg_trigger and since_update > max_age:
+                    logger.info("expired cell %s %s: value=%.2f, trigger=%.2f,since_update=%.2f",uid, atype, attr.m_value, avg_trigger, since_update)
                     attr.set_freshness(0.0)
                     # send "del cell" osc msg
-                    self.m_field.m_osc.nix_cell_attr(uid, type)
+                    self.m_field.m_osc.nix_cell_attr(uid, atype)
                     # delete attr and maybe cell
-                    self.m_field.del_cell_attr(uid, type)
+                    self.m_field.del_cell_attr(uid, atype)
                     # actually we want to keep the avg
                     #if index in self.m_avg_table:
                         #del self.m_avg_table[index]
@@ -345,42 +344,42 @@ class Conductor(object):
         # Now add new attributes, update existing ones
         for uid,cell in self.m_field.m_cell_dict.iteritems():
             if self.m_field.is_cell_good_to_go(uid):
-                for type, cell_test in self.cell_tests.iteritems():
-                    running_avg = cell_test(uid, type)
-                    if type in CELL_AVG:
-                        avg_trigger = CELL_AVG[type]
+                for atype, cell_test in self.cell_tests.iteritems():
+                    running_avg = cell_test(uid, atype)
+                    if atype in CELL_AVG:
+                        avg_trigger = CELL_AVG[atype]
                     else:
                         avg_trigger = CELL_AVG["default"]
 
-                    if running_avg >= avg_trigger and not self.m_field.check_for_cell_attr(uid, type): 
-                        logger.info("triggered cell %s attribute %s: avg (%.2f) > trigger (%.2f)"%(uid,type,running_avg,avg_trigger))
+                    if running_avg >= avg_trigger and not self.m_field.check_for_cell_attr(uid, atype):
+                        logger.info("triggered cell %s attribute %s: avg (%.2f) > trigger (%.2f)",uid, atype, running_avg, avg_trigger)
 
                     # Update all existing attributes, and create new ones if triggered
-                    if running_avg >= avg_trigger or self.m_field.check_for_cell_attr(uid, type): 
+                    if running_avg >= avg_trigger or self.m_field.check_for_cell_attr(uid, atype):
                         # update or create
-    def record_cell_avg(self, id, type, sample):
-        index = str(id)+'-'+str(type)
-        if type in CELL_MEM:
-            time = CELL_MEM[type]
                         self.m_field.update_cell_attr(uid, atype, running_avg, running_avg >= avg_trigger)
 
+    def record_cell_avg(self, uid, atype, sample):
         """Track Exponentially decaying weighted moving averages (ema) in an indexed dict."""
+        index = str(uid)+'-'+str(atype)
+        if atype in CELL_MEM:
+            mtime = CELL_MEM[atype]
         else:
-            time = CELL_MEM["default"]
+            mtime = CELL_MEM["default"]
         if index in self.m_avg_table:
             old_avg = self.m_avg_table[index]
         else:
             old_avg = 0
-        if float(time)*config.framerate<=1:
+        if float(mtime)*config.framerate <= 1:
             self.m_avg_table[index] = sample
         else:
-            k = 1 - 1/(config.framerate*float(time))
+            k = 1 - 1/(config.framerate*float(mtime))
             self.m_avg_table[index] = k*old_avg + (1-k)*sample
         return self.m_avg_table[index]
 
-    def get_cell_avg(self, id, type):
-        index = str(id)+'-'+str(type)
+    def get_cell_avg(self, uid, atype):
         """Retreive Exponentially decaying weighted moving averages (ema) in an indexed dict."""
+        index = str(uid)+'-'+str(atype)
         if index in self.m_avg_table:
             return self.m_avg_table[index]
         self.m_avg_table[index] = 0
@@ -404,7 +403,7 @@ class Conductor(object):
     # Connections Tests
     #
 
-    def test_conx_grouped(self, cid, type, cell0, cell1):
+    def test_conx_grouped(self, cid, atype, cell0, cell1):
         """Are cells currently grouped?
         **Implemented & Successfully Tested
 
@@ -422,9 +421,9 @@ class Conductor(object):
         else:
             score = 0.0
         # we record our score in our running avg table
-        return self.record_conx_avg(cid, type, score)
+        return self.record_conx_avg(cid, atype, score)
 
-    def test_conx_friends(self, cid, type, cell0, cell1):
+    def test_conx_friends(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Are cells in proximity for some time? Pref facing each other?
 
         **Implemented & Successfully Tested
@@ -442,15 +441,15 @@ class Conductor(object):
         # we normalize this dist where
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
-        if not type in CONX_QUAL:
-            logger.error("No connector_qualifying_triggers set for type '%s'"% type)
+        if not atype in CONX_QUAL:
+            logger.error("No connector_qualifying_triggers set for type '%s'",atype)
             return 0
-        max_dist = CONX_QUAL[type]
+        max_dist = CONX_QUAL[atype]
         score = max(0, 1 - float(dist) / max_dist)
         # we record our score in our running avg table
-        return self.record_conx_avg(cid, type, score)
+        return self.record_conx_avg(cid, atype, score)
 
-    def test_conx_contact(self, cid, type, cell0, cell1):
+    def test_conx_contact(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Are cells in contact with each other?
 
         **Implemented & Successfully Tested
@@ -466,14 +465,14 @@ class Conductor(object):
         # we calculate a score
         # we get the distance between cells
         dist = self.m_dist_table[cid]
-        if dist < CONX_QUAL[type]:
+        if dist < CONX_QUAL[atype]:
             score = 1.0
         else:
             score = 0
         # we record our score in our running avg table
-        return self.record_conx_avg(cid, type, score)
+        return self.record_conx_avg(cid, atype, score)
 
-    def test_conx_coord(self, cid, type, cell0, cell1):
+    def test_conx_coord(self, cid, atype, cell0, cell1):
         """Are individuals moving in a coordinated way.
 
         **Implemented & Not Tested
@@ -501,14 +500,14 @@ class Conductor(object):
         if spd0 < min_spd or spd1 < min_spd:
             score = 0.01
         else:
-        avgscore=self.record_conx_avg(cid, type, score)
         logger.debug( "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f"%(spd0,cell0.m_vx,cell0.m_vy,spd1,cell1.m_vx,cell1.m_vy,score,avgscore))
             score = min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
+        avgscore = self.record_conx_avg(cid, atype, score)
 
         # we record our score in our running avg table
         return avgscore
 
-    def test_conx_fof(self, cid, type, cell0, cell1):
+    def test_conx_fof(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Are these cells connected through a third person?
         **Not Yes Implemented
 
@@ -519,7 +518,7 @@ class Conductor(object):
         """
         return 0
 
-    def test_conx_irlbuds(self, cid, type, cell0, cell1):
+    def test_conx_irlbuds(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Did these people come in together? Have they spent most of their
         time together?
 
@@ -538,8 +537,8 @@ class Conductor(object):
         # we normalize this dist where
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
-        if not type in CONX_QUAL:
-            logger.error("No connector_qualifying_triggers set for type '%s'"% type)
+        if not atype in CONX_QUAL:
+            logger.error("No connector_qualifying_triggers set for type '%s'", atype)
             return 0
         max_dist = CONX_QUAL[atype]
         if dist < max_dist:
@@ -548,9 +547,9 @@ class Conductor(object):
             score = 0.0
 
         # we record our score in our running avg table to make it into a fraction of time that these 2 people were within max_dist of each other
-        return self.record_conx_avg(cid, type, score)
+        return self.record_conx_avg(cid, atype, score)
 
-    def test_conx_leastconx(self, cid, type, cell0, cell1):
+    def test_conx_leastconx(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Are these individuals among the least connected in the field?
 
         **Not Yes Implemented
@@ -562,7 +561,7 @@ class Conductor(object):
         """
         return 0
 
-    def test_conx_mirror(self, cid, type, cell0, cell1):
+    def test_conx_mirror(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Are individuals moving in a mirrorwise way?
 
         **Not Yes Implemented
@@ -574,7 +573,7 @@ class Conductor(object):
         """
         return 0
 
-    def test_conx_nearby(self, cid, type, cell0, cell1):
+    def test_conx_nearby(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Are cells near each other but not otherwise connected?
 
         **Implemented & Not Tested
@@ -609,7 +608,7 @@ class Conductor(object):
         # nearby-max = 0; nearby-min = 1.0
         return 1.0 - ((cell_dist-min_dist) / (max_dist-min_dist))
 
-    def test_conx_strangers(self, cid, type, cell0, cell1):
+    def test_conx_strangers(self, cid, atype, cell0, cell1):
         """Are these cells unconnected? Have they never been connected?
 
         **Implemented & Not Tested
@@ -639,9 +638,9 @@ class Conductor(object):
             else:
                 score = 1.0
         # we record our score in our running avg table
-        return self.record_conx_avg(cid, type, score)
+        return self.record_conx_avg(cid, atype, score)
 
-    def test_conx_chosen(self, cid, type, cell0, cell1):
+    def test_conx_chosen(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Did the conductor choose these people to be connected?
 
         **Not Yes Implemented
@@ -653,7 +652,7 @@ class Conductor(object):
         """
         return 0
 
-    def test_conx_facing(self, cid, type, cell0, cell1):
+    def test_conx_facing(self, cid, atype, cell0, cell1):
         """Are cells facing each other over some time?
 
         **Implemented & Successfully Tested
@@ -683,10 +682,10 @@ class Conductor(object):
             angle0 = cell0.m_body.m_facing%360
             angle1 = cell1.m_body.m_facing%360
             # get min qualifying angle
-            if not type in CONX_QUAL:
-                logger.error("No connector_qualifying_triggers set for type '%s'"% type)
+            if not atype in CONX_QUAL:
+                logger.error("No connector_qualifying_triggers set for type '%s'", atype)
                 return 0
-            min_angle = CONX_QUAL[type]
+            min_angle = CONX_QUAL[atype]
             # calculate the angle from cell0 to cell1
             # FIXME: Tracker is sending the "facing away" angle rather than
             # facing -- later when it is fixed, we can remove "+ 180"
@@ -717,24 +716,24 @@ class Conductor(object):
             else:
                 score1=0.0
             score = score0 * score1
-            self.record_conx_avg(cid, type, score)
+            self.record_conx_avg(cid, atype, score)
             if score0 * score1:
                 msg=" ".join(map(str,[ "facing:Frame:",self.m_field.m_frame,", CID:", cid, "HOLY SHIT, NOT ZERO"]))
             else:
                 msg=" ".join(map(str,[ "facing:Frame:",self.m_field.m_frame,", CID:", cid]))
             msg=msg+ "    facing angle0=%d, phi0=%d, diff0=%d, score0=%.2f"%(angle0,phi0,diff0,score0)
             msg=msg+ "    facing angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%(angle1,phi1,diff1,score1)
-            msg=msg+ "    facing: instantaneous score=%.2f, avg=%.2f"%(score,self.get_conx_avg(cid,type))
+            msg=msg+ "    facing: instantaneous score=%.2f, avg=%.2f"%(score,self.get_conx_avg(cid,atype))
             logging.getLogger(__name__+".facing").debug(msg)
 
         # we record our score in our running avg table
-        return self.get_conx_avg(cid, type)
+        return self.get_conx_avg(cid, atype)
 
     #
     # Happenings
     #
 
-    def test_conx_fusion(self, cid, type, cell0, cell1):
+    def test_conx_fusion(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Are cells currently fusing/fisioning?
 
         **Implemented & Successfully Tested
@@ -767,7 +766,7 @@ class Conductor(object):
         return 1.0 - ((cell_dist-min_dist) /
                       (max_dist-min_dist))
 
-    def test_conx_transfer(self, cid, type, cell0, cell1):
+    def test_conx_transfer(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Is a transfer of highlight happening between these cells?
 
         **Not Yes Implemented
@@ -783,7 +782,7 @@ class Conductor(object):
     # Event Tests
     #
 
-    def test_conx_touch(self, cid, type, cell0, cell1):
+    def test_conx_touch(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Are these two people touching?
 
         **Not Implemented
@@ -797,14 +796,14 @@ class Conductor(object):
         # we calculate a score
         # we get the distance between cells
         dist = self.m_dist_table[cid]
-        if dist < CONX_QUAL[type]:
+        if dist < CONX_QUAL[atype]:
             return 1.0
         else:
             return 0.0
         # we (don't) record our score in our running avg table
-        #return self.record_conx_avg(cid, type, score)
+        #return self.record_conx_avg(cid, atype, score)
 
-    def test_conx_tag(self, cid, type, cell0, cell1):
+    def test_conx_tag(self, cid, atype, cell0, cell1):   #pylint: disable=W0613
         """Did one of these individuals tag the other?
 
         **Not Yes Implemented
@@ -821,7 +820,7 @@ class Conductor(object):
     # Cell Tests
     #
 
-    def test_cell_dance(self, uid, type):
+    def test_cell_dance(self, uid, atype):   #pylint: disable=W0613
         """Does this cell have a history of behavior that looks like dancing?
 
         **Not Yes Implemented
@@ -834,10 +833,10 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        #return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, atype, score)
         return 0
 
-    def test_cell_interactive(self, uid, type):
+    def test_cell_interactive(self, uid, atype):
         """Does this cell have a history of being interactive?
 
         **Implemented & Not Tested
@@ -850,18 +849,18 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         # how close is this person to others?
-        if not type in CELL_QUAL:
-            logging.error("No cell_qualifying_triggers set for type '%s'"% type)
+        if not atype in CELL_QUAL:
+            logging.error("No cell_qualifying_triggers set for type '%s'", atype)
             return 0
-        max_dist = CELL_QUAL[type]
+        max_dist = CELL_QUAL[atype]
         if cell.m_fromnearest<0:
             score=0
         else:
             score = max(0, 1 - float(cell.m_fromnearest) / max_dist)
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        return self.record_cell_avg(uid, atype, score)
 
-    def test_cell_static(self, uid, type):
+    def test_cell_static(self, uid, atype):
         """Does this cell have a history of being immobile?
 
         **Implemented & Successfully Tested
@@ -874,20 +873,20 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if not type in CELL_QUAL:
-            logging.error("No cell_qualifying_triggers set for type '%s'"% type)
+        if not atype in CELL_QUAL:
+            logging.error("No cell_qualifying_triggers set for type '%s'", atype)
             return 0
-        max_vel = CELL_QUAL[type]
+        max_vel = CELL_QUAL[atype]
         if spd<max_vel:
             score=1.0
         else:
             score=0.0
-    	avg=self.record_cell_avg(uid, type, score)
         logging.getLogger(__name__+".static").debug("test_cell_static: uid=%s, spd=%.2f, max_vel=%.2f, score=%.2f,avg=%.2f"%(uid,spd,max_vel,score,avg))
+        avg=self.record_cell_avg(uid, atype, score)
         # we record our score in our running avg table
         return avg
 
-    def test_cell_kinetic(self, uid, type):
+    def test_cell_kinetic(self, uid, atype):
         """Does this cell have a long history of going fast?
 
         **Implemented & Successfully Tested
@@ -900,21 +899,21 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if not type in CELL_QUAL:
-            logger.error("No cell_qualifying_triggers set for type '%s'"% type)
+        if not atype in CELL_QUAL:
+            logger.error("No cell_qualifying_triggers set for type '%s'", atype)
             return 0
-        min_vel = CELL_QUAL[type]
+        min_vel = CELL_QUAL[atype]
         if spd>min_vel:
             score=1.0
         else:
             score=0.0
-        avg=self.record_cell_avg(uid, type, score)
         logging.getLogger(__name__+".kinetic").debug("test_cell_kinetic: uid=%s, spd=%.2f, min_vel=%.2f, score=%.2f, avg=%.2f"%(uid,spd,min_vel,score,avg))
+        avg=self.record_cell_avg(uid, atype, score)
         
         # we record our score in our running avg table
         return avg
 
-    def test_cell_fast(self, uid, type):
+    def test_cell_fast(self, uid, atype):
         """Does this cell have a short history of moving fast?
 
         **Implemented & Successfully Tested
@@ -927,18 +926,18 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         spd = sqrt(cell.m_vx**2+cell.m_vy**2)
-        if not type in CELL_QUAL:
-            logging.error("No cell_qualifying_triggers set for type '%s'"% type)
+        if not atype in CELL_QUAL:
+            logging.error("No cell_qualifying_triggers set for type '%s'", atype)
             return 0
-        max_vel = CELL_QUAL[type]
+        max_vel = CELL_QUAL[atype]
         if spd>=max_vel:
             score=1.0
         else:
             score=0.0
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        return self.record_cell_avg(uid, atype, score)
 
-    def test_cell_timein(self, uid, type):
+    def test_cell_timein(self, uid, atype):
         """Does this cell have a history in the space?
 
         **Implemented & Not Tested
@@ -951,18 +950,18 @@ class Conductor(object):
         cell = self.m_field.m_cell_dict[uid]
         # we calculate a score
         age = time() - cell.m_createtime 
-        if not type in CELL_QUAL:
-            logging.error("No cell_qualifying_triggers set for type '%s'"% type)
+        if not atype in CELL_QUAL:
+            logging.error("No cell_qualifying_triggers set for type '%s'", atype)
             return 0
-        min_age = CELL_QUAL[type]
+        min_age = CELL_QUAL[atype]
         if min_age<=0:
             score=1
         else:
             score = max(0, min(1, (float(age) / min_age)-1))
         # we record our score in our running avg table
-        return self.record_cell_avg(uid, type, score)
+        return self.record_cell_avg(uid, atype, score)
 
-    def test_cell_spin(self, uid, type):
+    def test_cell_spin(self, uid, atype):   #pylint: disable=W0613
         """Does this cell have a history of xxx?
 
         **Not Yes Implemented
@@ -975,10 +974,10 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        #return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, atype, score)
         return 0
 
-    def test_cell_quantum(self, uid, type):
+    def test_cell_quantum(self, uid, atype):   #pylint: disable=W0613
         """Does this cell have a history of xxx?
 
         **Not Yes Implemented
@@ -991,10 +990,10 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        #return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, atype, score)
         return 0
 
-    def test_cell_jacks(self, uid, type):
+    def test_cell_jacks(self, uid, atype):   #pylint: disable=W0613
         """Does this cell have a history of xxx?
 
         **Not Yes Implemented
@@ -1007,10 +1006,10 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        #return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, atype, score)
         return 0
 
-    def test_cell_chosen(self, uid, type):
+    def test_cell_chosen(self, uid, atype):   #pylint: disable=W0613
         """Does this cell have a history of xxx?
 
         **Not Yes Implemented
@@ -1023,5 +1022,5 @@ class Conductor(object):
         # we calculate a score
         # evaluate something here
         # we record our score in our running avg table
-        #return self.record_cell_avg(uid, type, score)
+        #return self.record_cell_avg(uid, atype, score)
         return 0

@@ -36,10 +36,10 @@ class Group(object):
 
     """
 
-    def __init__(self, field, id, gsize=None, duration=None, x=None, y=None,
+    def __init__(self, field, gid, gsize=None, duration=None, x=None, y=None,
                  diam=None):
         self.m_field=field
-        self.m_id = id
+        self.m_id = gid
         self.m_gsize = gsize
         self.m_duration = duration
         self.m_x = x
@@ -64,12 +64,12 @@ class Group(object):
         if visible is not None:
             self.m_visible = visible
 
-    def add_attr(self, type, value):
-        self.m_attr_dict[type] = Attr(type, self.m_id, value)
+    def add_attr(self, atype, value):
+        self.m_attr_dict[atype] = Attr(atype, self.m_id, value)
 
-    def del_attr(self, type):
-        if type in self.m_attr_dict:
-            del self.m_attr_dict[type]
+    def del_attr(self, atype):
+        if atype in self.m_attr_dict:
+            del self.m_attr_dict[atype]
 
     def add_cell(self, uid):
         """Add cell to group."""

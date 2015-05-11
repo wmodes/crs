@@ -186,9 +186,9 @@ class OSCHandler(object):
         # global sensitivity for cell attr
         self.m_oscserver.addMsgHandler( "/ui/cellglobal",self.event_ui_cellglobal)
 
-        for type in CELL_ATTR_TYPES + CONX_ATTR_TYPES:
+        for atype in CELL_ATTR_TYPES + CONX_ATTR_TYPES:
             for param in ("trigger", "memory", "maxage","qual","qualmin","qualmax"):
-        		self.m_oscserver.addMsgHandler("/ui/cond/"+type+"/"+param,self.event_ui_condparam)
+                self.m_oscserver.addMsgHandler("/ui/cond/"+atype+"/"+param,self.event_ui_condparam)
 
         # add a method to an instance of the class
         self.m_oscserver.handle_timeout = types.MethodType(handle_timeout, self.m_oscserver)
@@ -338,10 +338,10 @@ class OSCHandler(object):
         #print "event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
         frame = args[0]
-        time = args[1]
-        id = args[2]
-        logging.getLogger("cells").info("entry of cell "+str(id))
-        self.m_field.create_cell(id)
+        #etime = args[1]
+        uid = args[2]
+        logging.getLogger("cells").info("entry of cell "+str(uid))
+        self.m_field.create_cell(uid)
 
     def event_tracking_exit(self, path, tags, args, source):
         """Event when person exits field.
@@ -352,12 +352,12 @@ class OSCHandler(object):
         """
         #print "event_track_exit:",path,args,source
         frame = args[0]
-        time = args[1]
-        id = args[2]
-        logging.getLogger("cells").info("exit of cell "+str(id))
+        #etime = args[1]
+        uid = args[2]
+        logging.getLogger("cells").info("exit of cell "+str(uid))
         #print "BEFORE: cells:",self.m_field.m_cell_dict
         #print "BEFORE: conx:",self.m_field.m_conx_dict
-        self.m_field.del_cell(id)
+        self.m_field.del_cell(uid)
         #print "AFTER: cells:",self.m_field.m_cell_dict
         #print "AFTER: conx:",self.m_field.m_conx_dict
 
@@ -384,7 +384,7 @@ class OSCHandler(object):
             if item == 'nan':
                 args[index] = None
         frame = args[0]
-        id = args[1]
+        uid = args[1]
         x = args[2]       # comes in meters
         y = args[3]
         ex = args[4]
@@ -401,13 +401,13 @@ class OSCHandler(object):
         sigmasep = args[15]
         leftness = args[16]
         vis = args[17]
-        if id not in self.m_field.m_cell_dict:
-            logger.info( "event_track_body:no uid "+str(id)+" in registered cell list")
+        if uid not in self.m_field.m_cell_dict:
+            logger.info( "event_track_body:no uid "+str(uid)+" in registered cell list")
         if frame%config.report_frequency['debug'] == 0:
-            logger.debug(" ".join(map(str,[ "    event_track_body:id:",id,"pos:", (x, y), "data:", \
-                        ex, ey, spd, espd, facing, efacing, diam, sigmadiam, \
-                        sep, sigmasep, leftness, vis])))
-        self.m_field.update_body(id, x, y, ex, ey, spd, espd, facing, efacing, 
+            logger.debug(" ".join([str(x) for x in [ "    event_track_body:id:",uid,"pos:", (x, y), "data:",
+                                                     ex, ey, spd, espd, facing, efacing, diam, sigmadiam,
+                                                     sep, sigmasep, leftness, vis]]))
+        self.m_field.update_body(uid, x, y, ex, ey, spd, espd, facing, efacing, 
                            diam, sigmadiam, sep, sigmasep, leftness, vis)
 
     def event_tracking_leg(self, path, tags, args, source):
@@ -428,7 +428,7 @@ class OSCHandler(object):
             if item == 'nan':
                 args[index] = None
         frame = args[0]
-        id = args[1]
+        uid = args[1]
         leg = args[2]
         nlegs = args[3]
         x = args[4]       # comes in meters
@@ -440,12 +440,12 @@ class OSCHandler(object):
         espd = args[10]
         eheading = args[11]
         vis = args[12]
-        if id not in self.m_field.m_cell_dict:
-            logger.info( "event_track_leg:no uid "+str(id)+" in registered cell list")
+        if uid not in self.m_field.m_cell_dict:
+            logger.info( "event_track_leg:no uid "+str(uid)+" in registered cell list")
         if frame%config.report_frequency['debug'] == 0:
-            logger.debug(" ".join(map(str,["    event_track_leg:id:", id, "leg:", leg, "pos:", (x,y), \
-                "data:", ex, ey, spd, espd, heading, eheading, vis])))
-        self.m_field.update_leg(id, leg, nlegs, x, y, ex, ey, spd, espd, 
+            logger.debug(" ".join([str(x) for x in ["    event_track_leg:id:", uid, "leg:", leg, "pos:", (x,y),
+                                                        "data:", ex, ey, spd, espd, heading, eheading, vis]]))
+        self.m_field.update_leg(uid, leg, nlegs, x, y, ex, ey, spd, espd, 
                                    heading, eheading, vis)
 
     def event_tracking_update(self, path, tags, args, source):
@@ -467,10 +467,10 @@ class OSCHandler(object):
             if item == 'nan':
                 args[index] = None
         frame = args[0]
-        time = args[1]
-        id = args[2]
-        if id not in self.m_field.m_cell_dict:
-            logger.info( "event_track_update:no uid "+str(id)+" in registered cell list")
+        # etime = args[1]
+        uid = args[2]
+        if uid not in self.m_field.m_cell_dict:
+            logger.info( "event_track_update:no uid "+str(uid)+" in registered cell list")
         x = args[3]       # comes in meters
         y = args[4]
         vx = args[5]
@@ -483,9 +483,9 @@ class OSCHandler(object):
         #print "event_track_update:",path,args,source
         if frame%config.report_frequency['debug'] == 0:
             #print "event_track_update:",path,args,source
-            logger.debug(" ".join(map(str,[ " event_track_update:id:",id,"pos:", (x, y), "data:", \
-                        vx, vy, major, minor, gid, gsize])))
-        self.m_field.update_cell(id, x, y, vx, vy, major, minor, gid, gsize, 
+            logger.debug(" ".join([str(x) for x in [ " event_track_update:id:",uid,"pos:", (x, y), "data:", \
+                        vx, vy, major, minor, gid, gsize]]))
+        self.m_field.update_cell(uid, x, y, vx, vy, major, minor, gid, gsize, 
                                  frame=frame)
 
     def event_tracking_group(self, path, tags, args, source):
@@ -621,18 +621,18 @@ class OSCHandler(object):
         #print "args:",args,args[0],args[1],args[2]
         #frame = args[0]
         pathsplit = path.split('/')
-        type = pathsplit[len(pathsplit)-2]
+        atype = pathsplit[len(pathsplit)-2]
         param = pathsplit[len(pathsplit)-1]
         value = args[0]
         # if I received the type and attr as args, I'd use these 3 lines
         #type = args[0]
         #param = args[1]
         #value = args[2]
-        logger.debug("event_ui_condparam: type=%s,param=%s,value=%.2f"%(type,param,value))
-        if type in CELL_ATTR_TYPES:
-            self.m_conductor.update_cell_param(type,param, value)
-        elif type in CONX_ATTR_TYPES:
-            self.m_conductor.update_conx_param(type,param, value)
+        logger.debug("event_ui_condparam: type=%s,param=%s,value=%.2f",atype,param,value)
+        if atype in CELL_ATTR_TYPES:
+            self.m_conductor.update_cell_param(atype,param, value)
+        elif atype in CONX_ATTR_TYPES:
+            self.m_conductor.update_conx_param(atype,param, value)
 
 
     #
@@ -717,13 +717,13 @@ class OSCHandler(object):
         """Sends the currently highlighted cells via OSC.
         /conductor/rollcall [uid,action,numconx]
         """
-        for id,cell in self.m_field.m_cell_dict.iteritems():
+        for uid,cell in self.m_field.m_cell_dict.iteritems():
             if cell.m_visible:
                 action = "visible"
             else:
                 action = "hidden"
             #TODO: Should the connector count only show visble connectors?
-            self.m_field.m_osc.send_downstream("/conductor/rollcall",[id, action, len(cell.m_conx_dict)])
+            self.m_field.m_osc.send_downstream("/conductor/rollcall",[uid, action, len(cell.m_conx_dict)])
 
     def send_cell_attrs(self):
         """Sends the current attributes of visible cells.
@@ -731,10 +731,10 @@ class OSCHandler(object):
         """
         for uid, cell in self.m_field.m_cell_dict.iteritems():
             if cell.m_visible:
-                for type, attr in cell.m_attr_dict.iteritems():
+                for atype, attr in cell.m_attr_dict.iteritems():
                     duration = time() - attr.m_createtime
                     self.m_field.m_osc.send_downstream("/conductor/attr",
-			            [type, uid, attr.m_value, attr.m_freshness, duration])
+			            [atype, uid, attr.m_value, attr.m_freshness, duration])
 
     def send_conx_attr(self):
         """Sends the current descriptions of connectors.
@@ -742,9 +742,9 @@ class OSCHandler(object):
         """
         for cid,conx in self.m_field.m_conx_dict.iteritems():
             if conx.m_cell0.m_visible and conx.m_cell1.m_visible:
-                for type, attr in conx.m_attr_dict.iteritems():
+                for atype, attr in conx.m_attr_dict.iteritems():
                     duration = time() - attr.m_createtime
-                    self.send_conx_downstream(cid, type, conx.m_cell0.m_id,
+                    self.send_conx_downstream(cid, atype, conx.m_cell0.m_id,
                             conx.m_cell1.m_id, attr.m_value, attr.m_freshness,duration)
 
     def send_group_attrs(self):
@@ -753,10 +753,10 @@ class OSCHandler(object):
         """
         for gid,group in self.m_field.m_group_dict.iteritems():
             if group.m_visible:
-                for type,attr in group.m_attr_dict.iteritems():
+                for atype,attr in group.m_attr_dict.iteritems():
                     duration = time() - attr.m_createtime
                     self.m_field.m_osc.send_downstream("/conductor/gattr",
-                            [type, gid, attr.m_value, attr.m_freshness,duration])
+                            [atype, gid, attr.m_value, attr.m_freshness,duration])
 
     def send_events(self):
         """Sends notification of ongoing events.
@@ -769,46 +769,46 @@ class OSCHandler(object):
 
     # On-Call Messages
 
-    def send_conx_downstream(self, cid, type, uid0, uid1, value, freshness, duration):
-        key=cid+type
+    def send_conx_downstream(self, cid, atype, uid0, uid1, value, freshness, duration):
+        key=cid+atype
         if key not in self.cidkeys:
             self.cidkeys[key]=self.lastcid
             self.lastcid=self.lastcid+1
         cc=self.cidkeys[key]
         cid="%d"%cc
-        if type in HAPPENING_TYPES:
-            logger.debug( "send:"+str( ["happening", type, cid, uid0, uid1, value, duration]))
+        if atype in HAPPENING_TYPES:
+            logger.debug( "send:"+str( ["happening", atype, cid, uid0, uid1, value, duration]))
             self.m_field.m_osc.send_downstream("/conductor/conx",
-                    ["happening", type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
-        elif type in EVENT_TYPES:
+                    ["happening", atype, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
+        elif atype in EVENT_TYPES:
             self.m_field.m_osc.send_downstream("/conductor/event",
-                    [type, cid, uid0, uid1, 1.0*value])
+                    [atype, cid, uid0, uid1, 1.0*value])
         else:
             self.m_field.m_osc.send_downstream("/conductor/conx",
-                    ["persistent", type, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
+                    ["persistent", atype, cid, uid0, uid1, 1.0*value, 1.0*freshness, duration])
 
-    def nix_cell_attr(self, uid, type):
+    def nix_cell_attr(self, uid, atype):
         """Sends OSC messages to announce the removal of cell attr.
         
         /conductor/attr ["type",uid,0.0,time]"""
         if uid in self.m_field.m_cell_dict:
             cell = self.m_field.m_cell_dict[uid]
-            if type in cell.m_attr_dict:
+            if atype in cell.m_attr_dict:
                 attr = cell.m_attr_dict[type]
                 duration = time() - attr.m_createtime
                 self.m_field.m_osc.send_downstream("/conductor/attr",
-                        [type, uid, attr.m_value,0.0, duration])
+                        [atype, uid, attr.m_value,0.0, duration])
 
-    def nix_conx_attr(self, cid, type):
+    def nix_conx_attr(self, cid, atype):
         """Sends OSC messages to announce the removal of connection attr.
         
         /conductor/conx ["type","subtype",cid,uid0,uid1,value,0.0,time]"""
         if cid in self.m_field.m_conx_dict:
             conx = self.m_field.m_conx_dict[cid]
-            if type in conx.m_attr_dict:
-                attr = conx.m_attr_dict[type]
+            if atype in conx.m_attr_dict:
+                attr = conx.m_attr_dict[atype]
                 duration = time() - attr.m_createtime
-                self.send_conx_downstream(cid, type, conx.m_cell0.m_id,
+                self.send_conx_downstream(cid, atype, conx.m_cell0.m_id,
                         conx.m_cell1.m_id, attr.m_value, 0.0,duration)
 
     # TODO - FIXME - this is never called; do we need it at all?
@@ -819,9 +819,9 @@ class OSCHandler(object):
         """
         if cid in self.m_field.m_conx_dict:
             conx = self.m_field.m_conx_dict[cid]
-            for type,attr in conx.m_attr_dict.iteritems():
+            for atype,attr in conx.m_attr_dict.iteritems():
                 duration = time() - attr.m_createtime
-                self.send_conx_downstream(cid, type, conx.m_cell0.m_id,
+                self.send_conx_downstream(cid, atype, conx.m_cell0.m_id,
                         conx.m_cell1.m_id, conx.m_value,0.0, duration)
             self.m_field.m_osc.send_downstream("/conductor/conxbreak",
                     [cid, conx.m_cell0.m_id, conx.m_cell1.m_id])

@@ -94,11 +94,11 @@ class Cell(object):
         # init vars
         self.m_attr_dict = {}
         self.m_conx_dict = {}
-        self.m_body = Body(field, id)
+        self.m_body = Body(field, cellid)
         # create an array of leg instances
         self.m_leglist = []
         for i in range(config.max_legs):
-            self.m_leglist.append(Leg(field, id, i))
+            self.m_leglist.append(Leg(field, cellid, i))
         self.m_fromcenter = 0
         self.m_fromnearest = 0
         self.m_fromexit = 0
@@ -144,13 +144,6 @@ class Cell(object):
             self.m_fromexit = fromexit
         self.m_updatetime = time()
 
-    def add_attr(self, type, value):
-        self.m_attr_dict[type] = Attr(type, self.m_id, value)
-
-    def update_attr(self, type, value,aboveTrigger=False):
-        if type not in self.m_attr_dict:
-            assert(aboveTrigger)	   # Must be above trigger if we are creating it
-            self.m_attr_dict[type] = Attr(type, self.m_id, value)
     def update_body(self, x=None, y=None, ex=None, ey=None,
                     spd=None, espd=None, facing=None, efacing=None,
                     diam=None, sigmadiam=None, sep=None, sigmasep=None,
@@ -163,12 +156,19 @@ class Cell(object):
                    heading=None, eheading=None, vis=None):
         self.m_leglist[leg].update(nlegs, x, y, ex, ey, spd, espd, heading, eheading, vis)
 
-        else:
-            self.m_attr_dict[type].update(value,aboveTrigger)
+    def add_attr(self, atype, value):
+        self.m_attr_dict[atype] = Attr(atype, self.m_id, value)
 
-    def del_attr(self, type):
-        if type in self.m_attr_dict:
-            del self.m_attr_dict[type]
+    def update_attr(self, atype, value, aboveTrigger=False):
+        if atype not in self.m_attr_dict:
+            assert aboveTrigger	   # Must be above trigger if we are creating it
+            self.m_attr_dict[atype] = Attr(atype, self.m_id, value)
+        else:
+            self.m_attr_dict[atype].update(value, aboveTrigger)
+
+    def del_attr(self, atype):
+        if atype in self.m_attr_dict:
+            del self.m_attr_dict[atype]
 
     def add_connector(self, connector):
         self.m_conx_dict[connector.m_id] = connector
@@ -208,8 +208,8 @@ class Cell(object):
             # for it's two cells, including this one
             #self.del_connector(connector)
 
-    def record_history(self, type, uid1, value, time):
-        self.m_history.append(Journal(type, self.m_id, uid1, value, time))
+    def record_history(self, atype, uid, value, htime):
+        self.m_history.append(Journal(atype, self.m_id, uid, value, htime))
 
     def get_history(self, uid0, uid1):
         shared_history = []

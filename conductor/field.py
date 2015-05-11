@@ -149,92 +149,92 @@ class Field(object):
 
     # Legs and Body
 
-    def update_body(self, id, x=None, y=None, ex=None, ey=None, 
-                 spd=None, espd=None, facing=None, efacing=None, 
-                 diam=None, sigmadiam=None, sep=None, sigmasep=None,
-                 leftness=None, vis=None):
+    def update_body(self, uid, x=None, y=None, ex=None, ey=None,
+                    spd=None, espd=None, facing=None, efacing=None,
+                    diam=None, sigmadiam=None, sep=None, sigmasep=None,
+                    leftness=None, vis=None):
         # first we make sure the cell exists and is not suspect
-        self.check_for_missing_cell(id)
+        self.check_for_missing_cell(uid)
         # update body info
-        self.m_cell_dict[id].update_body(x, y, ex, ey, spd, espd, facing, efacing, 
-                           diam, sigmadiam, sep, sigmasep, leftness, vis)
+        self.m_cell_dict[uid].update_body(x, y, ex, ey, spd, espd, facing, efacing,
+                                          diam, sigmadiam, sep, sigmasep, leftness, vis)
 
-    def update_leg(self, id, leg, nlegs=None, x=None, y=None, 
-                 ex=None, ey=None, spd=None, espd=None, 
-                 heading=None, eheading=None, vis=None):
+    def update_leg(self, uid, leg, nlegs=None, x=None, y=None,
+                   ex=None, ey=None, spd=None, espd=None,
+                   heading=None, eheading=None, vis=None):
         """ Update leg information.  """ 
         # first we make sure the cell exists and is not suspect
-        self.check_for_missing_cell(id)
+        self.check_for_missing_cell(uid)
         # update leg info
-        self.m_cell_dict[id].update_leg(leg, nlegs, x, y, ex, ey, spd, espd, 
-                                   heading, eheading, vis)
+        self.m_cell_dict[uid].update_leg(leg, nlegs, x, y, ex, ey, spd, espd,
+                                         heading, eheading, vis)
     # Cells
 
-    def create_cell(self, id):
+    def create_cell(self, uid):
         """Create a cell.  """
         # If it already exists, don't create it
-        if not id in self.m_cell_dict:
+        if not uid in self.m_cell_dict:
             # note1: we access the cell class indirectly for local subclassing
             # note2: pass self since we want a back reference to field instance
-            cell = Cell(self, id)
+            cell = Cell(self, uid)
             # add to the cell list
-            self.m_cell_dict[id] = cell
+            self.m_cell_dict[uid] = cell
             self.m_our_cell_count += 1
             logger.debug("create_cell:count:"+str(self.m_our_cell_count))
         # but if it already exists
         else:
             # let's make sure it is no longer suspect
-            if id in self.m_suspect_cells:
-                logger.debug("create_cell:Cell "+str(id)+" was suspected lost but is now above suspicion")
-                del self.m_suspect_cells[id]
+            if uid in self.m_suspect_cells:
+                logger.debug("create_cell:Cell "+str(uid)+" was suspected lost but is now above suspicion")
+                del self.m_suspect_cells[uid]
 
-    def update_cell(self, id, x=None, y=None, vx=None, vy=None, major=None, 
+    def update_cell(self, uid, x=None, y=None, vx=None, vy=None, major=None, 
                     minor=None, gid=None, gsize=None, visible=None, frame=None):
         """ Update a cells information."""
-        #logger.debug("update_cell:Cell "+str(id))
-        self.check_for_missing_cell(id)
+        #logger.debug("update_cell:Cell "+str(uid))
+        self.check_for_missing_cell(uid)
         # if group param is provided 
         # if it is zero, that is okay and noteworthy (means no group)
         if gid is not None:
             self.check_for_missing_group(gid)
-            self.check_for_new_group(id, gid)
+            self.check_for_new_group(uid, gid)
             # now update the cell's gid membership
             # this is redundant but okay
-            self.m_cell_dict[id].m_gid = gid
+            self.m_cell_dict[uid].m_gid = gid
             # if non-zero, add cell to cell_dict in group
-            if gid and id not in self.m_group_dict[gid].m_cell_dict:
-                self.m_group_dict[gid].m_cell_dict[id] = self.m_cell_dict[id]
-                logger.debug("cell "+str(id)+" added to group "+str(self.m_cell_dict[id].m_gid))
-        self.m_cell_dict[id].update(x, y, vx, vy, major, minor, gid, gsize,
-                                    visible=visible, frame=frame)
+            if gid and uid not in self.m_group_dict[gid].m_cell_dict:
+                self.m_group_dict[gid].m_cell_dict[uid] = self.m_cell_dict[uid]
+                logger.debug("cell "+str(uid)+" added to group "+str(self.m_cell_dict[uid].m_gid))
+        self.m_cell_dict[uid].update(x, y, vx, vy, major, minor, gid, gsize,
+                                     visible=visible, frame=frame)
 
-    def check_for_cell_attr(self, uid, type):
+    def check_for_cell_attr(self, uid, atype):
         if uid in self.m_cell_dict:
             cell = self.m_cell_dict[uid]
-            if type in cell.m_attr_dict:
+            if atype in cell.m_attr_dict:
                 return True
         return False
 
-    def update_cell_attr(self, uid, type, value, aboveTrigger=False):
+    def update_cell_attr(self, uid, atype, value, aboveTrigger=False):
         """Update an attribute to a cell, creating it if it doesn't exist."""
         self.check_for_missing_cell(uid)
-        logger.debug(" ".join(map(str,["updating cell  ",uid, type, value,aboveTrigger])))
-        self.m_cell_dict[uid].update_attr(type, value,aboveTrigger)
+        logger.debug(" ".join([str(x) for x in ["updating cell  ",uid, atype, value,aboveTrigger]]))
+        self.m_cell_dict[uid].update_attr(atype, value,aboveTrigger)
 
-    def del_cell_attr(self, uid, type):
+    def del_cell_attr(self, uid, atype):
         """Delete an attribute to a cell."""
         if uid in self.m_cell_dict:
             cell = self.m_cell_dict[uid]
-            if type in cell.m_attr_dict:
-                cell.del_attr(type)
-                logger.debug( "del_cell_attr:del_attr:"+str(uid)+" "+str(type))
+            if atype in cell.m_attr_dict:
+                cell.del_attr(atype)
+                logger.debug( "del_cell_attr:del_attr:"+str(uid)+" "+str(atype))
 
-    def update_geo(self, id, fromcenter=None, fromnearest=None, fromexit=None):
+    def update_geo(self, uid, fromcenter=None, fromnearest=None, fromexit=None):
         """Update geo info for cell."""
-        self.check_for_missing_cell(id)
-        self.m_cell_dict[id].geoupdate(fromcenter, fromnearest, fromexit)
+        self.check_for_missing_cell(uid)
+        self.m_cell_dict[uid].geoupdate(fromcenter, fromnearest, fromexit)
 
-    def del_cell(self, id):
+    def del_cell(self, uid):
         """Delete a cell.
 
         We used to delete all of it's connections, now we just delete it and
@@ -254,7 +254,7 @@ class Field(object):
         connections, now we will try Solution 1.
 
         """
-        #cell = self.m_cell_dict[id]
+        #cell = self.m_cell_dict[uid]
         # delete all cell's connectors from master list of connectors
         #for conxid in cell.m_conx_dict:
 
@@ -262,19 +262,19 @@ class Field(object):
         #        del self.m_conx_dict[conxid]
         # have cell disconnect all of its connections and refs
         # Note: connector checks if cell still exists before rendering
-        if id in self.m_cell_dict:
+        if uid in self.m_cell_dict:
             #cell.cell_disconnect()
             # delete from the cell master list of cells
-            logger.debug("deleting cell "+str(id))
+            logger.debug("deleting cell "+str(uid))
             # Solution 1: Delete the conx along with the cell
-            new_conx_dict = self.m_cell_dict[id].m_conx_dict.copy()
             for cid,conx in new_conx_dict.iteritems():
+            new_conx_dict = self.m_cell_dict[uid].m_conx_dict.copy()
                 self.del_connector(cid)
             # Note that this only deletes the cell from the master list, but
             # doesn't destroy the instance, which may still be refd elsewhere.
-            del self.m_cell_dict[id]
-            if id in self.m_suspect_cells:
-                del self.m_suspect_cells[id]
+            del self.m_cell_dict[uid]
+            if uid in self.m_suspect_cells:
+                del self.m_suspect_cells[uid]
             else:
                 self.m_our_cell_count -= 1
             logger.debug( "del_cell:count:"+str(self.m_our_cell_count))
@@ -288,20 +288,20 @@ class Field(object):
             self.suspect_all_cells()
             self.m_our_cell_count = 0
 
-    def suspect_cell(self, id):
+    def suspect_cell(self, uid):
         """Hide a cell.
         We don't delete cells unless we have to.
         Instead we add them to a suspect list (actually a count of how
         suspicous they are)
         """
-        self.m_suspect_cells[id] = 1
+        self.m_suspect_cells[uid] = 1
         self.m_our_cell_count -= 1
         logger.debug("suspect_cell:count:"+str(self.m_our_cell_count))
 
     def suspect_all_cells(self):
         logger.debug("suspect_all_cells")
-        for id in self.m_cell_dict:
-            self.suspect_cell(id)
+        for uid in self.m_cell_dict:
+            self.suspect_cell(uid)
         self.m_our_cell_count = 0
         logger.debug("suspect_cell:count:"+str(self.m_our_cell_count))
 
@@ -344,31 +344,31 @@ class Field(object):
             # remove from the connector list
             del self.m_conx_dict[cid]
 
-    def check_for_conx_attr(self, uid0, uid1, type):
+    def check_for_conx_attr(self, uid0, uid1, atype):
         connector = self.get_connector(self.get_cid(uid0, uid1))
         if not connector:
             return False
-        if type not in connector.m_attr_dict:
+        if atype not in connector.m_attr_dict:
             return False
         return True
 
-    def update_conx_attr(self, cid, uid0, uid1, type, value, aboveTrigger=False):
+    def update_conx_attr(self, cid, uid0, uid1, atype, value, aboveTrigger=False):
         """Update an attribute to a connector, creating it if it doesn't exist."""
         self.check_for_missing_cell(uid0)
         self.check_for_missing_cell(uid1)
         self.check_for_missing_conx(cid, uid0, uid1)
         connector = self.m_conx_dict[cid]
-        logger.debug("updating connection "+str(connector.m_id)+" "+str(type)+" to "+str(value))
-        connector.update_attr(type, value, aboveTrigger)
+        logger.debug("updating connection "+str(connector.m_id)+" "+str(atype)+" to "+str(value))
+        connector.update_attr(atype, value, aboveTrigger)
 
-    def del_conx_attr(self, cid, type):
+    def del_conx_attr(self, cid, atype):
         """Delete an attribute to a connector, removing the connector if the
         list is empty."""
         if cid in self.m_conx_dict:
             connector = self.m_conx_dict[cid]
-            if type in connector.m_attr_dict:
-                connector.del_attr(type)
-                logger.debug( "del_conx_attr:del_attr:"+str(cid)+" "+str(type))
+            if atype in connector.m_attr_dict:
+                connector.del_attr(atype)
+                logger.debug( "del_conx_attr:del_attr:"+str(cid)+" "+str(atype))
             if not len(connector.m_attr_dict):
                 self.del_connector(cid)
                 logger.debug("del_conx_attr:del_conx:"+str(cid))
@@ -402,10 +402,10 @@ class Field(object):
                 del self.m_suspect_groups[gid]
                 logger.debug("group "+str(gid)+" was suspected lost but is now above suspicion")
 
-    def check_for_new_group(self, id, gid):
+    def check_for_new_group(self, uid, gid):
         """If this is a new group, disconnect the old one."""
         # find the old group id
-        former_gid = self.m_cell_dict[id].m_gid
+        former_gid = self.m_cell_dict[uid].m_gid
         # if the group has changed, remove the cell from former group list
         if gid != former_gid:
             # if the old group is not zero (no group) and not None (undef)
@@ -414,14 +414,14 @@ class Field(object):
                 if former_gid in self.m_group_dict:
                     former_group =  self.m_group_dict[former_gid]
                     # now delete the cell ref in the group's cell list
-                    if id in former_group.m_cell_dict:
-                        del former_group.m_cell_dict[id]
+                    if uid in former_group.m_cell_dict:
+                        del former_group.m_cell_dict[uid]
                     # if the length of this list is zero, we can nix the group
                     if not len(former_group.m_cell_dict):
                         self.del_group(former_gid)
         #TODO: When do we send the osc notice?
 
-    def check_for_missing_cell(self, id):
+    def check_for_missing_cell(self, uid):
         """Check for missing or suspect cell, handle it.
 
         Possibilities:
@@ -434,20 +434,20 @@ class Field(object):
                 update its info; count unchanged
         """
         # if cell does not exist:
-        if not id in self.m_cell_dict:
+        if not uid in self.m_cell_dict:
             # create it and increment count
-            self.create_cell(id)
+            self.create_cell(uid)
             # remove from suspect list
-            if id in self.m_suspect_cells:
-                del self.m_suspect_cells[id]
-            logger.info("cell_check:Cell "+str(id)+" was missed/lost and has been (re)created")
+            if uid in self.m_suspect_cells:
+                del self.m_suspect_cells[uid]
+            logger.info("cell_check:Cell "+str(uid)+" was missed/lost and has been (re)created")
         # if cell exists, but is on suspect list
-        elif id in self.m_suspect_cells:
+        elif uid in self.m_suspect_cells:
             # remove from suspect list
-            del self.m_suspect_cells[id]
+            del self.m_suspect_cells[uid]
             # increment count
             self.m_our_cell_count += 1
-            logger.debug("cell_check:Cell "+str(id)+" was suspected lost but is now above suspicion")
+            logger.debug("cell_check:Cell "+str(uid)+" was suspected lost but is now above suspicion")
 
     def check_for_missing_conx(self, cid, uid0, uid1):
         """Check for missing or suspect conx, handle it.
@@ -466,26 +466,26 @@ class Field(object):
             # create it and increment count
             self.create_connector(uid0, uid1)
 
-    def is_cell_good_to_go(self, id):
+    def is_cell_good_to_go(self, uid):
         """Test if cell is good to be rendered.
         Returns True if cell is on master list and not suspect.
         """
-        if not id in self.m_cell_dict:
+        if not uid in self.m_cell_dict:
             return False
-        if id in self.m_suspect_cells:
+        if uid in self.m_suspect_cells:
             return False
-        cell = self.m_cell_dict[id]
+        cell = self.m_cell_dict[uid]
         if not cell.m_visible or cell.m_x is None or cell.m_y is None:
             return False
         return True
 
-    def is_conx_good_to_go(self, id):
+    def is_conx_good_to_go(self, uid):
         """Test if conx is good to be rendered.
         Returns True if cell is on master list and not suspect.
         """
-        if not id in self.m_conx_dict:
+        if not uid in self.m_conx_dict:
             return False
-        connector = self.m_conx_dict[id]
+        connector = self.m_conx_dict[uid]
         if not connector.m_visible:
             return False
         if not self.is_cell_good_to_go(connector.m_cell0.m_id) or \
@@ -496,15 +496,15 @@ class Field(object):
             return False
         return True
 
-    def is_group_good_to_go(self, id):
+    def is_group_good_to_go(self, uid):
         """Test if group is good to be rendered.
         Returns True if group is on master list and not suspect.
         """
-        if id not in self.m_group_dict:
+        if uid not in self.m_group_dict:
             return False
-        if id in self.m_suspect_groups:
+        if uid in self.m_suspect_groups:
             return False
-        if self.m_group_dict[id].m_x is None or self.m_group_dict[id].m_y is None:
+        if self.m_group_dict[uid].m_x is None or self.m_group_dict[uid].m_y is None:
             return False
         return True
 
@@ -522,10 +522,10 @@ class Field(object):
         for uid,cell in new_cell_dict.iteritems():
             self.check_for_lost_cell(uid)
 
-    def record_history(self, type, uid0, uid1, value, time):
+    def record_history(self, atype, uid0, uid1, value, htime):
         """Record symetrical cell history."""
-        self.m_cell_dict[uid0].record_history(type, uid1, value, time)
-        self.m_cell_dict[uid1].record_history(type, uid0, value, time)
+        self.m_cell_dict[uid0].record_history(atype, uid1, value, htime)
+        self.m_cell_dict[uid1].record_history(atype, uid0, value, htime)
 
     def get_history(self, uid0, uid1):
         """What history do these cells have?"""

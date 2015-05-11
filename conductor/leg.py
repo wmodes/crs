@@ -31,11 +31,11 @@ class Leg(object):
 
     """
 
-    def __init__(self, field, id, leg=None, nlegs=None, x=None, y=None,
+    def __init__(self, field, uid, leg=None, nlegs=None, x=None, y=None,
                  ex=None, ey=None, spd=None, espd=None,
                  heading=None, eheading=None, vis=None):
         self.m_field=field
-        self.m_id = id
+        self.m_id = uid
         self.m_leg = leg
         self.m_nlegs = nlegs
         self.m_x = x

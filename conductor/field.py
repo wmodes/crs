@@ -529,9 +529,9 @@ class Field(object):
 
     def get_history(self, uid0, uid1):
         """What history do these cells have?"""
-        return self.m_cell_dict[uid0].get_history(uid0, uid1)
+        return self.m_cell_dict[uid0].get_history(uid1)
 
     def have_history(self, uid0, uid1):
         """Do these cells have history?"""
-        return self.m_cell_dict[uid0].have_history(uid0, uid1)
+        return self.m_cell_dict[uid0].have_history(uid1)
 

@@ -211,14 +211,14 @@ class Cell(object):
     def record_history(self, atype, uid, value, htime):
         self.m_history.append(Journal(atype, self.m_id, uid, value, htime))
 
-    def get_history(self, uid0, uid1):
+    def get_history(self, uid1):
         shared_history = []
         for entry in self.m_history:
             if entry.uid1 == uid1:
                 shared_history.append(entry)
         return shared_history
 
-    def have_history(self, uid0, uid1):
+    def have_history(self, uid1):
         for entry in self.m_history:
             if entry.uid == uid1:
                 return True

@@ -119,12 +119,12 @@ class OSCHandler(object):
         osc_clients = []
         for host in OSC_IPS:
             if host == IAM:
-                logger.info("setting server for %s to %s: %s"%(host,OSC_IPS[host],OSC_PORTS[host]))
+                logger.info("setting server for %s to %s: %s",host,OSC_IPS[host],OSC_PORTS[host])
                 osc_server = [('server', OSC_IPS[host], OSC_PORTS[host])]
             elif host == 'localhost' or host == 'default':
                 continue
             else:
-                logger.info("setting client for %s to %s:%s"%(host,OSC_IPS[host],OSC_PORTS[host]))
+                logger.info("setting client for %s to %s:%s",host,OSC_IPS[host],OSC_PORTS[host])
                 osc_clients.append((host, OSC_IPS[host], OSC_PORTS[host]))
 
         try:
@@ -133,7 +133,7 @@ class OSCHandler(object):
             logger.fatal("System:Unable to create OSC handler with server="+str(osc_server),exc_info=True)
             sys.exit(1)
         self.m_oscserver = OSCServer( (host, port) )
-        logger.info( "Initializing server at %s:%s"%(host, port))
+        logger.info( "Initializing server at %s:%s",host, port)
         self.m_oscserver.timeout = config.osctimeout
         self.m_oscserver.print_tracebacks = True
 
@@ -144,15 +144,15 @@ class OSCHandler(object):
                 (oldname, oldhost, oldport) = osc_clients[j]
                 if host == oldhost and port == oldport:
                     self.m_osc_clients[name] = self.m_osc_clients[oldname]
-                    logger.warning( "%s same as %s"%(name,oldname))
+                    logger.warning( "%s same as %s",name,oldname)
                     break
             if not name in self.m_osc_clients:
                 try:
                     self.m_osc_clients[name] = OSCClient()
                 except:
-                    logger.error( "Unable to create OSC handler for client %s at %s:%s"%(name,host,port),exc_info=True)
+                    logger.error( "Unable to create OSC handler for client %s at %s:%s",name,host,port,exc_info=True)
                 self.m_osc_clients[name].connect( (host, port) )
-                logger.info( "Connecting to %s at %s:%s"%(name,host,port))
+                logger.info( "Connecting to %s at %s:%s",name,host,port)
             self.send_to(name,"/ping",[0])
 
         # common
@@ -235,11 +235,11 @@ class OSCHandler(object):
         try:
             self.m_osc_clients[clientkey].send(OSCMessage(path,args))
             if args:
-                logger.debug( "Send to %s: %s %s" % (clientkey,path,args))
+                logger.debug( "Send to %s: %s %s" ,clientkey,path,args)
         except:
             lastError=self.m_downClients.get(clientkey,0)
             if time()-lastError >30:
-                logger.warning("send_to: Unable to reach host %s (will suppress this warning for 30 seconds)"%(clientkey),exc_info=False)
+                logger.warning("send_to: Unable to reach host %s (will suppress this warning for 30 seconds)",clientkey,exc_info=False)
                 self.m_downClients[clientkey]=time()
             return False
         return True
@@ -276,7 +276,7 @@ class OSCHandler(object):
             return
         ping_code = args[0]
         source_ip = source[0]
-        logger.debug( "ping from %s:code:%s" % (source_ip, ping_code))
+        logger.debug( "ping from %s:code:%s", source_ip, ping_code)
         for clientkey, client in self.m_osc_clients.iteritems():
             target_ip = client.address()[0]
             if target_ip == source_ip:
@@ -513,7 +513,7 @@ class OSCHandler(object):
         if gid not in self.m_field.m_group_dict:
             logger.info( "event_track_group:no gid "+str(gid)+" in group list")
 #        if frame%config.report_frequency['debug'] == 0:
-        logger.debug(" ".join(map(str,["    event_track_group:gid:",gid, "pos:", (x, y), "data:",gsize, duration, diam])))
+        logger.debug(" ".join([str(x) for x in ["    event_track_group:gid:",gid, "pos:", (x, y), "data:",gsize, duration, diam]]))
         self.m_field.update_group(gid, gsize, duration, x, y, diam)
 
     def event_tracking_geo(self, path, tags, args, source):
@@ -538,8 +538,8 @@ class OSCHandler(object):
         if uid not in self.m_field.m_cell_dict:
             logger.info("event_track_geo:no uid "+str(uid)+" in registered cell list")
         if frame%config.report_frequency['debug'] == 0:
-            logger.debug(" ".join(map(str,["    event_track_geo:uid:",uid, "data:", \
-                        fromcenter, fromnearest, fromexit])))
+            logger.debug(" ".join([str(x) for x in ["    event_track_geo:uid:",uid, "data:",
+                                                    fromcenter, fromnearest, fromexit]]))
         self.m_field.update_geo(uid, fromcenter, fromnearest, fromexit)
 
     def event_tracking_frame(self, path, tags, args, source):
@@ -556,7 +556,7 @@ class OSCHandler(object):
 
     def event_tracking_stop(self, path, tags, args, source):
         """Tracking has stopped."""
-        logger.info(" ".join(map(str,["event_tracking_stop: ",path,args,source])))
+        logger.info(" ".join([str(x) for x in ["event_tracking_stop: ",path,args,source]]))
         return None
 
 

@@ -511,7 +511,7 @@ class Field(object):
     def check_for_lost_cell(self, uid):
         time_since_last_update = time() - self.m_cell_dict[uid].m_updatetime
         if time_since_last_update > config.max_lost_patience:
-            logger.info("deleting cell %d that has been lost for %.2f sec"%(uid,time_since_last_update))
+            logger.info("deleting cell %d that has been lost for %.2f sec",uid,time_since_last_update)
             self.del_cell(uid)
 
     def check_for_abandoned_cells(self):

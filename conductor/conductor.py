@@ -492,7 +492,7 @@ class Conductor(object):
         # score = 0 if the values are very different
         logger=logging.getLogger(__name__+".coord")
         if not 'coord-min' in CONX_QUAL:
-            logger.error("No connector_qualifying_triggers set for type '%s'"% 'coord-min')
+            logger.error("No connector_qualifying_triggers set for type '%s'", 'coord-min')
             return 0
         min_spd = CONX_QUAL['coord-min']
         spd0 = sqrt(cell0.m_vx**2+cell0.m_vy**2)
@@ -500,9 +500,9 @@ class Conductor(object):
         if spd0 < min_spd or spd1 < min_spd:
             score = 0.01
         else:
-        logger.debug( "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f"%(spd0,cell0.m_vx,cell0.m_vy,spd1,cell1.m_vx,cell1.m_vy,score,avgscore))
             score = min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
         avgscore = self.record_conx_avg(cid, atype, score)
+        tmplogger.debug( "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f",spd0, cell0.m_vx, cell0.m_vy, spd1, cell1.m_vx, cell1.m_vy, score, avgscore)
 
         # we record our score in our running avg table
         return avgscore
@@ -596,11 +596,11 @@ class Conductor(object):
         # If dist of cells are < nearby_dist
         cell_dist = self.dist(cell0, cell1)
         if not 'nearby-min' in CONX_QUAL:
-            logger.error("No connector_qualifying_triggers set for type '%s'"% 'nearby-min')
+            logger.error("No connector_qualifying_triggers set for type '%s'", 'nearby-min')
             return 0
         min_dist = CONX_QUAL['nearby-min']
         if not 'nearby-max' in CONX_QUAL:
-            logger.error("No connector_qualifying_triggers set for type '%s'"% 'nearby-max')
+            logger.error("No connector_qualifying_triggers set for type '%s'", 'nearby-max')
             return 0
         max_dist = CONX_QUAL['nearby-max']
         if cell_dist < min_dist or cell_dist > max_dist:
@@ -627,7 +627,7 @@ class Conductor(object):
         age0 = time() - cell0.m_createtime
         age1 = time() - cell1.m_createtime
         if not 'strangers-min' in CONX_QUAL:
-            logger.error("No connector_qualifying_triggers set for type '%s'"% 'strangers-min')
+            logger.error("No connector_qualifying_triggers set for type '%s'", 'strangers-min')
             return 0
         min_age = CONX_QUAL['strangers-min']
         if age0 < min_age or age1 < min_age:
@@ -753,11 +753,11 @@ class Conductor(object):
         cell_dist = self.dist(cell0, cell1)
         # Is distance between fusion-min and fusion-max?
         if not 'fusion-min' in CONX_QUAL:
-            logging.error("No connector_qualifying_triggers set for type '%s'"% 'fusion-min')
+            logging.error("No connector_qualifying_triggers set for type '%s'", 'fusion-min')
             return 0
         min_dist = CONX_QUAL['fusion-min']
         if not 'fusion-max' in CONX_QUAL:
-            logging.error("No connector_qualifying_triggers set for type '%s'"% 'fusion-max')
+            logging.error("No connector_qualifying_triggers set for type '%s'", 'fusion-max')
             return 0
         max_dist = CONX_QUAL['fusion-max']
         if cell_dist > max_dist or \
@@ -857,6 +857,7 @@ class Conductor(object):
             score=0
         else:
             score = max(0, 1 - float(cell.m_fromnearest) / max_dist)
+        logging.debug("Interactive UID %d, max_dist=%f, fromnearest=%f, score = %f", uid,max_dist, cell.m_fromnearest,score)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, atype, score)
 
@@ -881,8 +882,8 @@ class Conductor(object):
             score=1.0
         else:
             score=0.0
-        logging.getLogger(__name__+".static").debug("test_cell_static: uid=%s, spd=%.2f, max_vel=%.2f, score=%.2f,avg=%.2f"%(uid,spd,max_vel,score,avg))
         avg=self.record_cell_avg(uid, atype, score)
+        logging.getLogger(__name__+".static").debug("test_cell_static: uid=%s, spd=%.2f, max_vel=%.2f, score=%.2f,avg=%.2f", uid,spd,max_vel,score,avg)
         # we record our score in our running avg table
         return avg
 
@@ -907,8 +908,8 @@ class Conductor(object):
             score=1.0
         else:
             score=0.0
-        logging.getLogger(__name__+".kinetic").debug("test_cell_kinetic: uid=%s, spd=%.2f, min_vel=%.2f, score=%.2f, avg=%.2f"%(uid,spd,min_vel,score,avg))
         avg=self.record_cell_avg(uid, atype, score)
+        logging.getLogger(__name__+".kinetic").debug("test_cell_kinetic: uid=%s, spd=%.2f, min_vel=%.2f, score=%.2f, avg=%.2f", uid,spd,min_vel,score,avg)
         
         # we record our score in our running avg table
         return avg

@@ -21,7 +21,7 @@ from time import time
 from math import sqrt
 from itertools import combinations
 from copy import copy
-from cmath import phase,pi
+from cmath import phase, pi
 
 # installed modules
 
@@ -386,15 +386,6 @@ class Conductor(object):
         return 0
 
     # Gather or calculate whether conditions are met for connection
-
-    def calc_all_distances(self):
-        
-        # first create an indexed array of numerical indecies
-        i = 0
-        for cid in self.m_field.m_conx_dict.iteritems():
-            pass
-        # we create a numpy array of the dimensions of our number of conx
-        # we use scipy.spatial.distance.cdist to calc distance between pairs
 
     def dist(self, cell0, cell1):
         return sqrt((cell0.m_x - cell1.m_x)**2 + (cell0.m_y - cell1.m_y)**2)

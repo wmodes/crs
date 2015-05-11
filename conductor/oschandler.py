@@ -397,7 +397,7 @@ class OSCHandler(object):
         if uid not in self.m_field.m_cell_dict:
             logger.info( "event_track_body:no uid "+str(uid)+" in registered cell list")
         if frame%config.report_frequency['debug'] == 0:
-            logger.debug(" ".join([str(x) for x in [ "    event_track_body:id:",uid,"pos:", (x, y), "data:",
+            logger.debug(" ".join([str(msgpart) for msgpart in [ "    event_track_body:id:",uid,"pos:", (x, y), "data:",
                                                      ex, ey, spd, espd, facing, efacing, diam, sigmadiam,
                                                      sep, sigmasep, leftness, vis]]))
         self.m_field.update_body(uid, x, y, ex, ey, spd, espd, facing, efacing, 
@@ -436,7 +436,7 @@ class OSCHandler(object):
         if uid not in self.m_field.m_cell_dict:
             logger.info( "event_track_leg:no uid "+str(uid)+" in registered cell list")
         if frame%config.report_frequency['debug'] == 0:
-            logger.debug(" ".join([str(x) for x in ["    event_track_leg:id:", uid, "leg:", leg, "pos:", (x,y),
+            logger.debug(" ".join([str(msgpart) for msgpart in ["    event_track_leg:id:", uid, "leg:", leg, "pos:", (x,y),
                                                         "data:", ex, ey, spd, espd, heading, eheading, vis]]))
         self.m_field.update_leg(uid, leg, nlegs, x, y, ex, ey, spd, espd, 
                                    heading, eheading, vis)
@@ -476,7 +476,7 @@ class OSCHandler(object):
         #print "event_track_update:",path,args,source
         if frame%config.report_frequency['debug'] == 0:
             #print "event_track_update:",path,args,source
-            logger.debug(" ".join([str(x) for x in [ " event_track_update:id:",uid,"pos:", (x, y), "data:", \
+            logger.debug(" ".join([str(msgpart) for msgpart in [ " event_track_update:id:",uid,"pos:", (x, y), "data:", \
                         vx, vy, major, minor, gid, gsize]]))
         self.m_field.update_cell(uid, x, y, vx, vy, major, minor, gid, gsize, 
                                  frame=frame)
@@ -506,7 +506,7 @@ class OSCHandler(object):
         if gid not in self.m_field.m_group_dict:
             logger.info( "event_track_group:no gid "+str(gid)+" in group list")
 #        if frame%config.report_frequency['debug'] == 0:
-        logger.debug(" ".join([str(x) for x in ["    event_track_group:gid:",gid, "pos:", (x, y), "data:",gsize, duration, diam]]))
+        logger.debug(" ".join([str(msgpart) for msgpart in ["    event_track_group:gid:",gid, "pos:", (x, y), "data:",gsize, duration, diam]]))
         self.m_field.update_group(gid, gsize, duration, x, y, diam)
 
     def event_tracking_geo(self, path, tags, args, source):

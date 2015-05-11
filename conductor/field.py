@@ -267,8 +267,8 @@ class Field(object):
             # delete from the cell master list of cells
             logger.debug("deleting cell "+str(uid))
             # Solution 1: Delete the conx along with the cell
-            for cid,conx in new_conx_dict.iteritems():
             new_conx_dict = self.m_cell_dict[uid].m_conx_dict.copy()
+            for cid in new_conx_dict:
                 self.del_connector(cid)
             # Note that this only deletes the cell from the master list, but
             # doesn't destroy the instance, which may still be refd elsewhere.
@@ -519,7 +519,7 @@ class Field(object):
         # we make a copy because we can't iterate over the dict if we are
         # deleting stuff from it!
         new_cell_dict = self.m_cell_dict.copy()
-        for uid,cell in new_cell_dict.iteritems():
+        for uid in new_cell_dict:
             self.check_for_lost_cell(uid)
 
     def record_history(self, atype, uid0, uid1, value, htime):

@@ -257,7 +257,7 @@ class OSCHandler(object):
 
     def send_to_all_clients(self, path, args):
         """Broadcast to all the clients."""
-        for clientkey, client in self.m_osc_clients.iteritems():
+        for clientkey in self.m_osc_clients:
             self.send_to(clientkey, path, args)
 
     #
@@ -337,7 +337,7 @@ class OSCHandler(object):
         """
         #print "event_track_entry:",path,args,source
         #print "args:",args,args[0],args[1],args[2]
-        frame = args[0]
+        #frame = args[0]
         #etime = args[1]
         uid = args[2]
         logging.getLogger("cells").info("entry of cell "+str(uid))
@@ -351,7 +351,7 @@ class OSCHandler(object):
              target - UID of target
         """
         #print "event_track_exit:",path,args,source
-        frame = args[0]
+        #frame = args[0]
         #etime = args[1]
         uid = args[2]
         logging.getLogger("cells").info("exit of cell "+str(uid))
@@ -390,9 +390,9 @@ class OSCHandler(object):
         ex = args[4]
         ey = args[5]
         spd = args[6]
-        heading = args[7]
+        #heading = args[7]
         espd = args[8]
-        eheading = args[9]
+        #eheading = args[9]
         facing = args[10]
         efacing = args[11]
         diam = args[12]
@@ -479,7 +479,7 @@ class OSCHandler(object):
         minor = args[8]
         gid = args[9]
         gsize = args[10]
-        channel = args[11]
+        #channel = args[11]
         #print "event_track_update:",path,args,source
         if frame%config.report_frequency['debug'] == 0:
             #print "event_track_update:",path,args,source
@@ -503,7 +503,7 @@ class OSCHandler(object):
         for index, item in enumerate(args):
             if item == 'nan':
                 args[index] = None
-        frame = args[0]
+        #frame = args[0]
         gid = args[1]
         gsize = args[2]       # comes in meters
         duration = args[3]
@@ -762,7 +762,7 @@ class OSCHandler(object):
         """Sends notification of ongoing events.
         /conductor/event ["type",uid0,uid1,value,time]
         """
-        for id,event in self.m_field.m_event_dict.iteritems():
+        for event in self.m_field.m_event_dict.itervalues():
             duration = time() - event.createtime
             self.m_field.m_osc.send_downstream("/conductor/event",
                     [event.m_type, event.m_uid0, event.m_uid1, event.m_value, 1.0, duration])

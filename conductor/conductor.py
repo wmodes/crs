@@ -342,7 +342,7 @@ class Conductor(object):
 
 
         # Now add new attributes, update existing ones
-        for uid,cell in self.m_field.m_cell_dict.iteritems():
+        for uid in self.m_field.m_cell_dict:
             if self.m_field.is_cell_good_to_go(uid):
                 for atype, cell_test in self.cell_tests.iteritems():
                     running_avg = cell_test(uid, atype)

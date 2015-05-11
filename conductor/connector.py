@@ -82,8 +82,8 @@ class Connector(object):
         if type in self.m_attr_dict:
             self.m_attr_dict[type].update(value,aboveTrigger)
         else:
-            assert(aboveTrigger)   # Must be above trigger if this is the first time it is being updated
             self.m_attr_dict[type] = Attr(type, self.m_id, value)
+            assert aboveTrigger   # Must be above trigger if this is the first time it is being updated
 
     def check_for_attr(self, type):
         if type in self.m_attr_dict:

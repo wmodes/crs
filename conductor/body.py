@@ -12,7 +12,7 @@ and light, including complex direct and indirect behavior and relationships.
 """
 
 __appname__ = "body.py"
-__author__  = "Wes Modes (modes.io)"
+__author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
@@ -44,7 +44,7 @@ class Body(object):
                  spd=None, espd=None, facing=None, efacing=None,
                  diam=None, sigmadiam=None, sep=None, sigmasep=None,
                  leftness=None, vis=None):
-        self.m_field=field
+        self.m_field = field
         self.m_id = b_id
         self.m_x = x
         self.m_y = y
@@ -62,9 +62,9 @@ class Body(object):
         self.m_vis = vis
 
     def update(self, x=None, y=None, ex=None, ey=None,
-                 spd=None, espd=None, facing=None, efacing=None,
-                 diam=None, sigmadiam=None, sep=None, sigmasep=None,
-                 leftness=None, vis=None):
+               spd=None, espd=None, facing=None, efacing=None,
+               diam=None, sigmadiam=None, sep=None, sigmasep=None,
+               leftness=None, vis=None):
         if x is not None:
             self.m_x = x
         if y is not None:

@@ -12,7 +12,7 @@ and light, including complex direct and indirect behavior and relationships.
 """
 
 __appname__ = "attr.py"
-__author__  = "Wes Modes (modes.io)"
+__author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
@@ -39,13 +39,13 @@ class Attr(object):
         self.m_value = value
         self.m_updatetime = time()
         self.m_freshness = 1.0
-        
+
     def update(self, value=None, aboveTrigger=False):
         if value is not None:
             self.m_value = value
         if aboveTrigger:
             self.m_updatetime = time()
-            self.m_freshness=1.0
+            self.m_freshness = 1.0
 
     def set_freshness(self, value):
-        self.m_freshness=value
+        self.m_freshness = value

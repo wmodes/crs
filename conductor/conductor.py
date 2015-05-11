@@ -12,7 +12,7 @@ and light, including complex direct and indirect behavior and relationships.
 """
 
 __appname__ = "cwconductorelements.py"
-__author__  = "Wes Modes (modes.io)"
+__author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
@@ -41,7 +41,7 @@ CONX_QUAL = config.connector_qualifying_triggers
 CONX_AGE = config.connector_max_age
 
 # init logging
-logger=logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 class Conductor(object):
     """An object representing the conductor.
@@ -55,20 +55,20 @@ class Conductor(object):
 
     Every algorithm that calculates an attribute, starts with a score which is
     clculated in a weighted running average, using a decay rate configured for
-    that attribute. The current running average is returned.  Whether that 
-    returned value triggers the attribute or not depends on whether it meets 
+    that attribute. The current running average is returned.  Whether that
+    returned value triggers the attribute or not depends on whether it meets
     the configurable trigger set in the config.
 
-    Thus, every attribute has five critical aspects about it, four of them 
+    Thus, every attribute has five critical aspects about it, four of them
     configurable:
 
         1. The algorithm that determines the score in this moment.
-        2. The "qualifying_trigger" that may specify distance, velocity, or 
+        2. The "qualifying_trigger" that may specify distance, velocity, or
             degrees for the algorithm
         3. The "memory_time" or how far back we are averaging
-        4. The "avg_trigger" that when the running average is greater than 
+        4. The "avg_trigger" that when the running average is greater than
             triggers the attribute
-        5. The "max_age" or how long the attribute stays around once 
+        5. The "max_age" or how long the attribute stays around once
             triggered (it diminishes to 0 in this time)
     """
 
@@ -119,19 +119,19 @@ class Conductor(object):
         self.m_dist_table = {}
 
     def update(self, field=None, condglobal=None, cellglobal=None):
-        if field!=None:
+        if field != None:
             self.m_field = field
-        if condglobal!=None:
+        if condglobal != None:
             self.m_condglobal = condglobal
-        if cellglobal!=None:
+        if cellglobal != None:
             self.m_cellglobal = cellglobal
 
     def update_cell_param(self, type,param, value):
         mod_array = None
         if param == "trigger":
             mod_array = CELL_AVG
-            if value<.01:
-                value=.01
+            if value < .01:
+                value = .01
         elif param == "memory":
             mod_array = CELL_MEM
         elif param == "maxage":
@@ -140,13 +140,13 @@ class Conductor(object):
             mod_array = CELL_QUAL
         if mod_array is not None:
             mod_array[type] = value
-            
     def update_conx_param(self, type,param, value):
+
         mod_array = None
         if param == "trigger":
             mod_array = CONX_AVG
-            if value<.01:
-                value=.01
+            if value < .01:
+                value = .01
         elif param == "memory":
             mod_array = CONX_MEM
         elif param == "maxage":
@@ -178,11 +178,8 @@ class Conductor(object):
             create a connection
           if a connection exists
             update the value
-        """
 
-        #logger.debug("update_all_conx")
-
-        """Age and expire connectors.
+       Age and expire connectors.
         Note that we should do this before we discover and create new
         connections. That way they are not prematurly aged.
 
@@ -194,11 +191,12 @@ class Conductor(object):
                     else
                         record the new value
         """
+        #logger.debug("update_all_conx")
         # Make a copy so we don't run into problems when deleting connections
         new_conx_dict = copy(self.m_field.m_conx_dict)
 
         # iterate over every connector
-        for cid,connector in new_conx_dict.iteritems():
+        for cid, connector in new_conx_dict.iteritems():
             new_attr_dict = copy(connector.m_attr_dict)
             # iterate over ever attr
             for type,attr in new_attr_dict.iteritems():
@@ -212,12 +210,13 @@ class Conductor(object):
                     avg_trigger = CONX_AVG["default"]
 
                 since_update = time() - attr.m_updatetime
-                if max_age>0:
+                if max_age > 0:
                     attr.set_freshness(1 - (since_update/max_age))
-                    
-                # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
-                if attr.m_value < avg_trigger and since_update>max_age:
                     logger.info("expired connection %s %s: value=%.2f,since_update=%.2f"%(cid,type,attr.m_value,since_update))
+
+                # Check if we should remove this attribute
+                # (when they are no longer triggered and it has been at least max_age since a trigger).
+                if attr.m_value < avg_trigger and since_update > max_age:
                     attr.set_freshness(0.0)
                     # send "del conx" osc msg
                     self.m_field.m_osc.nix_conx_attr(cid, type)
@@ -226,7 +225,7 @@ class Conductor(object):
                     index = str(cid)+'-'+str(type)
 
         # Now add new connections
-        for (cell0,cell1) in list(combinations(self.m_field.m_cell_dict.values(), 2)):
+        for (cell0, cell1) in list(combinations(self.m_field.m_cell_dict.values(), 2)):
             uid0 = cell0.m_id
             uid1 = cell1.m_id
             if self.m_field.is_cell_good_to_go(cell0.m_id) and \
@@ -249,14 +248,13 @@ class Conductor(object):
                     # Update all existing connections, and create new ones if triggered
                     if running_avg >= avg_trigger or self.m_field.check_for_conx_attr(uid0, uid1, type):
                         # create or update connection
-                        self.m_field.update_conx_attr(cid, uid0, uid1, type, running_avg, running_avg>=avg_trigger)
-
     def record_conx_avg(self, id, type, sample):
-        """Track Exponentially decaying weighted moving averages (ema) in an 
-        indexed dict."""
         index = str(id)+'-'+str(type)
         if type in CONX_MEM:
             mem_time = CONX_MEM[type]
+                        self.m_field.update_conx_attr(cid, uid0, uid1, atype, running_avg, running_avg >= avg_trigger)
+
+        """Track Exponentially decaying weighted moving averages (ema) in an indexed dict."""
         else:
             mem_time = CONX_MEM["default"]
         if mem_time:
@@ -271,15 +269,12 @@ class Conductor(object):
         return self.m_avg_table[index]
 
     def get_conx_avg(self, id, type):
-        """Retreive Exponentially decaying weighted moving averages (ema) in an 
-        indexed dict."""
         index = str(id)+'-'+str(type)
+        """Retreive Exponentially decaying weighted moving averages (ema) in an indexed dict."""
         if index in self.m_avg_table:
             return self.m_avg_table[index]
         self.m_avg_table[index] = 0
         return 0
-
-    
 
     #
     # Cell housekeeping
@@ -297,11 +292,8 @@ class Conductor(object):
                   update the value?
         anything else? they should be picked up when the conductor does its
         regular reports
-        """
 
-        #logger.debug( "update_all_cells")
-
-        """Age and expire connectors.
+        Age and expire connectors.
         Note that we should do this before we discover and create new
         connections. That way they are not prematurly aged.
 
@@ -316,10 +308,11 @@ class Conductor(object):
                             we'll set it to 0
                         record the new value
         """
+        #logger.debug( "update_all_cells")
         new_cell_dict = copy(self.m_field.m_cell_dict)
 
         # iterate over every connector
-        for uid,connector in new_cell_dict.iteritems():
+        for uid, connector in new_cell_dict.iteritems():
             new_attr_dict = copy(connector.m_attr_dict)
             # iterate over ever attr
             for type,attr in new_attr_dict.iteritems():
@@ -333,12 +326,12 @@ class Conductor(object):
                     avg_trigger = CELL_AVG["default"]
 
                 since_update = time() - attr.m_updatetime
-                if max_age>0:
+                if max_age > 0:
                     attr.set_freshness(1-(since_update/max_age))
 
                 # Check if we should remove this attribute (when they are no longer triggered and it has been at least max_age since a trigger).
-                if attr.m_value < avg_trigger and since_update>max_age:
                     logger.info("expired cell %s %s: value=%.2f, trigger=%.2f,since_update=%.2f"%(uid,type,attr.m_value,avg_trigger,since_update))
+                if attr.m_value < avg_trigger and since_update > max_age:
                     attr.set_freshness(0.0)
                     # send "del cell" osc msg
                     self.m_field.m_osc.nix_cell_attr(uid, type)
@@ -365,14 +358,13 @@ class Conductor(object):
                     # Update all existing attributes, and create new ones if triggered
                     if running_avg >= avg_trigger or self.m_field.check_for_cell_attr(uid, type): 
                         # update or create
-                        self.m_field.update_cell_attr(uid, type, running_avg, running_avg>=avg_trigger)
-
     def record_cell_avg(self, id, type, sample):
-        """Track Exponentially decaying weighted moving averages (ema) in an 
-        indexed dict."""
         index = str(id)+'-'+str(type)
         if type in CELL_MEM:
             time = CELL_MEM[type]
+                        self.m_field.update_cell_attr(uid, atype, running_avg, running_avg >= avg_trigger)
+
+        """Track Exponentially decaying weighted moving averages (ema) in an indexed dict."""
         else:
             time = CELL_MEM["default"]
         if index in self.m_avg_table:
@@ -387,9 +379,8 @@ class Conductor(object):
         return self.m_avg_table[index]
 
     def get_cell_avg(self, id, type):
-        """Retreive Exponentially decaying weighted moving averages (ema) in an 
-        indexed dict."""
         index = str(id)+'-'+str(type)
+        """Retreive Exponentially decaying weighted moving averages (ema) in an indexed dict."""
         if index in self.m_avg_table:
             return self.m_avg_table[index]
         self.m_avg_table[index] = 0
@@ -415,7 +406,6 @@ class Conductor(object):
 
     def test_conx_grouped(self, cid, type, cell0, cell1):
         """Are cells currently grouped?
-        
         **Implemented & Successfully Tested
 
         Evaluates the folllowing criteria
@@ -449,7 +439,7 @@ class Conductor(object):
         # we calculate a score
         # we get the distance between cells
         dist = self.m_dist_table[cid]
-        # we normalize this dist where 
+        # we normalize this dist where
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
         if not type in CONX_QUAL:
@@ -511,20 +501,19 @@ class Conductor(object):
         if spd0 < min_spd or spd1 < min_spd:
             score = 0.01
         else:
-            score=min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
         avgscore=self.record_conx_avg(cid, type, score)
         logger.debug( "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f"%(spd0,cell0.m_vx,cell0.m_vy,spd1,cell1.m_vx,cell1.m_vy,score,avgscore))
+            score = min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
 
         # we record our score in our running avg table
         return avgscore
 
     def test_conx_fof(self, cid, type, cell0, cell1):
         """Are these cells connected through a third person?
-        
         **Not Yes Implemented
 
         Meets the following conditions:
-            1. 
+            1.
         Returns:
             value: 1.0 if connected, 0 if no
         """
@@ -546,17 +535,17 @@ class Conductor(object):
         # we calculate a score
         # we get the distance between cells
         dist = self.m_dist_table[cid]
-        # we normalize this dist where 
+        # we normalize this dist where
         #   right on top of each other would be 1.0
         #   as far as you could get would be 0.0
         if not type in CONX_QUAL:
             logger.error("No connector_qualifying_triggers set for type '%s'"% type)
             return 0
-        max_dist = CONX_QUAL[type]
-        if dist<max_dist:
-            score=1.0
+        max_dist = CONX_QUAL[atype]
+        if dist < max_dist:
+            score = 1.0
         else:
-            score=0.0
+            score = 0.0
 
         # we record our score in our running avg table to make it into a fraction of time that these 2 people were within max_dist of each other
         return self.record_conx_avg(cid, type, score)
@@ -636,8 +625,8 @@ class Conductor(object):
         """
         # we calculate a score
         # If the gid is not-zero and cell->m_gid the same for each cell
-        age0 = time() - cell0.m_createtime 
-        age1 = time() - cell1.m_createtime 
+        age0 = time() - cell0.m_createtime
+        age1 = time() - cell1.m_createtime
         if not 'strangers-min' in CONX_QUAL:
             logger.error("No connector_qualifying_triggers set for type '%s'"% 'strangers-min')
             return 0
@@ -645,7 +634,7 @@ class Conductor(object):
         if age0 < min_age or age1 < min_age:
             score = 0.01
         else:
-            if cell0.m_gid == cell1.m_gid and cell0.m_gid!=0:
+            if cell0.m_gid == cell1.m_gid and cell0.m_gid != 0:
                 score = 0.0
             else:
                 score = 1.0
@@ -689,7 +678,7 @@ class Conductor(object):
 
         #TODO: Only if cells not in a group - Done
         #if True:
-        if cell0.m_gid != cell1.m_gid or cell0.m_gid==0 or cell1.m_gid==0:
+        if cell0.m_gid != cell1.m_gid or cell0.m_gid == 0 or cell1.m_gid == 0:
             # get the facing angles of the two cells
             angle0 = cell0.m_body.m_facing%360
             angle1 = cell1.m_body.m_facing%360
@@ -701,8 +690,7 @@ class Conductor(object):
             # calculate the angle from cell0 to cell1
             # FIXME: Tracker is sending the "facing away" angle rather than
             # facing -- later when it is fixed, we can remove "+ 180"
-            phi0=phase(complex(cell1.m_x-cell0.m_x,
-                                cell1.m_y-cell0.m_y)) *180/pi - 90
+            phi0 = phase(complex(cell1.m_x-cell0.m_x,cell1.m_y-cell0.m_y)) *180/pi - 90
             # get diff btwn the angle of cell0 and the angle to cell1
             diff0 = abs(phi0 - angle0)
             if diff0 > 180:
@@ -711,9 +699,9 @@ class Conductor(object):
                 diff0 = diff0 + 360
             diff0 = abs(diff0)
             if diff0 < min_angle:
-                score0=1.0
+                score0 = 1.0
             else:
-                score0=0.0
+                score0 = 0.0
 
             # reverse phi to get angle from cell1 to cell0
             phi1 = (phi0 + 180) % 360
@@ -724,8 +712,8 @@ class Conductor(object):
             if diff1 < -180:
                 diff1 = diff1 + 360
             diff1 = abs(diff1)
-            if diff1<min_angle:
-                score1=1.0
+            if diff1 < min_angle:
+                score1 = 1.0
             else:
                 score1=0.0
             score = score0 * score1
@@ -738,7 +726,7 @@ class Conductor(object):
             msg=msg+ "    facing angle1=%d, phi1=%d, diff1=%d, score1=%.2f"%(angle1,phi1,diff1,score1)
             msg=msg+ "    facing: instantaneous score=%.2f, avg=%.2f"%(score,self.get_conx_avg(cid,type))
             logging.getLogger(__name__+".facing").debug(msg)
-            
+
         # we record our score in our running avg table
         return self.get_conx_avg(cid, type)
 

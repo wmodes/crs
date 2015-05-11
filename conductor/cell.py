@@ -13,7 +13,7 @@ and light, including complex direct and indirect behavior and relationships.
 
 
 __appname__ = "cell.py"
-__author__  = "Wes Modes (modes.io)"
+__author__ = "Wes Modes (modes.io)"
 __version__ = "0.1pre0"
 __license__ = "GNU GPL 3.0 or later"
 
@@ -66,11 +66,11 @@ class Cell(object):
 
     """
 
-    def __init__(self, field, id, x=None, y=None, vx=None, vy=None, major=None, 
-                    minor=None, gid=None, gsize=None, visible=None, frame=None):
+    def __init__(self, field, cellid, x=None, y=None, vx=None, vy=None, major=None,
+                 minor=None, gid=None, gsize=None, visible=None, frame=None):
         # passed params
-        self.m_field=field
-        self.m_id = id
+        self.m_field = field
+        self.m_id = cellid
         self.m_x = x
         self.m_y = y
         self.m_vx = vx
@@ -107,9 +107,8 @@ class Cell(object):
         self.m_frame = frame
         self.m_history = []
 
-    def update(self, x=None, y=None, vx=None, vy=None, major=None, 
-                    minor=None, gid=None, gsize=None, visible=None,     
-                    frame=None):
+    def update(self, x=None, y=None, vx=None, vy=None, major=None,
+               minor=None, gid=None, gsize=None, visible=None, frame=None):
         """Store basic info and create a DataElement object"""
         if x is not None:
             self.m_x = x
@@ -145,19 +144,6 @@ class Cell(object):
             self.m_fromexit = fromexit
         self.m_updatetime = time()
 
-    def update_body(self, x=None, y=None, ex=None, ey=None, 
-                 spd=None, espd=None, facing=None, efacing=None, 
-                 diam=None, sigmadiam=None, sep=None, sigmasep=None,
-                 leftness=None, vis=None):
-        self.m_body.update(x, y, ex, ey, spd, espd, facing, efacing, 
-                           diam, sigmadiam, sep, sigmasep, leftness, vis)
-
-    def update_leg(self, leg, nlegs=None, x=None, y=None, 
-                 ex=None, ey=None, spd=None, espd=None, 
-                 heading=None, eheading=None, vis=None):
-        self.m_leglist[leg].update(nlegs, x, y, ex, ey, spd, espd, 
-                                   heading, eheading, vis)
-
     def add_attr(self, type, value):
         self.m_attr_dict[type] = Attr(type, self.m_id, value)
 
@@ -165,6 +151,18 @@ class Cell(object):
         if type not in self.m_attr_dict:
             assert(aboveTrigger)	   # Must be above trigger if we are creating it
             self.m_attr_dict[type] = Attr(type, self.m_id, value)
+    def update_body(self, x=None, y=None, ex=None, ey=None,
+                    spd=None, espd=None, facing=None, efacing=None,
+                    diam=None, sigmadiam=None, sep=None, sigmasep=None,
+                    leftness=None, vis=None):
+        self.m_body.update(x, y, ex, ey, spd, espd, facing, efacing, diam, sigmadiam,
+                           sep, sigmasep, leftness, vis)
+
+    def update_leg(self, leg, nlegs=None, x=None, y=None,
+                   ex=None, ey=None, spd=None, espd=None,
+                   heading=None, eheading=None, vis=None):
+        self.m_leglist[leg].update(nlegs, x, y, ex, ey, spd, espd, heading, eheading, vis)
+
         else:
             self.m_attr_dict[type].update(value,aboveTrigger)
 
@@ -181,11 +179,10 @@ class Cell(object):
 
     def cell_disconnect(self):
         """Disconnects all the connectors and refs it can reach.
-        
         To actually delete it, remove it from the list of cells in the Field
         class.
         """
-        logger.debug( "cell_disconnect  "+str(self.m_id))
+        logger.debug("cell_disconnect  "+str(self.m_id))
         # we make a copy because we can't iterate over the dict if we are
         # deleting stuff from it!
         new_conx_dict = self.m_conx_dict.copy()

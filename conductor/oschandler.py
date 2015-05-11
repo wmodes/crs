@@ -127,11 +127,7 @@ class OSCHandler(object):
                 logger.info("setting client for %s to %s:%s",host,OSC_IPS[host],OSC_PORTS[host])
                 osc_clients.append((host, OSC_IPS[host], OSC_PORTS[host]))
 
-        try:
-            (name, host, port) = osc_server[0]
-        except:
-            logger.fatal("System:Unable to create OSC handler with server="+str(osc_server),exc_info=True)
-            sys.exit(1)
+        (name, host, port) = osc_server[0]
         self.m_oscserver = OSCServer( (host, port) )
         logger.info( "Initializing server at %s:%s",host, port)
         self.m_oscserver.timeout = config.osctimeout
@@ -149,7 +145,7 @@ class OSCHandler(object):
             if not name in self.m_osc_clients:
                 try:
                     self.m_osc_clients[name] = OSCClient()
-                except:
+                except socket.error:
                     logger.error( "Unable to create OSC handler for client %s at %s:%s",name,host,port,exc_info=True)
                 self.m_osc_clients[name].connect( (host, port) )
                 logger.info( "Connecting to %s at %s:%s",name,host,port)
@@ -280,10 +276,7 @@ class OSCHandler(object):
         for clientkey, client in self.m_osc_clients.iteritems():
             target_ip = client.address()[0]
             if target_ip == source_ip:
-                try:
-                    self.send_to(clientkey, "/ack", ping_code)
-                except:
-                    logger.warning("event_ping:unable to ack to "+str(clientkey),exc_info=False)
+                self.send_to(clientkey, "/ack", ping_code)
 
     def event_ack(self, path, tags, args, source):
         logger.debug( "event_ack:code "+str(args[0]))
@@ -574,12 +567,9 @@ class OSCHandler(object):
         for clientkey, client in self.m_osc_clients.iteritems():
             target_ip = client.address()[0]
             if target_ip == source_ip:
-                try:
-                    #TODO: Decide what we dump and dump it
-                    #self.sendto(clientkey, '/ping', ping_code)
-                    logger.debug( "dump to "+str(clientkey))
-                except:
-                    logger.warning( "dump:unable to reach "+str(clientkey),exc_info=False)
+                #TODO: Decide what we dump and dump it
+                #self.sendto(clientkey, '/ping', ping_code)
+                logger.debug( "dump to "+str(clientkey))
 
     def event_ui_condglobal(self, path, tags, args, source):
         """Receive condglobal from UI.

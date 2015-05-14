@@ -113,7 +113,8 @@ class OSCHandler(object):
         self.m_ymin = 0
         self.m_xmax = 0
         self.m_ymax = 0
-
+        self.m_health = 0
+        
         # Setup OSC server and clients
         osc_server = []
         osc_clients = []
@@ -650,7 +651,13 @@ class OSCHandler(object):
             self.send_group_attrs()
         if frame%config.report_frequency['uisettings'] == 0:
             self.send_uisettings()
+        if frame%config.report_frequency['health'] == 0:
+            self.send_health()
 
+    def send_health(self):
+        self.m_field.m_osc.send_to("touchosc","/health/COND",self.m_health)
+        self.m_health=1-self.m_health
+        
     def send_uisettings(self):
         #print "Sending ui settings"
         fd=open("settings.py","w")

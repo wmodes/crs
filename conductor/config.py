@@ -218,5 +218,6 @@ report_frequency = {
     'conxs': 5,
     'gattrs': 5,
     'uisettings':50,
+    'health':24,
 }
 osctimeout = 0

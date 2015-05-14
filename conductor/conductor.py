@@ -498,7 +498,7 @@ class Conductor(object):
         # we calculate a score
         # score = 1 if the values are exactly the same
         # score = 0 if the values are very different
-        tmplogger = logging.getLogger(__name__+".coord")
+#        tmplogger = logging.getLogger(__name__+".coord")
         if not 'coord-min' in CONX_QUAL:
             logger.error("No connector_qualifying_triggers set for type '%s'", 'coord-min')
             return 0
@@ -510,7 +510,7 @@ class Conductor(object):
         else:
             score = min(1,max(0,(cell0.m_vx*cell1.m_vx+cell0.m_vy*cell1.m_vy)/(spd0*spd1)))   #BST-use correlation between velocities instead
         avgscore = self.record_conx_avg(cid, atype, score)
-        tmplogger.debug( "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f",spd0, cell0.m_vx, cell0.m_vy, spd1, cell1.m_vx, cell1.m_vy, score, avgscore)
+#        tmplogger.debug( "coord: spd0=%.2f (%.2f,%.2f), spd1=%.2f (%.2f,%.2f), score=%.3f, avg=%.3f",spd0, cell0.m_vx, cell0.m_vy, spd1, cell1.m_vx, cell1.m_vy, score, avgscore)
 
         # we record our score in our running avg table
         return avgscore
@@ -869,7 +869,7 @@ class Conductor(object):
             score=0
         else:
             score = max(0, 1 - float(cell.m_fromnearest) / max_dist)
-        logging.debug("Interactive UID %d, max_dist=%f, fromnearest=%f, score = %f", uid,max_dist, cell.m_fromnearest,score)
+#        logging.debug("Interactive UID %d, max_dist=%f, fromnearest=%f, score = %f", uid,max_dist, cell.m_fromnearest,score)
         # we record our score in our running avg table
         return self.record_cell_avg(uid, atype, score)
 

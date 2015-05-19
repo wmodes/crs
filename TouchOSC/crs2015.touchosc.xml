@@ -1,0 +1,529 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<layout mode="1" orientation="horizontal" version="14">
+  <tabpage name="1" scalef="0.0" scalet="1.0">
+    <control background="false" color="red" h="25" name="label16" outline="false" size="14" text="Conn Params" type="labelh" w="94" x="207" y="-33" />
+    <control color="red" h="50" local_off="false" name="multipush1" number_x="10" number_y="1" osc_cs="/ui/preset" scalef="0.0" scalet="1.0" type="multipush" w="449" x="285" y="928" />
+    <control centered="false" color="red" h="200" inverted="true" name="multifader1" number="18" osc_cs="/ui/conn/faders" scalef="0.0" scalet="1.0" type="multifaderv" w="740" x="24" y="361" />
+    <control background="false" color="red" h="25" name="label2" outline="false" size="14" text="Attribute Select" type="labelh" w="204" x="20" y="43" />
+    <control background="false" color="red" h="40" name="label3" osc_cs="/ui/conn/selected" outline="false" size="16" text="Grouped" type="labelh" w="500" x="254" y="36" />
+    <control background="true" color="red" h="25" name="battery1" outline="true" size="14" type="batteryh" w="80" x="671" y="11" />
+    <control background="false" color="purple" h="80" name="label4" osc_cs="/ui/conn/faders/1/label" outline="false" size="14" text="?" type="labelv" w="20" x="37" y="418" />
+    <control color="red" ex_mode="true" h="200" local_off="true" name="multitoggle1" number_x="4" number_y="5" osc_cs="/ui/conn/select" scalef="0.0" scalet="1.0" type="multitoggle" w="200" x="24" y="72" />
+    <control color="red" ex_mode="false" h="50" local_off="false" name="multitoggle2" number_x="16" number_y="1" osc_cs="/ui/conn/toggles" scalef="0.0" scalet="1.0" type="multitoggle" w="739" x="25" y="302" />
+    <control background="false" color="purple" h="80" name="label8" osc_cs="/ui/conn/faders/2/label" outline="false" size="14" text="?" type="labelv" w="20" x="78" y="418" />
+    <control background="false" color="purple" h="80" name="label9" osc_cs="/ui/conn/faders/3/label" outline="false" size="14" text="?" type="labelv" w="20" x="119" y="418" />
+    <control color="green" h="20" name="led1" osc_cs="/ui/active2" scalef="0.0" scalet="1.0" type="led" w="20" x="644" y="14" />
+    <control color="green" h="20" name="led2" osc_cs="/ui/active1" scalef="0.0" scalet="1.0" type="led" w="20" x="624" y="14" />
+    <control background="false" color="purple" h="80" name="label10" osc_cs="/ui/conn/faders/4/label" outline="false" size="14" text="?" type="labelv" w="20" x="159" y="418" />
+    <control background="false" color="purple" h="80" name="label11" osc_cs="/ui/conn/faders/5/label" outline="false" size="14" text="?" type="labelv" w="20" x="200" y="418" />
+    <control background="false" color="purple" h="80" name="label12" osc_cs="/ui/conn/faders/6/label" outline="false" size="14" text="?" type="labelv" w="20" x="241" y="418" />
+    <control background="false" color="purple" h="80" name="label13" osc_cs="/ui/conn/faders/7/label" outline="false" size="14" text="?" type="labelv" w="20" x="282" y="418" />
+    <control background="false" color="gray" h="44" name="label2" outline="false" size="14" text="Def" type="labelh" w="45" x="687" y="930" />
+    <control background="false" color="gray" h="44" name="label16" outline="false" size="14" text="2" type="labelh" w="44" x="332" y="931" />
+    <control background="false" color="gray" h="44" name="label17" outline="false" size="14" text="3" type="labelh" w="44" x="374" y="931" />
+    <control background="false" color="gray" h="44" name="label18" outline="false" size="14" text="4" type="labelh" w="44" x="419" y="931" />
+    <control background="false" color="gray" h="44" name="label19" outline="false" size="14" text="9" type="labelh" w="44" x="641" y="931" />
+    <control background="false" color="gray" h="44" name="label20" outline="false" size="14" text="8" type="labelh" w="44" x="597" y="931" />
+    <control background="false" color="gray" h="44" name="label21" outline="false" size="14" text="7" type="labelh" w="44" x="552" y="931" />
+    <control background="false" color="gray" h="44" name="label22" outline="false" size="14" text="6" type="labelh" w="44" x="508" y="931" />
+    <control background="false" color="gray" h="44" name="label23" outline="false" size="14" text="5" type="labelh" w="44" x="464" y="931" />
+    <control background="false" color="gray" h="44" name="label24" outline="false" size="14" text="1" type="labelh" w="44" x="287" y="931" />
+    <control background="true" color="red" h="25" name="label25" outline="false" size="14" text="Presets:" type="labelh" w="80" x="202" y="940" />
+    <control background="false" color="purple" h="25" name="label27" outline="false" size="14" text="Use attr value:" type="labelh" w="105" x="351" y="317" />
+    <control background="false" color="purple" h="31" name="label28" osc_cs="/ui/conn/select/1/1/label" outline="false" size="9" text="?" type="labelh" w="51" x="25" y="79" />
+    <control background="false" color="purple" h="80" name="label29" osc_cs="/ui/conn/faders/12/label" outline="false" size="14" text="?" type="labelv" w="20" x="485" y="418" />
+    <control background="false" color="purple" h="80" name="label30" osc_cs="/ui/conn/faders/11/label" outline="false" size="14" text="?" type="labelv" w="20" x="445" y="418" />
+    <control background="false" color="purple" h="80" name="label31" osc_cs="/ui/conn/faders/10/label" outline="false" size="14" text="?" type="labelv" w="20" x="404" y="418" />
+    <control background="false" color="purple" h="80" name="label32" osc_cs="/ui/conn/faders/9/label" outline="false" size="14" text="?" type="labelv" w="20" x="363" y="418" />
+    <control background="false" color="purple" h="80" name="label33" osc_cs="/ui/conn/faders/8/label" outline="false" size="14" text="?" type="labelv" w="20" x="322" y="418" />
+    <control background="false" color="purple" h="31" name="label34" osc_cs="/ui/conn/select/4/1/label" outline="false" size="9" text="?" type="labelh" w="51" x="170" y="79" />
+    <control background="false" color="purple" h="31" name="label35" osc_cs="/ui/conn/select/3/1/label" outline="false" size="9" text="?" type="labelh" w="51" x="121" y="79" />
+    <control background="false" color="purple" h="31" name="label36" osc_cs="/ui/conn/select/2/1/label" outline="false" size="9" text="?" type="labelh" w="51" x="73" y="79" />
+    <control background="false" color="purple" h="31" name="label37" osc_cs="/ui/conn/select/1/2/label" outline="false" size="9" text="?" type="labelh" w="51" x="26" y="120" />
+    <control background="false" color="purple" h="31" name="label38" osc_cs="/ui/conn/select/4/2/label" outline="false" size="9" text="?" type="labelh" w="51" x="171" y="120" />
+    <control background="false" color="purple" h="31" name="label39" osc_cs="/ui/conn/select/3/2/label" outline="false" size="9" text="?" type="labelh" w="51" x="123" y="120" />
+    <control background="false" color="purple" h="31" name="label40" osc_cs="/ui/conn/select/2/2/label" outline="false" size="9" text="?" type="labelh" w="51" x="74" y="120" />
+    <control background="false" color="purple" h="31" name="label41" osc_cs="/ui/conn/select/1/3/label" outline="false" size="9" text="?" type="labelh" w="51" x="26" y="157" />
+    <control background="false" color="purple" h="31" name="label42" osc_cs="/ui/conn/select/4/3/label" outline="false" size="9" text="?" type="labelh" w="51" x="171" y="157" />
+    <control background="false" color="purple" h="31" name="label43" osc_cs="/ui/conn/select/3/3/label" outline="false" size="9" text="?" type="labelh" w="51" x="123" y="157" />
+    <control background="false" color="purple" h="31" name="label44" osc_cs="/ui/conn/select/2/3/label" outline="false" size="9" text="?" type="labelh" w="51" x="74" y="157" />
+    <control background="false" color="purple" h="31" name="label45" osc_cs="/ui/conn/select/1/4/label" outline="false" size="9" text="?" type="labelh" w="51" x="26" y="197" />
+    <control background="false" color="purple" h="31" name="label46" osc_cs="/ui/conn/select/4/4/label" outline="false" size="9" text="?" type="labelh" w="51" x="171" y="197" />
+    <control background="false" color="purple" h="31" name="label47" osc_cs="/ui/conn/select/3/4/label" outline="false" size="9" text="?" type="labelh" w="51" x="123" y="197" />
+    <control background="false" color="purple" h="31" name="label48" osc_cs="/ui/conn/select/2/4/label" outline="false" size="9" text="?" type="labelh" w="51" x="74" y="197" />
+    <control color="red" h="45" local_off="true" name="toggle2" osc_cs="/ui/oneper" scalef="0.0" scalet="1.0" type="toggle" w="45" x="362" y="793" />
+    <control background="false" color="purple" h="25" name="label63" outline="false" size="12" text="1/type" type="labelh" w="80" x="344" y="803" />
+    <control color="red" ex_mode="false" h="56" local_off="true" name="multitoggle3" number_x="7" number_y="1" osc_cs="/ui/conn/buttons" scalef="0.0" scalet="1.0" type="multitoggle" w="503" x="250" y="142" />
+    <control background="false" color="red" h="25" name="label72" outline="false" size="14" text="Enable" type="labelh" w="80" x="464" y="97" />
+    <control background="false" color="purple" h="31" name="label73" osc_cs="/ui/conn/buttons/1/label" outline="false" size="9" text="?" type="labelh" w="51" x="264" y="154" />
+    <control background="false" color="purple" h="31" name="label74" osc_cs="/ui/conn/buttons/6/label" outline="false" size="9" text="?" type="labelh" w="51" x="619" y="154" />
+    <control background="false" color="purple" h="31" name="label75" osc_cs="/ui/conn/buttons/5/label" outline="false" size="9" text="?" type="labelh" w="51" x="548" y="154" />
+    <control background="false" color="purple" h="31" name="label76" osc_cs="/ui/conn/buttons/4/label" outline="false" size="9" text="?" type="labelh" w="51" x="477" y="154" />
+    <control background="false" color="purple" h="31" name="label77" osc_cs="/ui/conn/buttons/3/label" outline="false" size="9" text="?" type="labelh" w="51" x="406" y="154" />
+    <control background="false" color="purple" h="31" name="label78" osc_cs="/ui/conn/buttons/2/label" outline="false" size="9" text="?" type="labelh" w="51" x="335" y="154" />
+    <control background="false" color="purple" h="31" name="label79" osc_cs="/ui/conn/buttons/7/label" outline="false" size="9" text="?" type="labelh" w="51" x="690" y="154" />
+    <control background="false" color="purple" h="80" name="label86" osc_cs="/ui/conn/faders/18/label" outline="false" size="14" text="?" type="labelv" w="20" x="730" y="421" />
+    <control background="false" color="purple" h="80" name="label87" osc_cs="/ui/conn/faders/17/label" outline="false" size="14" text="?" type="labelv" w="20" x="689" y="422" />
+    <control background="false" color="purple" h="80" name="label88" osc_cs="/ui/conn/faders/16/label" outline="false" size="14" text="?" type="labelv" w="20" x="648" y="420" />
+    <control background="false" color="purple" h="80" name="label89" osc_cs="/ui/conn/faders/15/label" outline="false" size="14" text="?" type="labelv" w="20" x="608" y="419" />
+    <control background="false" color="purple" h="80" name="label90" osc_cs="/ui/conn/faders/14/label" outline="false" size="14" text="?" type="labelv" w="20" x="567" y="419" />
+    <control background="false" color="purple" h="80" name="label91" osc_cs="/ui/conn/faders/13/label" outline="false" size="14" text="?" type="labelv" w="20" x="526" y="419" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader9" osc_cs="/ui/visthresh" response="absolute" scalef="0.0" scalet="1.0" type="faderv" w="50" x="424" y="582" />
+    <control background="false" color="purple" h="183" name="label94" osc_cs="/ui/visthresh/label" outline="false" size="14" text="Visual Threshold" type="labelv" w="25" x="435" y="588" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader10" osc_cs="/ui/condglobal" response="absolute" scalef="0.0" scalet="1.0" type="faderv" w="50" x="484" y="582" />
+    <control background="false" color="purple" h="190" name="label95" osc_cs="/ui/condglobal/label" outline="false" size="14" text="Connection Global" type="labelv" w="25" x="495" y="587" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader11" osc_cs="/ui/maxconn" response="absolute" scalef="0.0" scalet="10.0" type="faderv" w="50" x="360" y="582" />
+    <control background="false" color="purple" h="175" name="label96" osc_cs="/ui/maxconn/label" outline="false" size="14" text="Max Connections" type="labelv" w="25" x="371" y="587" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader2" osc_cs="/ui/cellglobal" response="absolute" scalef="0.0" scalet="1.0" type="faderv" w="50" x="543" y="581" />
+    <control background="false" color="purple" h="190" name="label1" osc_cs="/ui/cellglobal/label" outline="false" size="14" text="Cell Global" type="labelv" w="25" x="554" y="586" />
+    <control background="false" color="green" h="25" name="label54" outline="false" size="14" text="Attributes" type="labelh" w="94" x="4" y="-33" />
+    <control background="true" color="red" h="68" name="label79" osc_cs="/pf/frame" outline="true" size="32" text="0" type="labelh" w="151" x="22" y="895" />
+    <control color="green" h="20" name="led1" osc_cs="/health/FE" scalef="0.0" scalet="1.0" type="led" w="20" x="640" y="585" />
+    <control color="green" h="20" name="led2" osc_cs="/health/LS" scalef="0.0" scalet="1.0" type="led" w="20" x="668" y="585" />
+    <control background="false" color="red" h="25" name="label82" outline="false" size="14" text="FE" type="labelh" w="28" x="635" y="607" />
+    <control background="false" color="red" h="25" name="label83" outline="false" size="14" text="LS" type="labelh" w="28" x="664" y="607" />
+    <control color="red" h="45" local_off="false" name="toggle1" osc_cs="/ui/layer" scalef="0.0" scalet="1.0" type="toggle" w="45" x="636" y="659" />
+    <control background="false" color="purple" h="20" name="label84" outline="false" size="11" text="Layer" type="labelh" w="46" x="635" y="671" />
+    <control color="red" h="45" local_off="false" name="toggle2" osc_cs="/ui/fusion" scalef="0.0" scalet="1.0" type="toggle" w="45" x="635" y="713" />
+    <control background="false" color="purple" h="20" name="label85" outline="false" size="11" text="Fusion" type="labelh" w="46" x="634" y="725" />
+    <control color="red" h="45" local_off="false" name="toggle3" osc_cs="/ui/attrenable" scalef="0.0" scalet="1.0" type="toggle" w="45" x="635" y="766" />
+    <control background="false" color="purple" h="20" name="label86" outline="false" size="11" text="Attr" type="labelh" w="46" x="634" y="778" />
+    <control color="red" h="45" local_off="false" name="toggle2" osc_cs="/ui/labels" scalef="0.0" scalet="1.0" type="toggle" w="45" x="693" y="767" />
+    <control background="false" color="purple" h="20" name="label1" outline="false" size="11" text="Labels" type="labelh" w="46" x="692" y="779" />
+    <control color="red" h="45" local_off="true" name="toggle3" osc_cs="/ui/laser/freeze" scalef="0.0" scalet="1.0" type="toggle" w="45" x="693" y="659" />
+    <control background="false" color="purple" h="20" name="label3" outline="false" size="10" text="Freeze" type="labelh" w="46" x="692" y="671" />
+    <control background="false" color="purple" h="31" name="label2" osc_cs="/ui/conn/select/1/5/label" outline="false" size="9" text="?" type="labelh" w="51" x="25" y="234" />
+    <control background="false" color="purple" h="31" name="label3" osc_cs="/ui/conn/select/2/5/label" outline="false" size="9" text="?" type="labelh" w="51" x="73" y="234" />
+    <control background="false" color="purple" h="31" name="label4" osc_cs="/ui/conn/select/3/5/label" outline="false" size="9" text="?" type="labelh" w="51" x="122" y="234" />
+    <control background="false" color="purple" h="31" name="label5" osc_cs="/ui/conn/select/4/5/label" outline="false" size="9" text="?" type="labelh" w="51" x="170" y="234" />
+    <control background="false" color="red" h="25" name="label6" outline="false" size="14" text="Connections" type="labelh" w="94" x="105" y="-33" />
+    <control background="false" color="red" h="25" name="label24" outline="false" size="14" text="Cell Params" type="labelh" w="94" x="309" y="-33" />
+    <control background="false" color="red" h="25" name="label31" outline="false" size="14" text="Sound" type="labelh" w="94" x="411" y="-33" />
+    <control background="false" color="red" h="25" name="label240" outline="false" size="14" text="Calibration" type="labelh" w="94" x="513" y="-33" />
+    <control background="false" color="red" h="25" name="label241" outline="false" size="14" text="Laser" type="labelh" w="94" x="615" y="-33" />
+    <control color="green" h="20" name="led28" osc_cs="/health/COND" scalef="0.0" scalet="1.0" type="led" w="20" x="696" y="585" />
+    <control background="false" color="red" h="25" name="label288" outline="false" size="12" text="Cond" type="labelh" w="40" x="688" y="607" />
+  </tabpage>
+  <tabpage name="2" scalef="0.0" scalet="1.0">
+    <control background="false" color="red" h="25" name="label1" osc_cs="/ui/uid/1" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="53" />
+    <control background="false" color="red" h="25" name="label2" osc_cs="/ui/uid/2" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="90" />
+    <control background="false" color="red" h="25" name="label3" osc_cs="/ui/uid/3" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="128" />
+    <control background="false" color="red" h="25" name="label4" osc_cs="/ui/uid/4" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="166" />
+    <control background="false" color="red" h="25" name="label5" osc_cs="/ui/uid/5" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="204" />
+    <control background="false" color="red" h="25" name="label6" osc_cs="/ui/uid/6" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="241" />
+    <control background="false" color="red" h="25" name="label7" osc_cs="/ui/uid/7" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="279" />
+    <control background="false" color="red" h="25" name="label8" osc_cs="/ui/uid/8" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="317" />
+    <control background="false" color="red" h="25" name="label9" osc_cs="/ui/uid/9" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="355" />
+    <control background="false" color="red" h="25" name="label10" osc_cs="/ui/uid/10" outline="false" size="14" text="UID" type="labelh" w="80" x="23" y="393" />
+    <control background="false" color="red" h="20" name="label11" outline="false" size="14" text="Connections" type="labelh" w="387" x="127" y="19" />
+    <control background="false" color="red" h="25" name="label49" osc_cs="/ui/connattr/uid1" outline="false" size="14" text="UID1" type="labelh" w="80" x="537" y="48" />
+    <control background="false" color="red" h="25" name="label50" osc_cs="/ui/connattr/uid2" outline="false" size="14" text="UID2" type="labelh" w="80" x="644" y="48" />
+    <control background="false" color="red" h="25" name="label51" osc_cs="/ui/connattr/1" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="88" />
+    <control background="false" color="red" h="25" name="label52" osc_cs="/ui/connattr/2" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="117" />
+    <control background="false" color="red" h="25" name="label53" osc_cs="/ui/connattr/3" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="147" />
+    <control background="false" color="red" h="25" name="label54" osc_cs="/ui/connattr/4" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="176" />
+    <control background="false" color="red" h="25" name="label55" osc_cs="/ui/connattr/5" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="206" />
+    <control background="false" color="red" h="25" name="label56" osc_cs="/ui/connattr/6" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="235" />
+    <control background="false" color="red" h="25" name="label57" osc_cs="/ui/connattr/7" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="265" />
+    <control background="false" color="red" h="25" name="label58" osc_cs="/ui/connattr/8" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="294" />
+    <control background="false" color="red" h="25" name="label59" osc_cs="/ui/connattr/9" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="324" />
+    <control background="false" color="red" h="25" name="label60" osc_cs="/ui/connattr/10" outline="false" size="14" text="attr" type="labelh" w="247" x="517" y="353" />
+    <control background="false" color="red" h="25" name="label61" outline="false" size="14" text="UID" type="labelh" w="80" x="22" y="18" />
+    <control color="red" h="381" local_off="true" name="multipush2" number_x="10" number_y="10" osc_cs="/ui/linked" scalef="0.0" scalet="1.0" type="multipush" w="387" x="129" y="47" />
+    <control background="true" color="red" h="25" name="label70" osc_cs="/ui/tempo" outline="true" size="14" text="Tempo" type="labelh" w="80" x="44" y="942" />
+    <control background="true" color="red" h="25" name="label71" osc_cs="/ui/beat" outline="true" size="14" text="Beat" type="labelh" w="80" x="134" y="942" />
+    <control background="false" color="red" h="25" name="label242" outline="false" size="14" text="Conn Params" type="labelh" w="94" x="207" y="-33" />
+    <control background="false" color="red" h="25" name="label243" outline="false" size="14" text="Attributes" type="labelh" w="94" x="4" y="-33" />
+    <control background="false" color="green" h="25" name="label244" outline="false" size="14" text="Connections" type="labelh" w="94" x="105" y="-33" />
+    <control background="false" color="red" h="25" name="label245" outline="false" size="14" text="Cell Params" type="labelh" w="94" x="309" y="-33" />
+    <control background="false" color="red" h="25" name="label246" outline="false" size="14" text="Sound" type="labelh" w="94" x="411" y="-33" />
+    <control background="false" color="red" h="25" name="label247" outline="false" size="14" text="Calibration" type="labelh" w="94" x="513" y="-33" />
+    <control background="false" color="red" h="25" name="label248" outline="false" size="14" text="Laser" type="labelh" w="94" x="615" y="-33" />
+  </tabpage>
+  <tabpage name="4" scalef="0.0" scalet="1.0">
+    <control centered="false" color="red" h="50" inverted="false" name="rotary19" norollover="true" osc_cs="/ui/cond/grouped/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="108" />
+    <control background="false" color="red" h="25" name="label2" outline="false" size="14" text="trigger" type="labelh" w="80" x="130" y="55" />
+    <control background="false" color="red" h="25" name="label3" outline="false" size="14" text="grouped" type="labelh" w="80" x="47" y="121" />
+    <control background="false" color="red" h="25" name="label18" outline="false" size="14" text="memory" type="labelh" w="80" x="257" y="55" />
+    <control background="false" color="red" h="25" name="label19" outline="false" size="14" text="maxage (decay)" type="labelh" w="117" x="370" y="55" />
+    <control background="false" color="red" h="25" name="label20" outline="false" size="14" text="qual/min" type="labelh" w="80" x="517" y="55" />
+    <control background="false" color="red" h="25" name="label21" outline="false" size="14" text="friends" type="labelh" w="80" x="47" y="202" />
+    <control background="false" color="red" h="25" name="label22" outline="false" size="14" text="contact" type="labelh" w="80" x="47" y="283" />
+    <control background="false" color="red" h="25" name="label23" outline="false" size="14" text="coord" type="labelh" w="80" x="47" y="365" />
+    <control background="false" color="red" h="25" name="label24" outline="false" size="14" text="irlbuds" type="labelh" w="80" x="47" y="446" />
+    <control background="false" color="red" h="25" name="label25" outline="false" size="14" text="nearby" type="labelh" w="80" x="47" y="527" />
+    <control background="false" color="red" h="25" name="label26" outline="false" size="14" text="strangers" type="labelh" w="80" x="47" y="609" />
+    <control background="false" color="red" h="25" name="label27" outline="false" size="14" text="facing" type="labelh" w="80" x="47" y="690" />
+    <control background="false" color="red" h="25" name="label28" outline="false" size="14" text="fusion" type="labelh" w="80" x="47" y="771" />
+    <control background="false" color="red" h="25" name="label29" outline="false" size="14" text="touch" type="labelh" w="80" x="47" y="853" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary21" norollover="true" osc_cs="/ui/cond/friends/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="189" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary22" norollover="true" osc_cs="/ui/cond/contact/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="270" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary23" norollover="true" osc_cs="/ui/cond/coord/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="351" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary24" norollover="true" osc_cs="/ui/cond/irlbuds/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="432" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary25" norollover="true" osc_cs="/ui/cond/nearby/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="513" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary26" norollover="true" osc_cs="/ui/cond/strangers/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="594" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary27" norollover="true" osc_cs="/ui/cond/facing/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="675" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary30" norollover="true" osc_cs="/ui/cond/grouped/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="107" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary31" norollover="true" osc_cs="/ui/cond/friends/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="188" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary32" norollover="true" osc_cs="/ui/cond/contact/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="269" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary33" norollover="true" osc_cs="/ui/cond/coord/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="350" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary34" norollover="true" osc_cs="/ui/cond/irlbuds/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="431" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary35" norollover="true" osc_cs="/ui/cond/nearby/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="513" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary36" norollover="true" osc_cs="/ui/cond/strangers/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="594" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary37" norollover="true" osc_cs="/ui/cond/facing/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="675" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary40" norollover="true" osc_cs="/ui/cond/grouped/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="107" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary41" norollover="true" osc_cs="/ui/cond/friends/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="188" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary42" norollover="true" osc_cs="/ui/cond/contact/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="269" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary43" norollover="true" osc_cs="/ui/cond/coord/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="350" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary44" norollover="true" osc_cs="/ui/cond/irlbuds/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="431" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary45" norollover="true" osc_cs="/ui/cond/nearby/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="513" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary46" norollover="true" osc_cs="/ui/cond/strangers/maxage" response="absolute" scalef="1.0" scalet="60.0" type="rotaryv" w="50" x="402" y="594" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary47" norollover="true" osc_cs="/ui/cond/facing/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="675" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary51" norollover="true" osc_cs="/ui/cond/friends/qual" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="661" y="188" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary52" norollover="true" osc_cs="/ui/cond/contact/qual" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="530" y="269" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary53" norollover="true" osc_cs="/ui/cond/coord/qualmin" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="530" y="350" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary55" norollover="true" osc_cs="/ui/cond/nearby/qualmin" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="530" y="513" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary56" norollover="true" osc_cs="/ui/cond/strangers/qual" response="absolute" scalef="0.0" scalet="20.0" type="rotaryv" w="50" x="530" y="594" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary57" norollover="true" osc_cs="/ui/cond/facing/qual" response="absolute" scalef="0.0" scalet="90.0" type="rotaryv" w="50" x="530" y="675" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary58" norollover="true" osc_cs="/ui/cond/fusion/qualmin" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="530" y="756" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary59" norollover="true" osc_cs="/ui/cond/touch/qual" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="530" y="837" />
+    <control background="false" color="red" h="25" name="label37" outline="false" size="14" text="qual max" type="labelh" w="80" x="649" y="55" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary1" norollover="true" osc_cs="/ui/cond/nearby/qualmax" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="661" y="513" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary2" norollover="true" osc_cs="/ui/cond/fusion/qualmax" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="661" y="756" />
+    <control color="green" h="20" name="led1" osc_cs="/ui/cond/active/grouped" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="123" />
+    <control color="green" h="20" name="led3" osc_cs="/ui/cond/active/friends" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="204" />
+    <control color="green" h="20" name="led4" osc_cs="/ui/cond/active/contact" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="286" />
+    <control color="green" h="20" name="led5" osc_cs="/ui/cond/active/coord" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="367" />
+    <control color="green" h="20" name="led6" osc_cs="/ui/cond/active/irlbuds" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="449" />
+    <control color="green" h="20" name="led7" osc_cs="/ui/cond/active/nearby" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="530" />
+    <control color="green" h="20" name="led8" osc_cs="/ui/cond/active/strangers" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="612" />
+    <control color="green" h="20" name="led9" osc_cs="/ui/cond/active/facing" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="693" />
+    <control color="green" h="20" name="led10" osc_cs="/ui/cond/active/fusion" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="775" />
+    <control color="green" h="20" name="led11" osc_cs="/ui/cond/active/touch" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="857" />
+    <control background="false" color="red" h="25" name="label4" outline="false" size="12" text="maxdist" type="labelh" w="80" x="646" y="234" />
+    <control background="false" color="red" h="25" name="label5" outline="false" size="12" text="dist" type="labelh" w="80" x="515" y="315" />
+    <control background="false" color="red" h="25" name="label6" outline="false" size="12" text="minspeed" type="labelh" w="80" x="515" y="397" />
+    <control background="false" color="red" h="25" name="label7" outline="false" size="12" text="mindist" type="labelh" w="80" x="515" y="558" />
+    <control background="false" color="red" h="25" name="label8" outline="false" size="12" text="minage" type="labelh" w="80" x="515" y="640" />
+    <control background="false" color="red" h="25" name="label9" outline="false" size="12" text="minangle" type="labelh" w="80" x="515" y="720" />
+    <control background="false" color="red" h="25" name="label10" outline="false" size="12" text="mindist" type="labelh" w="80" x="515" y="802" />
+    <control background="false" color="red" h="25" name="label11" outline="false" size="12" text="maxdist" type="labelh" w="80" x="515" y="883" />
+    <control background="false" color="red" h="25" name="label13" outline="false" size="12" text="maxdist" type="labelh" w="80" x="646" y="558" />
+    <control background="false" color="red" h="25" name="label14" outline="false" size="12" text="maxdist" type="labelh" w="80" x="646" y="805" />
+    <control background="false" color="red" h="25" name="label16" outline="false" size="14" text="(seconds)" type="labelh" w="80" x="258" y="77" />
+    <control background="false" color="red" h="25" name="label17" outline="false" size="14" text="(seconds)" type="labelh" w="80" x="388" y="77" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary2" norollover="true" osc_cs="/ui/cond/irlbuds/qual" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="661" y="423" />
+    <control background="false" color="red" h="25" name="label26" outline="false" size="12" text="maxdist" type="labelh" w="80" x="646" y="469" />
+    <control background="false" color="green" h="25" name="label249" outline="false" size="14" text="Conn Params" type="labelh" w="94" x="207" y="-33" />
+    <control background="false" color="red" h="25" name="label250" outline="false" size="14" text="Attributes" type="labelh" w="94" x="4" y="-33" />
+    <control background="false" color="red" h="25" name="label251" outline="false" size="14" text="Connections" type="labelh" w="94" x="105" y="-33" />
+    <control background="false" color="red" h="25" name="label252" outline="false" size="14" text="Cell Params" type="labelh" w="94" x="309" y="-33" />
+    <control background="false" color="red" h="25" name="label253" outline="false" size="14" text="Sound" type="labelh" w="94" x="411" y="-33" />
+    <control background="false" color="red" h="25" name="label254" outline="false" size="14" text="Calibration" type="labelh" w="94" x="513" y="-33" />
+    <control background="false" color="red" h="25" name="label255" outline="false" size="14" text="Laser" type="labelh" w="94" x="615" y="-33" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary61" norollover="true" osc_cs="/ui/cond/touch/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="837" />
+  </tabpage>
+  <tabpage name="5" scalef="0.0" scalet="1.0">
+    <control centered="false" color="red" h="50" inverted="false" name="rotary3" norollover="true" osc_cs="/ui/cond/interactive/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="108" />
+    <control background="true" color="red" h="25" name="label38" outline="false" size="14" text="trigger" type="labelh" w="80" x="130" y="55" />
+    <control background="false" color="red" h="25" name="label39" outline="false" size="14" text="interactive" type="labelh" w="80" x="47" y="121" />
+    <control background="true" color="red" h="25" name="label40" outline="false" size="14" text="memory" type="labelh" w="80" x="257" y="55" />
+    <control background="false" color="red" h="25" name="label43" outline="false" size="14" text="static" type="labelh" w="80" x="47" y="202" />
+    <control background="false" color="red" h="25" name="label44" outline="false" size="14" text="kinetic" type="labelh" w="80" x="47" y="283" />
+    <control background="false" color="red" h="25" name="label45" outline="false" size="14" text="fast" type="labelh" w="80" x="47" y="365" />
+    <control background="false" color="red" h="25" name="label46" outline="false" size="14" text="timein" type="labelh" w="80" x="47" y="446" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary4" norollover="true" osc_cs="/ui/cond/static/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="189" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary5" norollover="true" osc_cs="/ui/cond/kinetic/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="270" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary6" norollover="true" osc_cs="/ui/cond/fast/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="351" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary7" norollover="true" osc_cs="/ui/cond/timein/trigger" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="50" x="144" y="432" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary13" norollover="true" osc_cs="/ui/cond/interactive/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="107" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary14" norollover="true" osc_cs="/ui/cond/static/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="188" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary15" norollover="true" osc_cs="/ui/cond/kinetic/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="269" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary16" norollover="true" osc_cs="/ui/cond/fast/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="350" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary17" norollover="true" osc_cs="/ui/cond/timein/memory" response="absolute" scalef="0.0" scalet="30.0" type="rotaryv" w="50" x="273" y="431" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary23" norollover="true" osc_cs="/ui/cond/interactive/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="107" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary24" norollover="true" osc_cs="/ui/cond/static/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="188" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary25" norollover="true" osc_cs="/ui/cond/kinetic/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="269" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary26" norollover="true" osc_cs="/ui/cond/fast/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="350" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary27" norollover="true" osc_cs="/ui/cond/timein/maxage" response="absolute" scalef="1.0" scalet="30.0" type="rotaryv" w="50" x="402" y="431" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary33" norollover="true" osc_cs="/ui/cond/static/qual" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="531" y="188" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary34" norollover="true" osc_cs="/ui/cond/kinetic/qual" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="531" y="269" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary35" norollover="true" osc_cs="/ui/cond/timein/qual" response="absolute" scalef="0.0" scalet="60.0" type="rotaryv" w="50" x="531" y="431" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary44" norollover="true" osc_cs="/ui/cond/interactive/qual" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="531" y="107" />
+    <control color="green" h="20" name="led12" osc_cs="/ui/cond/active/interactive" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="123" />
+    <control color="green" h="20" name="led13" osc_cs="/ui/cond/active/static" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="204" />
+    <control color="green" h="20" name="led14" osc_cs="/ui/cond/active/kinetic" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="286" />
+    <control color="green" h="20" name="led15" osc_cs="/ui/cond/active/fast" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="367" />
+    <control color="green" h="20" name="led16" osc_cs="/ui/cond/active/timein" scalef="0.0" scalet="1.0" type="led" w="20" x="23" y="449" />
+    <control background="false" color="red" h="25" name="label18" outline="false" size="14" text="(seconds)" type="labelh" w="80" x="258" y="77" />
+    <control background="false" color="red" h="25" name="label19" outline="false" size="14" text="(seconds)" type="labelh" w="80" x="388" y="77" />
+    <control background="false" color="red" h="25" name="label20" outline="false" size="12" text="minage" type="labelh" w="80" x="515" y="473" />
+    <control background="false" color="red" h="25" name="label21" outline="false" size="12" text="minspeed" type="labelh" w="80" x="515" y="315" />
+    <control background="false" color="red" h="25" name="label22" outline="false" size="12" text="maxspeed" type="labelh" w="80" x="515" y="234" />
+    <control background="false" color="red" h="25" name="label23" outline="false" size="12" text="maxdist" type="labelh" w="80" x="515" y="151" />
+    <control centered="false" color="red" h="50" inverted="false" name="rotary1" norollover="true" osc_cs="/ui/cond/fast/qual" response="absolute" scalef="0.0" scalet="5.0" type="rotaryv" w="50" x="531" y="350" />
+    <control background="false" color="red" h="25" name="label24" outline="false" size="12" text="maxspeed" type="labelh" w="80" x="515" y="396" />
+    <control background="false" color="red" h="25" name="label25" outline="false" size="14" text="maxage (decay)" type="labelh" w="117" x="370" y="55" />
+    <control background="false" color="red" h="25" name="label256" outline="false" size="14" text="Conn Params" type="labelh" w="94" x="207" y="-33" />
+    <control background="false" color="red" h="25" name="label257" outline="false" size="14" text="Attributes" type="labelh" w="94" x="4" y="-33" />
+    <control background="false" color="red" h="25" name="label258" outline="false" size="14" text="Connections" type="labelh" w="94" x="105" y="-33" />
+    <control background="false" color="green" h="25" name="label259" outline="false" size="14" text="Cell Params" type="labelh" w="94" x="309" y="-33" />
+    <control background="false" color="red" h="25" name="label260" outline="false" size="14" text="Sound" type="labelh" w="94" x="411" y="-33" />
+    <control background="false" color="red" h="25" name="label261" outline="false" size="14" text="Calibration" type="labelh" w="94" x="513" y="-33" />
+    <control background="false" color="red" h="25" name="label262" outline="false" size="14" text="Laser" type="labelh" w="94" x="615" y="-33" />
+  </tabpage>
+  <tabpage name="6" scalef="0.0" scalet="1.0">
+    <control centered="false" color="red" h="200" inverted="true" name="fader1" osc_cs="/soundui/events/grouped" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="632" y="585" />
+    <control centered="false" color="red" h="151" inverted="false" name="rotary2" norollover="true" osc_cs="/soundui/melody" response="absolute" scalef="1.0" scalet="3.99" type="rotaryv" w="151" x="71" y="54" />
+    <control background="false" color="purple" h="20" name="label32" osc_cs="/soundui/melody/label" outline="false" size="15" text="Melody Name" type="labelh" w="199" x="49" y="117" />
+    <control centered="false" color="red" h="333" inverted="true" name="fader1" osc_cs="/soundui/volume" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="91" x="45" y="582" />
+    <control background="false" color="purple" h="333" name="label33" outline="false" size="23" text="Master Volume" type="labelv" w="68" x="56" y="584" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader2" osc_cs="/soundui/tempo" response="absolute" scalef="40.0" scalet="180.0" type="faderv" w="50" x="234" y="585" />
+    <control background="false" color="purple" h="80" name="label34" outline="false" size="14" text="Tempo" type="labelv" w="25" x="245" y="652" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader3" osc_cs="/soundui/threshold" response="absolute" scalef="0.0" scalet="1.0" type="faderv" w="50" x="404" y="585" />
+    <control background="false" color="purple" h="80" name="label35" outline="false" size="14" text="Note Threshold" type="labelv" w="25" x="414" y="646" />
+    <control color="red" h="45" local_off="false" name="toggle1" osc_cs="/soundui/record" scalef="0.0" scalet="1.0" type="toggle" w="45" x="635" y="873" />
+    <control background="false" color="purple" h="20" name="label36" outline="false" size="11" text="Record" type="labelh" w="46" x="633" y="885" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader4" osc_cs="/soundui/kick" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="185" y="293" />
+    <control background="false" color="purple" h="198" name="label37" outline="false" size="14" text="Kick" type="labelv" w="27" x="199" y="294" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader5" osc_cs="/soundui/trigger/fusion" response="absolute" scalef="0.0" scalet="1.0" type="faderv" w="50" x="338" y="585" />
+    <control background="false" color="purple" h="80" name="label39" outline="false" size="14" text="Fusion" type="labelv" w="25" x="349" y="645" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader8" osc_cs="/soundui/events/fusion" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="503" y="585" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader9" osc_cs="/soundui/events/touch" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="569" y="585" />
+    <control background="false" color="red" h="25" name="label44" outline="false" size="14" text="Trigger Levels" type="labelh" w="115" x="339" y="549" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader10" osc_cs="/soundui/snare" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="245" y="293" />
+    <control background="false" color="purple" h="196" name="label45" outline="false" size="14" text="Snare" type="labelv" w="25" x="260" y="295" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader11" osc_cs="/soundui/hat" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="305" y="293" />
+    <control background="false" color="purple" h="196" name="label46" outline="false" size="14" text="Hat" type="labelv" w="25" x="320" y="295" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader12" osc_cs="/soundui/synth1" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="426" y="293" />
+    <control background="false" color="purple" h="196" name="label47" outline="false" size="14" text="Synth1" type="labelv" w="25" x="441" y="295" />
+    <control background="true" color="red" h="25" name="label49" osc_cs="/ui/tempo" outline="true" size="14" text="Tempo" type="labelh" w="80" x="232" y="888" />
+    <control background="true" color="red" h="25" name="label50" osc_cs="/ui/beat" outline="true" size="14" text="Beat" type="labelh" w="80" x="322" y="888" />
+    <control background="false" color="purple" h="80" name="label1" outline="false" size="14" text="Touch" type="labelv" w="25" x="580" y="642" />
+    <control background="false" color="purple" h="80" name="label2" outline="false" size="14" text="Fusion" type="labelv" w="25" x="515" y="642" />
+    <control background="false" color="purple" h="80" name="label3" outline="false" size="14" text="Grouped" type="labelv" w="25" x="646" y="642" />
+    <control background="false" color="red" h="25" name="label4" outline="false" size="14" text="Event Volumes" type="labelh" w="166" x="510" y="549" />
+    <control background="false" color="red" h="25" name="label5" outline="false" size="14" text="Tempo" type="labelh" w="115" x="203" y="549" />
+    <control background="false" color="red" h="25" name="label6" outline="false" size="14" text="Channels" type="labelh" w="533" x="186" y="235" />
+    <control color="green" h="20" name="led2" osc_cs="/soundui/activity/1" scalef="0.0" scalet="1.0" type="led" w="20" x="202" y="266" />
+    <control color="green" h="20" name="led3" osc_cs="/soundui/activity/2" scalef="0.0" scalet="1.0" type="led" w="20" x="262" y="266" />
+    <control color="green" h="20" name="led4" osc_cs="/soundui/activity/3" scalef="0.0" scalet="1.0" type="led" w="20" x="322" y="266" />
+    <control color="green" h="20" name="led5" osc_cs="/soundui/activity/4" scalef="0.0" scalet="1.0" type="led" w="20" x="382" y="266" />
+    <control color="green" h="20" name="led6" osc_cs="/soundui/activity/5" scalef="0.0" scalet="1.0" type="led" w="20" x="443" y="266" />
+    <control color="green" h="20" name="led7" osc_cs="/soundui/activity/6" scalef="0.0" scalet="1.0" type="led" w="20" x="503" y="266" />
+    <control color="green" h="20" name="led8" osc_cs="/soundui/activity/7" scalef="0.0" scalet="1.0" type="led" w="20" x="563" y="266" />
+    <control color="green" h="20" name="led9" osc_cs="/soundui/activity/8" scalef="0.0" scalet="1.0" type="led" w="20" x="623" y="266" />
+    <control color="green" h="20" name="led10" osc_cs="/soundui/activity/9" scalef="0.0" scalet="1.0" type="led" w="20" x="684" y="266" />
+    <control background="false" color="red" h="25" name="label263" outline="false" size="14" text="Conn Params" type="labelh" w="94" x="207" y="-33" />
+    <control background="false" color="red" h="25" name="label264" outline="false" size="14" text="Attributes" type="labelh" w="94" x="4" y="-33" />
+    <control background="false" color="red" h="25" name="label265" outline="false" size="14" text="Connections" type="labelh" w="94" x="105" y="-33" />
+    <control background="false" color="red" h="25" name="label266" outline="false" size="14" text="Cell Params" type="labelh" w="94" x="309" y="-33" />
+    <control background="false" color="green" h="25" name="label267" outline="false" size="14" text="Sound" type="labelh" w="94" x="411" y="-33" />
+    <control background="false" color="red" h="25" name="label268" outline="false" size="14" text="Calibration" type="labelh" w="94" x="513" y="-33" />
+    <control background="false" color="red" h="25" name="label269" outline="false" size="14" text="Laser" type="labelh" w="94" x="615" y="-33" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader34" osc_cs="/soundui/speech" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="365" y="293" />
+    <control background="false" color="purple" h="196" name="label289" outline="false" size="14" text="Speech" type="labelv" w="25" x="380" y="295" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader35" osc_cs="/soundui/synth2" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="486" y="293" />
+    <control background="false" color="purple" h="196" name="label290" outline="false" size="14" text="Synth2" type="labelv" w="25" x="501" y="295" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader36" osc_cs="/soundui/8ndelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="546" y="293" />
+    <control background="false" color="purple" h="196" name="label291" outline="false" size="14" text="8ndelay" type="labelv" w="25" x="561" y="295" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader37" osc_cs="/soundui/8nddelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="607" y="293" />
+    <control background="false" color="purple" h="196" name="label292" outline="false" size="14" text="8nddelay" type="labelv" w="25" x="622" y="295" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader38" osc_cs="/soundui/4nddelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="667" y="293" />
+    <control background="false" color="purple" h="196" name="label293" outline="false" size="14" text="4nddelay" type="labelv" w="25" x="682" y="295" />
+  </tabpage>
+  <tabpage name="7" scalef="0.0" scalet="1.0">
+    <control color="red" h="45" local_off="true" name="push18" osc_cs="/cal/align" scalef="0.0" scalet="1.0" type="push" w="49" x="409" y="132" />
+    <control color="red" h="63" local_off="true" name="toggle9" osc_cs="/cal/lock" scalef="0.0" scalet="1.0" type="toggle" w="59" x="353" y="513" />
+    <control background="true" color="red" h="98" name="label98" outline="true" size="14" text="" type="labelh" w="141" x="325" y="28" />
+    <control color="red" h="250" inverted_x="false" inverted_y="true" name="xy1" osc_cs="/cal/xy/1" scalef="-1.0" scalet="1.0" type="xy" w="250" x="50" y="128" />
+    <control color="red" h="60" local_off="false" name="push1" osc_cs="/cal/sel/left/1" scalef="0.0" scalet="1.0" type="push" w="60" x="81" y="60" />
+    <control color="red" h="60" local_off="false" name="push2" osc_cs="/cal/sel/right/1" scalef="0.0" scalet="1.0" type="push" w="60" x="211" y="60" />
+    <control background="false" color="purple" h="25" name="label99" outline="false" size="24" text="&lt;" type="labelh" w="60" x="80" y="78" />
+    <control background="false" color="purple" h="25" name="label100" outline="false" size="24" text="&gt;" type="labelh" w="60" x="211" y="77" />
+    <control background="false" color="red" h="59" name="label101" osc_cs="/cal/sel/val/1" outline="false" size="23" text="1" type="labelh" w="59" x="145" y="60" />
+    <control color="red" h="60" local_off="false" name="push3" osc_cs="/cal/left/1" scalef="0.0" scalet="1.0" type="push" w="60" x="87" y="480" />
+    <control color="red" h="60" local_off="false" name="push4" osc_cs="/cal/up/1" scalef="0.0" scalet="1.0" type="push" w="60" x="145" y="421" />
+    <control color="red" h="60" local_off="false" name="push5" osc_cs="/cal/down/1" scalef="0.0" scalet="1.0" type="push" w="60" x="145" y="539" />
+    <control background="false" color="purple" h="25" name="label102" outline="false" size="24" text="&lt;" type="labelh" w="60" x="86" y="498" />
+    <control background="false" color="purple" h="25" name="label103" outline="false" size="27" text="v" type="labelh" w="60" x="145" y="556" />
+    <control background="false" color="purple" h="25" name="label104" outline="false" size="24" text="&gt;" type="labelh" w="60" x="203" y="497" />
+    <control background="false" color="purple" h="25" name="label105" outline="false" size="30" text="^" type="labelh" w="60" x="145" y="439" />
+    <control color="red" ex_mode="true" h="50" local_off="true" name="multitoggle4" number_x="10" number_y="1" osc_cs="/cal/selpair" scalef="0.0" scalet="1.0" type="multitoggle" w="500" x="134" y="625" />
+    <control color="red" h="45" local_off="false" name="push6" osc_cs="/cal/save" scalef="0.0" scalet="1.0" type="push" w="45" x="672" y="779" />
+    <control background="false" color="purple" h="25" name="label106" outline="false" size="14" text="Save" type="labelh" w="46" x="670" y="828" />
+    <control color="red" h="45" local_off="false" name="push7" osc_cs="/cal/load" scalef="0.0" scalet="1.0" type="push" w="45" x="608" y="779" />
+    <control background="false" color="purple" h="25" name="label107" outline="false" size="14" text="Load" type="labelh" w="46" x="606" y="828" />
+    <control color="red" h="45" local_off="false" name="push8" osc_cs="/cal/recompute" scalef="0.0" scalet="1.0" type="push" w="45" x="359" y="779" />
+    <control color="red" h="60" local_off="false" name="push9" osc_cs="/cal/right/1" scalef="0.0" scalet="1.0" type="push" w="60" x="203" y="480" />
+    <control background="true" color="red" h="25" name="label108" osc_cs="/cal/x/1" outline="true" size="14" text="0" type="labelh" w="80" x="135" y="384" />
+    <control background="true" color="red" h="80" name="label109" osc_cs="/cal/y/1" outline="true" size="14" text="0" type="labelv" w="25" x="19" y="208" />
+    <control background="false" color="purple" h="25" name="label110" outline="false" size="24" text="&gt;" type="labelh" w="60" x="205" y="498" />
+    <control background="false" color="purple" h="20" name="label111" outline="false" size="14" text="Lock" type="labelh" w="54" x="357" y="580" />
+    <control background="false" color="red" h="25" name="label112" osc_cs="/cal/status/1" outline="false" size="14" text="status/1" type="labelh" w="733" x="18" y="890" />
+    <control background="false" color="red" h="25" name="label113" osc_cs="/cal/status/2" outline="false" size="14" text="status/2" type="labelh" w="733" x="18" y="915" />
+    <control background="false" color="red" h="25" name="label114" osc_cs="/cal/status/3" outline="false" size="14" text="status/3" type="labelh" w="733" x="18" y="940" />
+    <control color="red" h="20" name="led18" osc_cs="/cal/led/1" scalef="0.0" scalet="1.0" type="led" w="20" x="152" y="682" />
+    <control color="red" h="20" name="led19" osc_cs="/cal/led/2" scalef="0.0" scalet="1.0" type="led" w="20" x="201" y="682" />
+    <control color="red" h="20" name="led20" osc_cs="/cal/led/3" scalef="0.0" scalet="1.0" type="led" w="20" x="250" y="682" />
+    <control color="red" h="20" name="led21" osc_cs="/cal/led/4" scalef="0.0" scalet="1.0" type="led" w="20" x="300" y="682" />
+    <control color="red" h="20" name="led22" osc_cs="/cal/led/5" scalef="0.0" scalet="1.0" type="led" w="20" x="349" y="682" />
+    <control color="red" h="20" name="led23" osc_cs="/cal/led/6" scalef="0.0" scalet="1.0" type="led" w="20" x="399" y="682" />
+    <control color="red" h="20" name="led24" osc_cs="/cal/led/7" scalef="0.0" scalet="1.0" type="led" w="20" x="448" y="682" />
+    <control color="red" h="20" name="led25" osc_cs="/cal/led/8" scalef="0.0" scalet="1.0" type="led" w="20" x="498" y="682" />
+    <control color="red" h="20" name="led26" osc_cs="/cal/led/9" scalef="0.0" scalet="1.0" type="led" w="20" x="547" y="682" />
+    <control color="red" h="20" name="led27" osc_cs="/cal/led/10" scalef="0.0" scalet="1.0" type="led" w="20" x="597" y="682" />
+    <control background="false" color="red" h="25" name="label115" osc_cs="/cal/error/1" outline="true" size="14" text="4.56" type="labelh" w="50" x="137" y="716" />
+    <control background="false" color="red" h="25" name="label116" osc_cs="/cal/error/10" outline="true" size="14" text="4.56" type="labelh" w="50" x="583" y="716" />
+    <control background="false" color="purple" h="25" name="label117" outline="false" size="14" text="Flip" type="labelh" w="46" x="6" y="385" />
+    <control color="red" h="30" local_off="true" name="toggle10" osc_cs="/cal/flipy/1" scalef="0.0" scalet="1.0" type="toggle" w="30" x="14" y="344" />
+    <control color="red" h="30" local_off="true" name="toggle11" osc_cs="/cal/flipx/1" scalef="0.0" scalet="1.0" type="toggle" w="30" x="52" y="383" />
+    <control centered="false" color="red" h="72" inverted="false" name="rotary60" norollover="true" osc_cs="/cal/speed" response="absolute" scalef="0.0" scalet="1.0" type="rotaryv" w="72" x="348" y="398" />
+    <control background="false" color="purple" h="25" name="label118" outline="false" size="14" text="Speed" type="labelh" w="46" x="361" y="470" />
+    <control background="false" color="red" h="25" name="label119" osc_cs="/cal/error/2" outline="true" size="14" text="4.56" type="labelh" w="50" x="186" y="716" />
+    <control background="false" color="red" h="25" name="label120" osc_cs="/cal/error/3" outline="true" size="14" text="4.56" type="labelh" w="50" x="236" y="716" />
+    <control background="false" color="red" h="25" name="label121" osc_cs="/cal/error/4" outline="true" size="14" text="4.56" type="labelh" w="50" x="285" y="716" />
+    <control background="false" color="red" h="25" name="label122" osc_cs="/cal/error/5" outline="true" size="14" text="4.56" type="labelh" w="50" x="335" y="716" />
+    <control background="false" color="red" h="25" name="label123" osc_cs="/cal/error/6" outline="true" size="14" text="4.56" type="labelh" w="50" x="384" y="716" />
+    <control background="false" color="red" h="25" name="label124" osc_cs="/cal/error/7" outline="true" size="14" text="4.56" type="labelh" w="50" x="434" y="716" />
+    <control background="false" color="red" h="25" name="label125" osc_cs="/cal/error/8" outline="true" size="14" text="4.56" type="labelh" w="50" x="483" y="716" />
+    <control background="false" color="red" h="25" name="label126" osc_cs="/cal/error/9" outline="true" size="14" text="4.56" type="labelh" w="50" x="533" y="716" />
+    <control color="red" h="250" inverted_x="false" inverted_y="true" name="xy2" osc_cs="/cal/xy/2" scalef="-1.0" scalet="1.0" type="xy" w="250" x="466" y="128" />
+    <control color="red" h="60" local_off="false" name="push10" osc_cs="/cal/sel/left/2" scalef="0.0" scalet="1.0" type="push" w="60" x="497" y="60" />
+    <control color="red" h="60" local_off="false" name="push11" osc_cs="/cal/sel/right/2" scalef="0.0" scalet="1.0" type="push" w="60" x="627" y="60" />
+    <control background="false" color="purple" h="25" name="label127" outline="false" size="24" text="&lt;" type="labelh" w="60" x="496" y="78" />
+    <control background="false" color="purple" h="25" name="label128" outline="false" size="24" text="&gt;" type="labelh" w="60" x="627" y="77" />
+    <control background="false" color="red" h="59" name="label129" osc_cs="/cal/sel/val/2" outline="false" size="23" text="2" type="labelh" w="59" x="562" y="60" />
+    <control color="red" h="60" local_off="false" name="push12" osc_cs="/cal/left/2" scalef="0.0" scalet="1.0" type="push" w="60" x="503" y="480" />
+    <control color="red" h="60" local_off="false" name="push13" osc_cs="/cal/up/2" scalef="0.0" scalet="1.0" type="push" w="60" x="561" y="421" />
+    <control color="red" h="60" local_off="false" name="push14" osc_cs="/cal/down/2" scalef="0.0" scalet="1.0" type="push" w="60" x="561" y="539" />
+    <control background="false" color="purple" h="25" name="label130" outline="false" size="24" text="&lt;" type="labelh" w="60" x="502" y="498" />
+    <control background="false" color="purple" h="25" name="label131" outline="false" size="27" text="v" type="labelh" w="60" x="561" y="556" />
+    <control background="false" color="purple" h="25" name="label132" outline="false" size="24" text="&gt;" type="labelh" w="60" x="619" y="497" />
+    <control background="false" color="purple" h="25" name="label133" outline="false" size="30" text="^" type="labelh" w="60" x="561" y="439" />
+    <control color="red" h="60" local_off="false" name="push15" osc_cs="/cal/right/2" scalef="0.0" scalet="1.0" type="push" w="60" x="619" y="480" />
+    <control background="true" color="red" h="25" name="label134" osc_cs="/cal/x/2" outline="true" size="14" text="0" type="labelh" w="80" x="551" y="384" />
+    <control background="true" color="red" h="80" name="label135" osc_cs="/cal/y/2" outline="true" size="14" text="0" type="labelv" w="25" x="723" y="208" />
+    <control background="false" color="purple" h="25" name="label136" outline="false" size="24" text="&gt;" type="labelh" w="60" x="621" y="498" />
+    <control background="false" color="purple" h="25" name="label137" outline="false" size="14" text="Flip" type="labelh" w="46" x="715" y="385" />
+    <control color="red" h="30" local_off="true" name="toggle12" osc_cs="/cal/flipy/2" scalef="0.0" scalet="1.0" type="toggle" w="30" x="721" y="344" />
+    <control color="red" h="30" local_off="true" name="toggle13" osc_cs="/cal/flipx/2" scalef="0.0" scalet="1.0" type="toggle" w="30" x="684" y="383" />
+    <control background="false" color="gray" h="25" name="label138" osc_cs="/cal/cnt/1/4" outline="false" size="14" text="10" type="labelh" w="37" x="396" y="28" />
+    <control background="false" color="gray" h="25" name="label139" osc_cs="/cal/cnt/2/4" outline="false" size="14" text="10" type="labelh" w="37" x="396" y="52" />
+    <control background="false" color="gray" h="25" name="label140" osc_cs="/cal/cnt/3/4" outline="false" size="14" text="10" type="labelh" w="37" x="396" y="76" />
+    <control background="false" color="gray" h="25" name="label141" osc_cs="/cal/cnt/1/3" outline="false" size="14" text="10" type="labelh" w="37" x="360" y="28" />
+    <control background="false" color="gray" h="25" name="label142" osc_cs="/cal/cnt/2/3" outline="false" size="14" text="10" type="labelh" w="37" x="360" y="51" />
+    <control background="false" color="gray" h="25" name="label143" osc_cs="/cal/cnt/1/2" outline="false" size="14" text="10" type="labelh" w="37" x="324" y="28" />
+    <control background="false" color="red" h="25" name="label144" outline="false" size="14" text="1" type="labelh" w="37" x="293" y="28" />
+    <control background="false" color="red" h="25" name="label145" outline="false" size="14" text="2" type="labelh" w="37" x="293" y="52" />
+    <control background="false" color="red" h="25" name="label146" outline="false" size="14" text="3" type="labelh" w="37" x="293" y="76" />
+    <control background="false" color="red" h="25" name="label147" outline="false" size="14" text="4" type="labelh" w="37" x="396" y="3" />
+    <control background="false" color="red" h="25" name="label148" outline="false" size="14" text="3" type="labelh" w="37" x="360" y="3" />
+    <control background="false" color="red" h="25" name="label149" outline="false" size="14" text="2" type="labelh" w="37" x="324" y="3" />
+    <control background="false" color="red" h="25" name="label150" outline="false" size="14" text="4" type="labelh" w="37" x="293" y="100" />
+    <control background="false" color="gray" h="25" name="label151" osc_cs="/cal/cnt/1/W" outline="false" size="14" text="10" type="labelh" w="37" x="432" y="28" />
+    <control background="false" color="gray" h="25" name="label152" osc_cs="/cal/cnt/2/W" outline="false" size="14" text="10" type="labelh" w="37" x="432" y="52" />
+    <control background="false" color="gray" h="25" name="label153" osc_cs="/cal/cnt/3/W" outline="false" size="14" text="10" type="labelh" w="37" x="432" y="76" />
+    <control background="false" color="red" h="25" name="label154" outline="false" size="14" text="W" type="labelh" w="37" x="432" y="3" />
+    <control background="false" color="gray" h="25" name="label155" osc_cs="/cal/cnt/4/W" outline="false" size="14" text="10" type="labelh" w="37" x="432" y="100" />
+    <control color="red" ex_mode="true" h="50" local_off="true" name="multitoggle5" number_x="5" number_y="1" osc_cs="/cal/lasermode" scalef="0.0" scalet="1.0" type="multitoggle" w="250" x="27" y="779" />
+    <control background="false" color="purple" h="20" name="label157" outline="false" size="14" text="Update" type="labelh" w="54" x="357" y="829" />
+    <control background="false" color="purple" h="20" name="label158" outline="false" size="14" text="Lasers" type="labelh" w="54" x="124" y="829" />
+    <control background="false" color="purple" h="20" name="label159" outline="false" size="12" text="Normal" type="labelh" w="52" x="29" y="794" />
+    <control background="false" color="purple" h="20" name="label160" outline="false" size="12" text="Point" type="labelh" w="52" x="127" y="794" />
+    <control background="false" color="purple" h="20" name="label161" outline="false" size="12" text="Pair" type="labelh" w="52" x="175" y="794" />
+    <control background="false" color="purple" h="20" name="label162" outline="false" size="12" text="All" type="labelh" w="52" x="224" y="794" />
+    <control color="red" h="45" local_off="true" name="push16" osc_cs="/cal/est/2" scalef="0.0" scalet="1.0" type="push" w="68" x="350" y="209" />
+    <control background="false" color="purple" h="20" name="label163" outline="false" size="17" text="Est -&gt;" type="labelh" w="60" x="355" y="221" />
+    <control color="red" h="45" local_off="true" name="push17" osc_cs="/cal/est/1" scalef="0.0" scalet="1.0" type="push" w="68" x="350" y="269" />
+    <control background="false" color="purple" h="20" name="label164" outline="false" size="17" text="&lt;- Est" type="labelh" w="60" x="355" y="282" />
+    <control background="false" color="red" h="25" name="label270" outline="false" size="14" text="Conn Params" type="labelh" w="94" x="207" y="-33" />
+    <control background="false" color="red" h="25" name="label271" outline="false" size="14" text="Attributes" type="labelh" w="94" x="4" y="-33" />
+    <control background="false" color="red" h="25" name="label272" outline="false" size="14" text="Connections" type="labelh" w="94" x="105" y="-33" />
+    <control background="false" color="red" h="25" name="label273" outline="false" size="14" text="Cell Params" type="labelh" w="94" x="309" y="-33" />
+    <control background="false" color="red" h="25" name="label274" outline="false" size="14" text="Sound" type="labelh" w="94" x="411" y="-33" />
+    <control background="false" color="green" h="25" name="label275" outline="false" size="14" text="Calibration" type="labelh" w="94" x="513" y="-33" />
+    <control background="false" color="red" h="25" name="label276" outline="false" size="14" text="Laser" type="labelh" w="94" x="615" y="-33" />
+    <control background="false" color="red" h="25" name="label285" osc_cs="/cal/error/total" outline="true" size="16" text="4.56" type="labelh" w="66" x="670" y="716" />
+    <control background="false" color="purple" h="20" name="label286" outline="false" size="12" text="Home" type="labelh" w="52" x="77" y="794" />
+    <control background="false" color="purple" h="23" name="label287" outline="false" size="12" text="Align W" type="labelh" w="59" x="405" y="145" />
+  </tabpage>
+  <tabpage name="8" scalef="0.0" scalet="1.0">
+    <control centered="false" color="red" h="50" inverted="false" name="fader15" osc_cs="/ui/laser/hfov" response="absolute" scalef="70.0" scalet="110.0" type="faderh" w="200" x="34" y="840" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader16" osc_cs="/ui/laser/xmin" response="absolute" scalef="-1.0" scalet="1.0" type="faderh" w="200" x="35" y="485" />
+    <control color="red" h="45" local_off="true" name="toggle14" osc_cs="/ui/laser/alignment" scalef="0.0" scalet="1.0" type="toggle" w="45" x="558" y="145" />
+    <control centered="false" color="red" h="144" inverted="false" name="fader17" osc_cs="/ui/laser/pps" response="absolute" scalef="10000.0" scalet="40000.0" type="faderv" w="40" x="15" y="52" />
+    <control background="false" color="purple" h="126" name="label165" osc_cs="/ui/laser/pps/label" outline="false" size="14" text="PPS" type="labelv" w="25" x="21" y="61" />
+    <control centered="false" color="red" h="144" inverted="false" name="fader18" osc_cs="/ui/laser/points" response="absolute" scalef="100.0" scalet="4000.0" type="faderv" w="40" x="59" y="52" />
+    <control background="false" color="purple" h="126" name="label166" osc_cs="/ui/laser/points/label" outline="false" size="14" text="Num Points" type="labelv" w="25" x="67" y="61" />
+    <control centered="false" color="red" h="144" inverted="false" name="fader19" osc_cs="/ui/laser/preblank" response="absolute" scalef="0.0" scalet="30.0" type="faderv" w="40" x="105" y="52" />
+    <control background="false" color="purple" h="126" name="label167" osc_cs="/ui/laser/preblank/label" outline="false" size="14" text="Blanking (pre)" type="labelv" w="25" x="113" y="61" />
+    <control centered="false" color="red" h="144" inverted="false" name="fader20" osc_cs="/ui/laser/postblank" response="absolute" scalef="0.0" scalet="30.0" type="faderv" w="40" x="151" y="52" />
+    <control background="false" color="purple" h="126" name="label168" osc_cs="/ui/laser/postblank/label" outline="false" size="14" text="Blanking (post)" type="labelv" w="25" x="159" y="61" />
+    <control centered="false" color="red" h="144" inverted="false" name="fader21" osc_cs="/ui/laser/skew" response="absolute" scalef="-3.0" scalet="6.0" type="faderv" w="40" x="198" y="52" />
+    <control background="false" color="purple" h="126" name="label169" osc_cs="/ui/laser/skew/label" outline="false" size="14" text="Blanking skew" type="labelv" w="25" x="206" y="63" />
+    <control background="true" color="red" h="25" name="label170" outline="false" size="14" text="Laser Setup" type="labelh" w="80" x="124" y="22" />
+    <control color="red" h="45" local_off="true" name="toggle15" osc_cs="/ui/laser/freeze" scalef="0.0" scalet="1.0" type="toggle" w="45" x="622" y="40" />
+    <control color="red" h="45" local_off="true" name="toggle16" osc_cs="/ui/laser/body" scalef="0.0" scalet="1.0" type="toggle" w="45" x="622" y="93" />
+    <control color="red" h="45" local_off="true" name="toggle17" osc_cs="/ui/laser/legs" scalef="0.0" scalet="1.0" type="toggle" w="45" x="622" y="146" />
+    <control background="false" color="purple" h="80" name="label171" outline="false" size="12" text="Freeze" type="labelv" w="25" x="632" y="22" />
+    <control background="false" color="purple" h="80" name="label172" outline="false" size="14" text="Body" type="labelv" w="25" x="632" y="75" />
+    <control background="false" color="purple" h="80" name="label173" outline="false" size="14" text="Legs" type="labelv" w="25" x="632" y="128" />
+    <control background="false" color="purple" h="80" name="label174" outline="false" size="14" text="Align" type="labelv" w="25" x="568" y="127" />
+    <control color="red" h="45" local_off="true" name="toggle18" osc_cs="/ui/laser/grid" scalef="0.0" scalet="1.0" type="toggle" w="45" x="558" y="38" />
+    <control background="false" color="purple" h="80" name="label175" outline="false" size="14" text="Grid" type="labelv" w="25" x="568" y="21" />
+    <control color="red" h="45" local_off="true" name="toggle19" osc_cs="/ui/laser/background" scalef="0.0" scalet="1.0" type="toggle" w="45" x="558" y="91" />
+    <control background="false" color="purple" h="80" name="label176" outline="false" size="14" text="Bg" type="labelv" w="25" x="568" y="74" />
+    <control color="red" ex_mode="false" h="200" local_off="true" name="multitoggle6" number_x="1" number_y="4" osc_cs="/ui/laser/enable" scalef="0.0" scalet="1.0" type="multitoggle" w="50" x="461" y="38" />
+    <control background="true" color="red" h="199" name="label177" outline="false" size="16" text="Enable" type="labelv" w="25" x="516" y="38" />
+    <control color="red" h="45" local_off="true" name="toggle20" osc_cs="/ui/laser/test" scalef="0.0" scalet="1.0" type="toggle" w="45" x="558" y="197" />
+    <control background="false" color="purple" h="80" name="label178" outline="false" size="14" text="Test" type="labelv" w="25" x="568" y="179" />
+    <control color="red" h="45" local_off="true" name="toggle21" osc_cs="/ui/laser/outline" scalef="0.0" scalet="1.0" type="toggle" w="45" x="558" y="249" />
+    <control background="false" color="purple" h="80" name="label179" outline="false" size="12" text="Outline" type="labelv" w="25" x="568" y="231" />
+    <control background="false" color="purple" h="25" name="label180" osc_cs="/ui/laser/hfov/label" outline="false" size="14" text="??" type="labelh" w="80" x="100" y="846" />
+    <control background="false" color="purple" h="25" name="label181" osc_cs="/ui/laser/xmin/label" outline="false" size="14" text="??" type="labelh" w="80" x="95" y="499" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader22" osc_cs="/ui/laser/ymin" response="absolute" scalef="-1.0" scalet="1.0" type="faderh" w="200" x="35" y="543" />
+    <control background="false" color="purple" h="25" name="label182" osc_cs="/ui/laser/ymin/label" outline="false" size="14" text="??" type="labelh" w="80" x="95" y="556" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader23" osc_cs="/ui/laser/xmax" response="absolute" scalef="-1.0" scalet="1.0" type="faderh" w="200" x="35" y="599" />
+    <control background="false" color="purple" h="25" name="label183" osc_cs="/ui/laser/xmax/label" outline="false" size="14" text="??" type="labelh" w="80" x="95" y="612" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader24" osc_cs="/ui/laser/ymax" response="absolute" scalef="-1.0" scalet="1.0" type="faderh" w="200" x="35" y="654" />
+    <control background="false" color="purple" h="25" name="label184" osc_cs="/ui/laser/ymax/label" outline="false" size="14" text="??" type="labelh" w="80" x="95" y="667" />
+    <control color="red" ex_mode="true" h="220" local_off="false" name="multitoggle7" number_x="1" number_y="4" osc_cs="/ui/laser/select" scalef="0.0" scalet="1.0" type="multitoggle" w="50" x="418" y="585" />
+    <control background="true" color="red" h="199" name="label185" outline="false" size="16" text="Select" type="labelv" w="25" x="477" y="597" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader25" osc_cs="/ui/laser/hfov" response="absolute" scalef="70.0" scalet="110.0" type="faderh" w="200" x="34" y="840" />
+    <control background="false" color="purple" h="25" name="label186" osc_cs="/ui/laser/hfov/label" outline="false" size="14" text="??" type="labelh" w="80" x="100" y="846" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader26" osc_cs="/ui/laser/hfov" response="absolute" scalef="70.0" scalet="110.0" type="faderh" w="200" x="35" y="751" />
+    <control background="false" color="purple" h="25" name="label187" osc_cs="/ui/laser/hfov/label" outline="false" size="14" text="??" type="labelh" w="80" x="101" y="757" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader27" osc_cs="/ui/laser/vfov" response="absolute" scalef="70.0" scalet="110.0" type="faderh" w="200" x="35" y="751" />
+    <control background="false" color="purple" h="25" name="label188" osc_cs="/ui/laser/vfov/label" outline="false" size="14" text="??" type="labelh" w="80" x="101" y="763" />
+    <control background="true" color="red" h="25" name="label189" outline="false" size="16" text="VFOV" type="labelh" w="80" x="235" y="764" />
+    <control background="true" color="red" h="25" name="label190" outline="false" size="16" text="HFOV" type="labelh" w="80" x="235" y="856" />
+    <control background="true" color="red" h="25" name="label191" outline="false" size="16" text="X Min" type="labelh" w="80" x="235" y="498" />
+    <control background="true" color="red" h="25" name="label192" outline="false" size="16" text="Y Min" type="labelh" w="80" x="235" y="554" />
+    <control background="true" color="red" h="25" name="label193" outline="false" size="16" text="X Max" type="labelh" w="80" x="235" y="610" />
+    <control background="true" color="red" h="25" name="label194" outline="false" size="16" text="Y Max" type="labelh" w="80" x="235" y="667" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader28" osc_cs="/pf/miny" response="absolute" scalef="-1.0" scalet="13.0" type="faderh" w="194" x="555" y="512" />
+    <control background="false" color="red" h="25" name="label196" outline="false" size="14" text="Min Y" type="labelh" w="80" x="622" y="524" />
+    <control centered="false" color="red" h="200" inverted="false" name="fader29" osc_cs="/pf/maxx" response="absolute" scalef="0.0" scalet="15.0" type="faderv" w="50" x="626" y="642" />
+    <control background="false" color="red" h="80" name="label197" outline="false" size="14" text="Max X" type="labelv" w="28" x="637" y="701" />
+    <control centered="false" color="red" h="50" inverted="false" name="fader30" osc_cs="/pf/maxy" response="absolute" scalef="2.0" scalet="15.0" type="faderh" w="194" x="555" y="572" />
+    <control background="false" color="red" h="25" name="label198" outline="false" size="14" text="Max Y" type="labelh" w="80" x="622" y="584" />
+    <control centered="false" color="red" h="200" inverted="false" name="fader31" osc_cs="/pf/minx" response="absolute" scalef="-15.0" scalet="0.0" type="faderv" w="50" x="693" y="642" />
+    <control background="false" color="red" h="80" name="label199" outline="false" size="14" text="Min X" type="labelv" w="28" x="704" y="701" />
+    <control color="red" h="45" local_off="true" name="toggle22" osc_cs="/ui/laser/save" scalef="0.0" scalet="1.0" type="toggle" w="45" x="437" y="897" />
+    <control background="false" color="purple" h="80" name="label205" outline="false" size="12" text="Save" type="labelv" w="25" x="447" y="879" />
+    <control color="red" h="45" local_off="true" name="toggle23" osc_cs="/ui/laser/load" scalef="0.0" scalet="1.0" type="toggle" w="45" x="378" y="898" />
+    <control background="false" color="purple" h="80" name="label206" outline="false" size="12" text="Load" type="labelv" w="25" x="388" y="880" />
+    <control centered="false" color="red" h="144" inverted="false" name="fader32" osc_cs="/ui/laser/intensitypts" response="absolute" scalef="100.0" scalet="50000.0" type="faderv" w="40" x="244" y="52" />
+    <control background="false" color="purple" h="126" name="label207" osc_cs="/ui/laser/intensitypts/label" outline="false" size="14" text="Intensity  Size" type="labelv" w="25" x="252" y="63" />
+    <control background="false" color="red" h="25" name="label277" outline="false" size="14" text="Conn Params" type="labelh" w="94" x="207" y="-33" />
+    <control background="false" color="red" h="25" name="label278" outline="false" size="14" text="Attributes" type="labelh" w="94" x="4" y="-33" />
+    <control background="false" color="red" h="25" name="label279" outline="false" size="14" text="Connections" type="labelh" w="94" x="105" y="-33" />
+    <control background="false" color="red" h="25" name="label280" outline="false" size="14" text="Cell Params" type="labelh" w="94" x="309" y="-33" />
+    <control background="false" color="red" h="25" name="label281" outline="false" size="14" text="Sound" type="labelh" w="94" x="411" y="-33" />
+    <control background="false" color="red" h="25" name="label282" outline="false" size="14" text="Calibration" type="labelh" w="94" x="513" y="-33" />
+    <control background="false" color="green" h="25" name="label283" outline="false" size="14" text="Laser" type="labelh" w="94" x="615" y="-33" />
+    <control centered="false" color="red" h="144" inverted="false" name="fader33" osc_cs="/ui/laser/power" response="absolute" scalef="0.0" scalet="100.0" type="faderv" w="40" x="349" y="623" />
+    <control background="false" color="purple" h="126" name="label284" osc_cs="/ui/laser/power/label" outline="false" size="14" text="Power %" type="labelv" w="25" x="357" y="633" />
+  </tabpage>
+</layout>

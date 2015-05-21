@@ -785,7 +785,7 @@ class OSCHandler(object):
         if uid in self.m_field.m_cell_dict:
             cell = self.m_field.m_cell_dict[uid]
             if atype in cell.m_attr_dict:
-                attr = cell.m_attr_dict[type]
+                attr = cell.m_attr_dict[atype]
                 duration = time() - attr.m_createtime
                 self.m_field.m_osc.send_downstream("/conductor/attr",
                         [atype, uid, attr.m_value,0.0, duration])

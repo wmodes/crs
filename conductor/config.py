@@ -16,7 +16,7 @@ osc_ips_local = {
     'sound': "127.0.0.1",
     'laser': "127.0.0.1",
     'recorder': "127.0.0.1",
-    'touchosc':"192.168.0.8",
+    'touchosc':"127.0.01",
 }
 
 osc_ips_prod = {
@@ -27,7 +27,7 @@ osc_ips_prod = {
     'sound': "192.168.0.29",
     'laser': "localhost",
     'recorder': "localhost",
-    'touchosc':"192.168.0.8",
+    'touchosc':"127.0.01",
 }
 
 osc_ports_local = {

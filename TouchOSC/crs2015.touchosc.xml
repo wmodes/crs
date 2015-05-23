@@ -284,19 +284,19 @@
     <control background="false" color="purple" h="80" name="label35" outline="false" size="14" text="Note Threshold" type="labelv" w="25" x="414" y="646" />
     <control color="red" h="45" local_off="false" name="toggle1" osc_cs="/soundui/record" scalef="0.0" scalet="1.0" type="toggle" w="45" x="635" y="873" />
     <control background="false" color="purple" h="20" name="label36" outline="false" size="11" text="Record" type="labelh" w="46" x="633" y="885" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader4" osc_cs="/soundui/kick" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="111" y="296" />
-    <control background="false" color="purple" h="198" name="label37" outline="false" size="14" text="Kick" type="labelv" w="27" x="125" y="297" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader4" osc_cs="/soundui/kick" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="197" y="297" />
+    <control background="false" color="purple" h="198" name="label37" outline="false" size="14" text="Kick" type="labelv" w="27" x="211" y="298" />
     <control centered="false" color="red" h="200" inverted="true" name="fader5" osc_cs="/soundui/trigger/fusion" response="absolute" scalef="0.0" scalet="1.0" type="faderv" w="50" x="338" y="585" />
     <control background="false" color="purple" h="80" name="label39" outline="false" size="14" text="Fusion" type="labelv" w="25" x="349" y="645" />
     <control centered="false" color="red" h="200" inverted="true" name="fader8" osc_cs="/soundui/events/fusion" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="503" y="585" />
     <control centered="false" color="red" h="200" inverted="true" name="fader9" osc_cs="/soundui/events/touch" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="569" y="585" />
     <control background="false" color="red" h="25" name="label44" outline="false" size="14" text="Trigger Levels" type="labelh" w="115" x="339" y="549" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader10" osc_cs="/soundui/snare" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="171" y="296" />
-    <control background="false" color="purple" h="196" name="label45" outline="false" size="14" text="Snare" type="labelv" w="25" x="186" y="298" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader11" osc_cs="/soundui/hat" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="231" y="296" />
-    <control background="false" color="purple" h="196" name="label46" outline="false" size="14" text="Hat" type="labelv" w="25" x="246" y="298" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader12" osc_cs="/soundui/synth1" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="352" y="296" />
-    <control background="false" color="purple" h="196" name="label47" outline="false" size="14" text="Synth1" type="labelv" w="25" x="367" y="298" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader10" osc_cs="/soundui/snare" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="257" y="297" />
+    <control background="false" color="purple" h="196" name="label45" outline="false" size="14" text="Snare" type="labelv" w="25" x="272" y="299" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader11" osc_cs="/soundui/hat" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="317" y="297" />
+    <control background="false" color="purple" h="196" name="label46" outline="false" size="14" text="Hat" type="labelv" w="25" x="332" y="299" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader12" osc_cs="/soundui/synth1" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="438" y="297" />
+    <control background="false" color="purple" h="196" name="label47" outline="false" size="14" text="Synth1" type="labelv" w="25" x="453" y="299" />
     <control background="true" color="red" h="25" name="label49" osc_cs="/ui/tempo" outline="true" size="14" text="Tempo" type="labelh" w="80" x="232" y="888" />
     <control background="true" color="red" h="25" name="label50" osc_cs="/ui/beat" outline="true" size="14" text="Beat" type="labelh" w="80" x="322" y="888" />
     <control background="false" color="purple" h="80" name="label1" outline="false" size="14" text="Touch" type="labelv" w="25" x="580" y="642" />
@@ -304,16 +304,16 @@
     <control background="false" color="purple" h="80" name="label3" outline="false" size="14" text="Grouped" type="labelv" w="25" x="646" y="642" />
     <control background="false" color="red" h="25" name="label4" outline="false" size="14" text="Event Volumes" type="labelh" w="166" x="510" y="549" />
     <control background="false" color="red" h="25" name="label5" outline="false" size="14" text="Tempo" type="labelh" w="115" x="203" y="549" />
-    <control background="false" color="red" h="25" name="label6" outline="false" size="14" text="Channels" type="labelh" w="533" x="112" y="238" />
-    <control color="green" h="20" name="led2" osc_cs="/soundui/activity/1" scalef="0.0" scalet="1.0" type="led" w="20" x="128" y="269" />
-    <control color="green" h="20" name="led3" osc_cs="/soundui/activity/2" scalef="0.0" scalet="1.0" type="led" w="20" x="188" y="269" />
-    <control color="green" h="20" name="led4" osc_cs="/soundui/activity/3" scalef="0.0" scalet="1.0" type="led" w="20" x="248" y="269" />
-    <control color="green" h="20" name="led5" osc_cs="/soundui/activity/4" scalef="0.0" scalet="1.0" type="led" w="20" x="308" y="269" />
-    <control color="green" h="20" name="led6" osc_cs="/soundui/activity/5" scalef="0.0" scalet="1.0" type="led" w="20" x="369" y="269" />
-    <control color="green" h="20" name="led7" osc_cs="/soundui/activity/6" scalef="0.0" scalet="1.0" type="led" w="20" x="429" y="269" />
-    <control color="green" h="20" name="led8" osc_cs="/soundui/activity/7" scalef="0.0" scalet="1.0" type="led" w="20" x="489" y="269" />
-    <control color="green" h="20" name="led9" osc_cs="/soundui/activity/8" scalef="0.0" scalet="1.0" type="led" w="20" x="549" y="269" />
-    <control color="green" h="20" name="led10" osc_cs="/soundui/activity/9" scalef="0.0" scalet="1.0" type="led" w="20" x="610" y="269" />
+    <control background="false" color="red" h="25" name="label6" outline="false" size="14" text="Channels" type="labelh" w="533" x="198" y="239" />
+    <control color="green" h="20" name="led2" osc_cs="/soundui/activity/1" scalef="0.0" scalet="1.0" type="led" w="20" x="214" y="270" />
+    <control color="green" h="20" name="led3" osc_cs="/soundui/activity/2" scalef="0.0" scalet="1.0" type="led" w="20" x="274" y="270" />
+    <control color="green" h="20" name="led4" osc_cs="/soundui/activity/3" scalef="0.0" scalet="1.0" type="led" w="20" x="334" y="270" />
+    <control color="green" h="20" name="led5" osc_cs="/soundui/activity/4" scalef="0.0" scalet="1.0" type="led" w="20" x="394" y="270" />
+    <control color="green" h="20" name="led6" osc_cs="/soundui/activity/5" scalef="0.0" scalet="1.0" type="led" w="20" x="455" y="270" />
+    <control color="green" h="20" name="led7" osc_cs="/soundui/activity/6" scalef="0.0" scalet="1.0" type="led" w="20" x="515" y="270" />
+    <control color="green" h="20" name="led8" osc_cs="/soundui/activity/7" scalef="0.0" scalet="1.0" type="led" w="20" x="575" y="270" />
+    <control color="green" h="20" name="led9" osc_cs="/soundui/activity/8" scalef="0.0" scalet="1.0" type="led" w="20" x="635" y="270" />
+    <control color="green" h="20" name="led10" osc_cs="/soundui/activity/9" scalef="0.0" scalet="1.0" type="led" w="20" x="696" y="270" />
     <control background="false" color="red" h="25" name="label263" outline="false" size="14" text="Conn Params" type="labelh" w="94" x="207" y="-33" />
     <control background="false" color="red" h="25" name="label264" outline="false" size="14" text="Attributes" type="labelh" w="94" x="4" y="-33" />
     <control background="false" color="red" h="25" name="label265" outline="false" size="14" text="Connections" type="labelh" w="94" x="105" y="-33" />
@@ -321,16 +321,19 @@
     <control background="false" color="green" h="25" name="label267" outline="false" size="14" text="Sound" type="labelh" w="94" x="411" y="-33" />
     <control background="false" color="red" h="25" name="label268" outline="false" size="14" text="Calibration" type="labelh" w="94" x="513" y="-33" />
     <control background="false" color="red" h="25" name="label269" outline="false" size="14" text="Laser" type="labelh" w="94" x="615" y="-33" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader34" osc_cs="/soundui/speech" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="291" y="296" />
-    <control background="false" color="purple" h="196" name="label289" outline="false" size="14" text="Speech" type="labelv" w="25" x="306" y="298" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader35" osc_cs="/soundui/synth2" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="412" y="296" />
-    <control background="false" color="purple" h="196" name="label290" outline="false" size="14" text="Synth2" type="labelv" w="25" x="427" y="298" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader36" osc_cs="/soundui/8ndelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="472" y="296" />
-    <control background="false" color="purple" h="196" name="label291" outline="false" size="14" text="8ndelay" type="labelv" w="25" x="487" y="298" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader37" osc_cs="/soundui/8nddelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="533" y="296" />
-    <control background="false" color="purple" h="196" name="label292" outline="false" size="14" text="8nddelay" type="labelv" w="25" x="548" y="298" />
-    <control centered="false" color="red" h="200" inverted="true" name="fader38" osc_cs="/soundui/4nddelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="593" y="296" />
-    <control background="false" color="purple" h="196" name="label293" outline="false" size="14" text="4nddelay" type="labelv" w="25" x="608" y="298" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader34" osc_cs="/soundui/speech" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="377" y="297" />
+    <control background="false" color="purple" h="196" name="label289" outline="false" size="14" text="Speech" type="labelv" w="25" x="392" y="299" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader35" osc_cs="/soundui/synth2" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="498" y="297" />
+    <control background="false" color="purple" h="196" name="label290" outline="false" size="14" text="Synth2" type="labelv" w="25" x="513" y="299" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader36" osc_cs="/soundui/8ndelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="558" y="297" />
+    <control background="false" color="purple" h="196" name="label291" outline="false" size="14" text="8ndelay" type="labelv" w="25" x="573" y="299" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader37" osc_cs="/soundui/8nddelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="619" y="297" />
+    <control background="false" color="purple" h="196" name="label292" outline="false" size="14" text="8nddelay" type="labelv" w="25" x="634" y="299" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader38" osc_cs="/soundui/4nddelay" response="absolute" scalef="0.0" scalet="157.0" type="faderv" w="50" x="679" y="297" />
+    <control background="false" color="purple" h="196" name="label293" outline="false" size="14" text="4nddelay" type="labelv" w="25" x="694" y="299" />
+    <control centered="false" color="red" h="200" inverted="true" name="fader39" osc_cs="/soundui/tonic" response="absolute" scalef="60.0" scalet="71.0" type="faderv" w="50" x="68" y="296" />
+    <control background="false" color="purple" h="198" name="label294" osc_cs="/soundui/tonic/value" outline="false" size="14" text="Tonic" type="labelv" w="27" x="82" y="297" />
+    <control background="false" color="red" h="22" name="label295" outline="false" size="14" text="Tonic" type="labelh" w="115" x="37" y="239" />
   </tabpage>
   <tabpage name="7" scalef="0.0" scalet="1.0">
     <control color="red" h="45" local_off="true" name="push18" osc_cs="/cal/align" scalef="0.0" scalet="1.0" type="push" w="49" x="409" y="132" />

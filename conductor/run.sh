@@ -1,6 +1,6 @@
 #!/bin/sh
 # Run conductor
-LOGDIR=~/Desktop/CRSLogs
+LOGDIR=~/Desktop/PFLogs
 [ -d $LOGDIR ] || mkdir -p $LOGDIR
 while true
 do
